@@ -1,0 +1,5 @@
+# Docs
+htdocs/
+/.venv
+# Mac specific
+.DS_Store
