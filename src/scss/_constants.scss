@@ -1,0 +1,133 @@
+@use "sass:list";
+@use "sass:math";
+
+@use "functions";
+
+// font fallbacks
+$sans-fallbacks: "Helvetica Neue", Helvetica, Arial, FreeSans, sans-serif;
+$serif-fallbacks: Georgia, Palatino, "Palatino Linotype", FreeSerif, serif;
+
+// relative path to fonts
+// we expect CSS to live in <version>/css/<vertical>/<subdirectory>/<filename>.css
+// adjust this for files not in a subdirectory e.g. advertorial or framebuilder
+$font-path-prefix: "../../../fonts/" !default;
+
+// relative path to images
+$images-path-prefix: "../../../images/" !default;
+
+// font families
+$font-franziska: list.join(FranziskaWebPro, $serif-fallbacks) !default;
+$font-tabletgothic: list.join(TabletGothic, $sans-fallbacks) !default;
+$font-zeittiemannschmal: list.join(ZeitTiemannSchmal, $serif-fallbacks) !default;
+$font-gintonord: list.join("Ginto Nord", $sans-fallbacks) !default;
+$font-verdana: list.join(Verdana, $sans-fallbacks) !default;
+$font-georgia: list.join(Georgia, $serif-fallbacks) !default;
+
+// basic styles
+$base-font-family: $font-tabletgothic !default;
+$base-line-height: 1.5 !default;
+$headline-line-height: 1.4;
+$is-advertorial: false !default;
+
+// letter-spacing
+$letter-spacing-xl: 0.125em !default; // 2px
+$letter-spacing-l: 0.08em !default; // 1.28px
+$letter-spacing-m: 0.05em !default; // 0.8px
+$letter-spacing-s: 0.03em !default; // a half of a pixel
+$letter-spacing-xs: 0.015em !default; // a quarter of a pixel
+
+// utility colors
+$white: #fff !default;
+$grey--bright: #f9f9f9 !default;
+$charcoal: #aaaaac !default;
+$grey--dark: #33333c !default;
+$black: #000 !default;
+
+// named colors, see http://chir.ag/projects/name-that-color/
+
+$zon-red: #b91109 !default;
+$zon-charcoal: #252525 !default;
+$zon-dark-grey: #44444c !default;
+$zon-trout: #535560 !default;
+$zon-grey: #77777c !default;
+$zon-mid-grey: #99999c !default;
+$zon-light-grey: #cccccf !default;
+$zon-iron: #dfdfe1 !default;
+$zon-lighter-grey: #eeeef0 !default;
+$zon-warm-grey: #f0eeec !default;
+$zon-mid-green: #187e43 !default;
+$zon-warm-yellow: #ffe246 !default;
+
+$primary-color: $zon-charcoal !default;
+
+// semantic colors
+$color-light: #69696c !default;
+$dark-background-primary: #121212 !default;
+$dark-red: #eb362e !default;
+
+$color-image-overlay: #000 !default;
+
+// tickaroo liveblog
+$color-highlited-post: #ffa500;
+
+// shadows (used on e.g. article headers, scrollytelling steps)
+$shadow-text-on-media:
+	0 27px 112px rgba(0, 0, 0, 0.37),
+	0 9.855px 40.882px rgba(0, 0, 0, 0.26),
+	0 4.785px 19.847px rgba(0, 0, 0, 0.21),
+	0 2.346px 9.73px rgba(0, 0, 0, 0.16),
+	0 0.927px 3.847px rgba(0, 0, 0, 0.11);
+$shadow-box-on-media:
+	0 42px 150px 0 rgba(0, 0, 0, 0.11),
+	0 9.381px 33.504px 0 rgba(0, 0, 0, 0.07),
+	0 2.793px 9.975px 0 rgba(0, 0, 0, 0.04);
+
+// content lengths
+$medium-content-width: functions.rem(660px) !default;
+
+$max-page-width: functions.rem(1000px) !default;
+$max-longform-width: functions.rem(1364px) !default;
+$max-overview-width: functions.rem(820px) !default;
+$max-author-list-width: functions.rem(760px) !default;
+$max-teaser-standard-width: functions.rem(880px) !default; // 840px + 20px padding on each side
+$max-teaser-standard-text-width: functions.rem(840px * 0.8) !default;
+$max-teaser-full-text-width: functions.rem(960px * 0.8) !default;
+
+// new design system
+$ds-content-width: functions.rem(892px) !default;
+$ds-text-max-width: functions.rem(740px) !default;
+
+// layout
+$gutter: functions.rem(20px) !default;
+$vertical-space: $gutter !default;
+
+// Standard breakpoints (in 'em' for purpose)
+$break-phablet-min: functions.em(520px) !default;
+$break-tablet-min: functions.em(768px) !default;
+$break-desktop-min: functions.em(980px) !default;
+$break-areas: $break-tablet-min !default;
+$break-page-padding: $break-tablet-min !default;
+
+// *ad* breakpoint
+$break-mobile-ad-width: functions.em(1280px) !default;
+
+// ------ z-index directory --------- //
+// Introduced in 2021, to standardize the levels and provide an overview
+
+$z-index-teaser-media-addition: 1;
+$z-index-faux-link: 2 !default;
+$z-index-above-faux-link: 3 !default;
+
+// Stacking of elements inside small modules (eg commentcount link above teaser links with position:absolute).
+// These modules will never collide with each other, because they are never stacked on another.
+// This is the smallest level above the regular content.
+$z-index-inside-modules: 3 !default;
+
+// Elements that are part of the regular content flow, but above the regular content.
+$z-index-above-regular-content: 10;
+// For the main navigation, above all normal content
+$z-index-nav: 900 !default;
+// Modals, really above everything
+$z-index-modal: 910;
+// This is set as inline CSS by the iqd and written down here as documentation
+$z-index-ads: 111;

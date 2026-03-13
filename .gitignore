@@ -3,3 +3,4 @@ htdocs/
 /.venv
 # Mac specific
 .DS_Store
+node_modules/

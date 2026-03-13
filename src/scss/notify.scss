@@ -1,0 +1,95 @@
+@use "utils";
+@use "functions";
+@use "constants";
+@use "mixins";
+
+.z-notification-inline {
+	background-color: var(--z-ds-color-text-100);
+	border: 0;
+	border-radius: var(--z-ds-border-radius-4);
+	color: var(--z-ds-color-background-0);
+	font-size: var(--z-ds-fontsize-14);
+	height: unset; // fix normalize rule to set to "fit-content", breaking in Safari 14
+	line-height: var(--z-ds-lineheight-12);
+	margin: 0;
+	padding: var(--z-ds-space-s) var(--z-ds-space-m);
+	position: absolute;
+}
+
+.z-notification-bottom {
+	background-color: transparent;
+	border: 0;
+	bottom: var(--z-ds-space-s);
+	left: 50%;
+	padding: 0;
+	position: fixed;
+	right: auto;
+	top: auto;
+	transform: translateX(-50%);
+	z-index: constants.$z-index-above-faux-link;
+
+	@include utils.respond-max(constants.$break-phablet-min) {
+		width: 90vw;
+	}
+}
+
+.z-notification-bottom__item {
+	align-items: center;
+	animation: slide-in-from-bottom 0.3s ease-out;
+	background-color: var(--z-ds-color-text-100);
+	border-radius: var(--z-ds-border-radius-4);
+	color: var(--z-ds-color-background-0);
+	display: flex;
+	font-size: var(--z-ds-fontsize-14);
+	justify-content: space-between;
+	line-height: var(--z-ds-lineheight-12);
+	margin: auto auto var(--z-ds-space-xs);
+	opacity: 1;
+	transform: translateY(0);
+	will-change: transform, opacity;
+
+	&--no-action {
+		padding-right: var(--z-ds-space-m);
+	}
+
+	&--state-error {
+		background-color: var(--z-ds-color-error-70);
+		color: var(--z-ds-color-general-white-100);
+		.z-notification-bottom__close-btn svg path {
+			stroke: var(--z-ds-color-general-white-100);
+		}
+	}
+
+	@keyframes slide-in-from-bottom {
+		0% {
+			opacity: 0;
+			transform: translateY(100%);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+}
+
+.z-notification-bottom__message {
+	flex: 1;
+}
+
+.z-notification-bottom__action-btn,
+.z-notification-bottom__close-btn {
+	align-self: center;
+	background: none;
+	border: none;
+	color: var(--z-ds-color-background-0);
+	cursor: pointer;
+	display: flex;
+	font-size: var(--z-ds-fontsize-14);
+	font-weight: bold;
+	height: auto;
+	padding: var(--z-ds-space-10) var(--z-ds-space-m);
+
+	@include mixins.on-interaction {
+		color: var(--z-ds-color-accent-100);
+	}
+}

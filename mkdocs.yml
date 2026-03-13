@@ -1,7 +1,7 @@
 INHERIT: /zon/common_config.yaml
 site_name: ZEIT ONLINE Docs
-repo_url: https://github.com/ZeitOnline/project-template
-team: team-login-paid-services,editorial-squad,team-ops,team-engagement,team-content
+repo_url: https://github.com/ZeitOnline/notify
+team: team-engagement
 
 nav:
     - index.md
