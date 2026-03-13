@@ -7,6 +7,14 @@
  * @version 0.3.0
  */
 
+import type {
+	BottomNotificationOptions,
+	InlineNotificationOptions,
+	InlineNotification,
+	NotificationElement,
+	NotificationService,
+} from '../index.d.ts';
+
 const CLOSE_BUTTON_HTML = `
 	<button class="z-notification-bottom__close-btn" aria-label="Schließen">
 		<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -17,7 +25,13 @@ const CLOSE_BUTTON_HTML = `
 
 // Notify manages ui elements and keep you informed about results, warnings and errors.
 // This includes deciding which type of notification to show (e.g., inline or bottom).
-class Notify {
+export class Notify {
+	static instance: Notify | undefined;
+	notifications!: HTMLElement[];
+	maxNotifications!: number;
+	container!: HTMLDialogElement | HTMLDivElement | null;
+	notificationTimeout!: number;
+
 	constructor() {
 		if (Notify.instance) {
 			return Notify.instance;
@@ -28,7 +42,7 @@ class Notify {
 		this.container = null;
 		this.notificationTimeout = 4000;
 	}
-	showBottom({ message, status, button, link }) {
+	showBottom({ message, status, button, link }: BottomNotificationOptions): void {
 		this.container = this.createBottomContainer();
 
 		let notification = this.createNotification({ message, status, button, link });
@@ -38,7 +52,7 @@ class Notify {
 			this.removeNotification(this.notifications[0]);
 		}
 
-		this.container.show();
+		(this.container as HTMLDialogElement).show();
 
 		this.startTimeout(notification);
 	}
@@ -47,13 +61,13 @@ class Notify {
 	 * When the container is added to the page, a small delay is required
 	 * before setting the innerText, otherwise the screen reader might not announce it correctly.
 	 */
-	async setAndAnnounceMessage(message) {
+	async setAndAnnounceMessage(message: string): Promise<void> {
 		if (!this.container) {
 			console.warn('Notification container is not initialized.');
 			return;
 		}
 		this.container.innerText = '';
-		await new Promise(resolve => {
+		await new Promise<void>(resolve => {
 			setTimeout(() => {
 				resolve();
 			}, 50);
@@ -61,8 +75,8 @@ class Notify {
 		this.container.innerText = message;
 	}
 
-	async showInline({ element, message }) {
-		let inline = { timeoutID: null };
+	async showInline({ element, message }: InlineNotificationOptions): Promise<void> {
+		let inline: InlineNotification = { timeoutID: null };
 		this.container = this.createInlineContainer();
 		await this.setAndAnnounceMessage(message);
 		this.inlinePositioning(element, this.container);
@@ -70,9 +84,9 @@ class Notify {
 		// using pointerup so that simply touching the screen
 		// (e.g. by accident or to start scrolling) does not close the notification instantly
 		// this gives the user a better chance to read the message
-		const clickOutsideListener = event => {
-			if (this.container && !this.container.contains(event.target)) {
-				this.removeInlineNotification(this.container, inline);
+		const clickOutsideListener = (event: Event): void => {
+			if (this.container && !this.container.contains(event.target as Node)) {
+				this.removeInlineNotification(this.container as HTMLElement, inline);
 				document.removeEventListener('pointerup', clickOutsideListener);
 			}
 		};
@@ -82,7 +96,7 @@ class Notify {
 		const lastScrollY = window.scrollY;
 		const scrollListener = () => {
 			if (Math.abs(window.scrollY - lastScrollY) > 100) {
-				this.removeInlineNotification(this.container, inline);
+				this.removeInlineNotification(this.container as HTMLElement, inline);
 				document.removeEventListener('scroll', scrollListener);
 			}
 		};
@@ -91,7 +105,7 @@ class Notify {
 		});
 
 		inline.timeoutID = setTimeout(
-			() => this.removeInlineNotification(this.container, inline),
+			() => this.removeInlineNotification(this.container as HTMLElement, inline),
 			this.notificationTimeout,
 		);
 	}
@@ -104,8 +118,8 @@ class Notify {
 	 * @param {Object} options - Options for the inline container.
 	 * @param {string} options.ariaLiveRegionRole - The ARIA role for the live region
 	 */
-	createInlineContainer() {
-		let container = document.querySelector('.z-notification-inline');
+	createInlineContainer(): HTMLDivElement {
+		let container = document.querySelector('.z-notification-inline') as HTMLDivElement | null;
 		if (!container) {
 			container = document.createElement('div');
 			container.className = 'z-notification-inline';
@@ -119,8 +133,8 @@ class Notify {
 		return container;
 	}
 
-	createBottomContainer() {
-		let container = document.querySelector('.z-notification-bottom');
+	createBottomContainer(): HTMLDialogElement {
+		let container = document.querySelector('.z-notification-bottom') as HTMLDialogElement | null;
 		if (!container) {
 			container = document.createElement('dialog');
 			container.className = 'z-notification-bottom';
@@ -129,8 +143,8 @@ class Notify {
 		return container;
 	}
 
-	createNotification({ message, status, button, link }) {
-		const notification = document.createElement('div');
+	createNotification({ message, status, button, link }: BottomNotificationOptions): HTMLElement {
+		const notification = document.createElement('div') as unknown as NotificationElement;
 		notification.className = `z-notification-bottom__item ${status === 'error' ? 'z-notification-bottom__item--state-error' : ''}`;
 		notification.setAttribute('role', 'alert');
 		notification.setAttribute('aria-live', 'assertive');
@@ -148,17 +162,17 @@ class Notify {
 		}
 
 		notification.innerHTML = `${CLOSE_BUTTON_HTML}<p class="z-notification-bottom__message">${message}</p>${actionHtml}`;
-		this.container.appendChild(notification);
+		(this.container as HTMLElement).appendChild(notification);
 
 		if (button && button.onClick) {
-			const actionElement = notification.querySelector('.z-notification-bottom__action-btn');
+			const actionElement = notification.querySelector('.z-notification-bottom__action-btn') as HTMLElement;
 			actionElement.onclick = () => {
 				button.onClick();
 				this.removeNotification(notification);
 			};
 		}
 
-		const closeButton = notification.querySelector('.z-notification-bottom__close-btn');
+		const closeButton = notification.querySelector('.z-notification-bottom__close-btn') as HTMLElement;
 		closeButton.onclick = () => this.removeNotification(notification);
 
 		notification.isPaused = false;
@@ -167,7 +181,7 @@ class Notify {
 		return notification;
 	}
 
-	inlinePositioning(element, container) {
+	inlinePositioning(element: HTMLElement, container: HTMLElement): void {
 		let margin = 8;
 		let rect = element.getBoundingClientRect();
 		const viewportWidth = document.documentElement.clientWidth || window.innerWidth;
@@ -187,60 +201,65 @@ class Notify {
 		}
 	}
 
-	startTimeout(notification) {
-		notification.timeoutID = setTimeout(() => {
-			if (!notification.isPaused) {
+	startTimeout(notification: HTMLElement): void {
+		const notif = notification as NotificationElement;
+		notif.timeoutID = setTimeout(() => {
+			if (!notif.isPaused) {
 				this.removeNotification(notification);
 			}
 		}, this.notificationTimeout);
 	}
 
-	addPauseResumeEvents(notification) {
+	addPauseResumeEvents(notification: HTMLElement): void {
+		const notif = notification as NotificationElement;
 		const pause = () => {
-			notification.isPaused = true;
-			clearTimeout(notification.timeoutID);
+			notif.isPaused = true;
+			clearTimeout(notif.timeoutID);
 		};
 
 		const resume = () => {
-			notification.isPaused = false;
-			this.startTimeout(notification);
+			notif.isPaused = false;
+			this.startTimeout(notif);
 		};
 
 		notification.addEventListener('pointerenter', pause);
 		notification.addEventListener('pointerleave', resume);
 	}
 
-	removeNotification(notification) {
+	removeNotification(notification: HTMLElement | null): void {
 		if (!notification) return;
 
-		notification.remove();
+		const notif = notification as NotificationElement;
+		notif.remove();
 		this.notifications = this.notifications.filter(t => t !== notification);
 
-		clearTimeout(notification.timeoutID);
+		clearTimeout(notif.timeoutID);
 
-		if (this.notifications.length === 0 && this.container.open) {
+		if (this.notifications.length === 0 && this.container instanceof HTMLDialogElement && this.container.open) {
 			this.container.close();
 		}
 	}
 
-	removeInlineNotification(container, inline) {
-		clearTimeout(inline.timeoutID);
+	removeInlineNotification(container: HTMLElement, inline: InlineNotification): void {
+		if (inline.timeoutID) {
+			clearTimeout(inline.timeoutID);
+		}
 		container.remove();
 	}
 }
 
-const notify = {
+const notify: NotificationService = {
 	notify: new Notify(),
-	showInline({ message, element }) {
-		this.notify.showInline({ message, element });
+	showInline({ message, element }: InlineNotificationOptions): Promise<void> {
+		return this.notify.showInline({ message, element });
 	},
-	showBottom({ message, status, button, link }) {
+	showBottom({ message, status, button, link }: BottomNotificationOptions): void {
 		this.notify.showBottom({ message, status, button, link });
 	},
 };
 
 // for debugging purposes in zeit.web
-if(window.Zeit){
+if (window.Zeit) {
 	window.Zeit.notify = notify;
 }
 

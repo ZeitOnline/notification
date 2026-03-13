@@ -11,14 +11,17 @@
   "type": "module",
   "main": "./dist/notify.js",
   "module": "./dist/notify.js",
+  "types": "./index.d.ts",
   "exports": {
     ".": {
+      "types": "./index.d.ts",
       "import": "./dist/notify.js",
       "default": "./dist/notify.js"
     }
   },
   "files": [
     "dist",
+    "index.d.ts",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
