@@ -1,7 +1,7 @@
 {
   "name": "@zeitonline/notify",
-  "version": "0.1.0",
-  "description": "Notify keep you informed about results, warnings and errors.",
+  "version": "0.1.1",
+  "description": "Notify keeps you informed about results, warnings and errors.",
   "author": {
     "name": "DIE ZEIT",
     "email": "engineering@zeit.de"
