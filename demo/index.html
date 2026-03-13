@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<title>Notifications</title>
+		<meta
+			name="description"
+			content="Notifications - to keep you informed about results, warnings and errors."
+		/>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="style.css" />
+		<style>
+			body {
+				min-height: 100vh;
+			}
+
+			.hero {
+				text-align: center;
+				padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-md);
+				background: var(--color-white);
+				margin-bottom: var(--spacing-xl);
+				position: relative;
+			}
+
+			.hero .mascot {
+				height: 240px;
+				width: auto;
+				display: block;
+				margin-left: auto;
+				margin-right: auto;
+			}
+
+			.hero h1 {
+				font-size: 3rem;
+				color: var(--color-primary);
+				font-weight: 600;
+				letter-spacing: -0.01em;
+				display: inline-block;
+			}
+
+			.hero h1::after {
+				content: '';
+				position: absolute;
+				bottom: 0;
+				left: 50%;
+				transform: translateX(-50%) skewX(-2deg);
+				width: 80%;
+				height: 1px;
+				background: var(--color-text);
+			}
+
+			.hero p {
+				font-size: var(--font-size-lg);
+				max-width: 600px;
+				margin: 0 auto;
+				line-height: 1.2;
+			}
+
+			.demo-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+				gap: var(--spacing-md);
+				max-width: 1200px;
+				margin: 0 auto;
+				padding: var(--spacing-md);
+			}
+
+			@media (max-width: 768px) {
+				.hero .mascot {
+					height: 250px;
+				}
+
+				.hero h1 {
+					font-size: 2rem;
+				}
+
+				.demo-grid {
+					grid-template-columns: 1fr;
+					padding: var(--spacing-sm);
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<nav>
+				<a href="index.html">
+					start - Notify
+				</a>
+				<div class="nav__examples">
+					<p>Demos</p>
+				</div>
+			</nav>
+
+			<section class="hero">
+				<img src="logo-meerkat.png" height="600" width="420" alt="notifications mascot" class="mascot" />
+				<h1>Notify</h1>
+				<p>
+					Notify keep you informed about<br/>results, warnings and errors.
+				</p>
+			</section>
+		</main>
+	</body>
+</html>
