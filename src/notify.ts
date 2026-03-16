@@ -18,8 +18,8 @@ import type {
 const CLOSE_BUTTON_HTML = `
 	<button class="z-notification-bottom__close-btn" aria-label="Schließen">
 		<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-			<path d="M15 15L2.99999 3.00001" stroke="#444444" stroke-width="1.5"/>
-			<path d="M15 3.00001L3.00001 15" stroke="#444444" stroke-width="1.5"/>
+			<path d="M15 15L2.99999 3.00001" stroke="currentColor" stroke-width="1.5"/>
+			<path d="M15 3.00001L3.00001 15" stroke="currentColor" stroke-width="1.5"/>
 		</svg>
 	</button>`;
 
@@ -29,7 +29,7 @@ export class Notify {
 	static instance: Notify | undefined;
 	notifications!: HTMLElement[];
 	maxNotifications!: number;
-	container!: HTMLDialogElement | HTMLDivElement | null;
+	container!: HTMLDivElement | null;
 	notificationTimeout!: number;
 
 	constructor() {
@@ -51,8 +51,6 @@ export class Notify {
 		if (this.notifications.length > this.maxNotifications) {
 			this.removeNotification(this.notifications[0]);
 		}
-
-		(this.container as HTMLDialogElement).show();
 
 		this.startTimeout(notification);
 	}
@@ -133,11 +131,12 @@ export class Notify {
 		return container;
 	}
 
-	createBottomContainer(): HTMLDialogElement {
-		let container = document.querySelector('.z-notification-bottom') as HTMLDialogElement | null;
+	createBottomContainer(): HTMLDivElement {
+		let container = document.querySelector('.z-notification-bottom') as HTMLDivElement | null;
 		if (!container) {
-			container = document.createElement('dialog');
+			container = document.createElement('div');
 			container.className = 'z-notification-bottom';
+			container.setAttribute('aria-live', 'off');
 			document.body.insertAdjacentElement('beforeend', container);
 		}
 		return container;
@@ -235,9 +234,6 @@ export class Notify {
 
 		clearTimeout(notif.timeoutID);
 
-		if (this.notifications.length === 0 && this.container instanceof HTMLDialogElement && this.container.open) {
-			this.container.close();
-		}
 	}
 
 	removeInlineNotification(container: HTMLElement, inline: InlineNotification): void {
