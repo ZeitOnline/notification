@@ -1,0 +1,15 @@
+# Consider updating the types_or field of the prettier pre-commit-hook
+# within the .pre-commit-config.yaml file
+
+*.md
+*.html
+*.yml
+*.yaml
+*.lock
+
+.vite
+.vscode
+package-lock.json
+dist
+docs/
+demo/
