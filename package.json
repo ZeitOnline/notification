@@ -29,6 +29,7 @@
     "dev": "vite build --watch",
     "build": "vite build",
     "demo": "vite --open demo/index.html",
+    "eslint": "eslint javascript",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepublishOnly": "npm run build",
@@ -37,6 +38,9 @@
   },
   "devDependencies": {
     "@zeitonline/design-system": "^0.3.4",
+    "@zeitonline/eslint-config": "^3.0.0",
+    "@zeitonline/prettier-config": "^2.0.0",
+    "eslint": "^10.0.3",
     "prettier": "^3.8.1",
     "sass": "^1.98.0",
     "vite": "^7.3.1"
