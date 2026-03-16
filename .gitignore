@@ -3,6 +3,8 @@ htdocs/
 /.venv
 # Mac specific
 .DS_Store
+
+.vite/
 node_modules/
 assets/
 dist/
