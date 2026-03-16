@@ -134,7 +134,9 @@ export class Notification {
 	}
 
 	createBottomContainer(): HTMLDialogElement {
-		let container = document.querySelector('.z-notification-bottom') as HTMLDialogElement | null;
+		let container = document.querySelector(
+			'.z-notification-bottom',
+		) as HTMLDialogElement | null;
 		if (!container) {
 			container = document.createElement('dialog');
 			container.className = 'z-notification-bottom';
@@ -165,14 +167,18 @@ export class Notification {
 		(this.container as HTMLElement).appendChild(notification);
 
 		if (button && button.onClick) {
-			const actionElement = notification.querySelector('.z-notification-bottom__action-btn') as HTMLElement;
+			const actionElement = notification.querySelector(
+				'.z-notification-bottom__action-btn',
+			) as HTMLElement;
 			actionElement.onclick = () => {
 				button.onClick();
 				this.removeNotification(notification);
 			};
 		}
 
-		const closeButton = notification.querySelector('.z-notification-bottom__close-btn') as HTMLElement;
+		const closeButton = notification.querySelector(
+			'.z-notification-bottom__close-btn',
+		) as HTMLElement;
 		closeButton.onclick = () => this.removeNotification(notification);
 
 		notification.isPaused = false;
@@ -235,7 +241,11 @@ export class Notification {
 
 		clearTimeout(notif.timeoutID);
 
-		if (this.notifications.length === 0 && this.container instanceof HTMLDialogElement && this.container.open) {
+		if (
+			this.notifications.length === 0 &&
+			this.container instanceof HTMLDialogElement &&
+			this.container.open
+		) {
 			this.container.close();
 		}
 	}
