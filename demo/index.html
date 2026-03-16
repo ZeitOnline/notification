@@ -1,105 +1,277 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<title>Notifications</title>
-		<meta
-			name="description"
-			content="Notifications - to keep you informed about results, warnings and errors."
-		/>
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" href="style.css" />
-		<style>
-			body {
-				min-height: 100vh;
-			}
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Notifications</title>
+    <meta
+      name="description"
+      content="Notifications - to keep you informed about results, warnings and errors."
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="/src/scss/notify.scss" />
+    <style>
+      body {
+        min-height: 100vh;
+        background: var(--color-bg);
+      }
 
-			.hero {
-				text-align: center;
-				padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-md);
-				background: var(--color-white);
-				margin-bottom: var(--spacing-xl);
-				position: relative;
-			}
+      .hero {
+        text-align: center;
+        padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-md);
+        background: var(--color-white);
+        margin-bottom: var(--spacing-xl);
+        position: relative;
+      }
 
-			.hero .mascot {
-				height: 240px;
-				width: auto;
-				display: block;
-				margin-left: auto;
-				margin-right: auto;
-			}
+      .hero .mascot {
+        height: 240px;
+        width: auto;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
 
-			.hero h1 {
-				font-size: 3rem;
-				color: var(--color-primary);
-				font-weight: 600;
-				letter-spacing: -0.01em;
-				display: inline-block;
-			}
+      .hero h1 {
+        font-size: 3rem;
+        color: var(--color-primary);
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        display: inline-block;
+      }
 
-			.hero h1::after {
-				content: '';
-				position: absolute;
-				bottom: 0;
-				left: 50%;
-				transform: translateX(-50%) skewX(-2deg);
-				width: 80%;
-				height: 1px;
-				background: var(--color-text);
-			}
+      .hero h1::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%) skewX(-2deg);
+        width: 80%;
+        height: 1px;
+        background: var(--color-text);
+      }
 
-			.hero p {
-				font-size: var(--font-size-lg);
-				max-width: 600px;
-				margin: 0 auto;
-				line-height: 1.2;
-			}
+      .hero p {
+        font-size: var(--font-size-lg);
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.2;
+      }
 
-			.demo-grid {
-				display: grid;
-				grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-				gap: var(--spacing-md);
-				max-width: 1200px;
-				margin: 0 auto;
-				padding: var(--spacing-md);
-			}
+      .demo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: var(--spacing-md);
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: var(--spacing-md);
+      }
 
-			@media (max-width: 768px) {
-				.hero .mascot {
-					height: 250px;
-				}
+      .demo-card {
+        background: var(--color-white);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-md);
+        padding: var(--spacing-md);
+      }
 
-				.hero h1 {
-					font-size: 2rem;
-				}
+      .demo-card h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+      }
 
-				.demo-grid {
-					grid-template-columns: 1fr;
-					padding: var(--spacing-sm);
-				}
-			}
-		</style>
-	</head>
-	<body>
-		<main>
-			<nav>
-				<a href="index.html">
-					start - Notify
-				</a>
-				<div class="nav__examples">
-					<p>Demos</p>
-				</div>
-			</nav>
+      .demo-card p {
+        color: var(--color-text-muted);
+        margin-bottom: var(--spacing-md);
+      }
 
-			<section class="hero">
-				<img src="logo-meerkat.png" height="600" width="420" alt="notifications mascot" class="mascot" />
-				<h1>Notify</h1>
-				<p>
-					Notify keep you informed about<br/>results, warnings and errors.
-				</p>
-			</section>
-		</main>
-	</body>
+      .button-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-xs);
+      }
+
+      .demo-button {
+        appearance: none;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        background: var(--color-primary);
+        color: var(--color-white);
+        cursor: pointer;
+        font: inherit;
+        padding: 0.75rem 1rem;
+        transition:
+          transform var(--transition),
+          opacity var(--transition),
+          background var(--transition);
+      }
+
+      .demo-button:hover {
+        opacity: 0.92;
+        transform: translateY(-1px);
+      }
+
+      .demo-button:focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
+      }
+
+      .demo-button[data-variant="secondary"] {
+        background: var(--color-white);
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+      }
+
+      .demo-button[data-variant="accent"] {
+        background: var(--color-primary-red);
+      }
+
+      @media (max-width: 768px) {
+        .hero .mascot {
+          height: 250px;
+        }
+
+        .hero h1 {
+          font-size: 2rem;
+        }
+
+        .demo-grid {
+          grid-template-columns: 1fr;
+          padding: var(--spacing-sm);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav>
+        <a href="index.html"> start - Notify </a>
+        <div class="nav__examples">
+          <p>Demos</p>
+        </div>
+      </nav>
+
+      <section class="hero">
+        <img
+          src="logo-meerkat.png"
+          height="600"
+          width="420"
+          alt="notifications mascot"
+          class="mascot"
+        />
+        <h1>Notify</h1>
+        <p>Notify keep you informed about<br />results, warnings and errors.</p>
+      </section>
+
+      <section class="demo-grid" aria-label="Notify demos">
+        <article class="demo-card">
+          <h2>Bottom notifications</h2>
+          <p>
+            Trigger the different bottom variants and verify timing, stacking
+            and actions.
+          </p>
+          <div class="button-group">
+            <button
+              type="button"
+              class="demo-button"
+              data-demo-action="success"
+            >
+              Show success
+            </button>
+            <button
+              type="button"
+              class="demo-button"
+              data-demo-action="warning"
+              data-variant="secondary"
+            >
+              Show warning
+            </button>
+            <button
+              type="button"
+              class="demo-button"
+              data-demo-action="error"
+              data-variant="accent"
+            >
+              Show error with action
+            </button>
+            <button
+              type="button"
+              class="demo-button"
+              data-demo-action="link"
+              data-variant="secondary"
+            >
+              Show link CTA
+            </button>
+          </div>
+        </article>
+
+        <article class="demo-card">
+          <h2>Inline notifications</h2>
+          <p>
+            Use the anchor button to verify placement, dismissal on scroll and
+            timeout handling.
+          </p>
+          <div class="button-group">
+            <button type="button" class="demo-button" id="inline-target">
+              Show inline message
+            </button>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script type="module">
+      import notify from "/index.js";
+
+      const messages = {
+        success: {
+          message: "Profile saved successfully.",
+          status: "success",
+        },
+        warning: {
+          message: "Connection is unstable. Changes may sync later.",
+          status: "warning",
+        },
+        error: {
+          message: "Publishing failed. Check the form and try again.",
+          status: "error",
+          button: {
+            text: "Retry",
+            onClick: () => {
+              notify.showBottom({
+                message: "Retry triggered from the notification action.",
+                status: "info",
+              });
+            },
+          },
+        },
+        link: {
+          message: "A new version of Notify is available.",
+          status: "info",
+          link: {
+            text: "Open docs",
+            href: "https://github.com/ZeitOnline/notify",
+          },
+        },
+      };
+
+      document.querySelectorAll("[data-demo-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const action = button.getAttribute("data-demo-action");
+          if (!action) return;
+
+          notify.showBottom(messages[action]);
+        });
+      });
+
+      const inlineTarget = document.querySelector("#inline-target");
+      inlineTarget?.addEventListener("click", () => {
+        notify.showInline({
+          element: inlineTarget,
+          message: "This message is attached to the button you clicked.",
+        });
+      });
+    </script>
+  </body>
 </html>
