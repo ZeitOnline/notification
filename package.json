@@ -1,6 +1,6 @@
 {
   "name": "@zeitonline/notification",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Notifications keep you informed about results, warnings and errors.",
   "author": {
     "name": "DIE ZEIT",
@@ -20,7 +20,6 @@
     }
   },
   "files": [
-    "dist",
     "index.d.ts",
     "README.md",
     "LICENSE",
