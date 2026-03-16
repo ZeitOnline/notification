@@ -246,6 +246,10 @@ export class Notification {
 		}
 		container.remove();
 	}
+
+	debug(): void {
+		console.log('Notification service from npm.');
+	}
 }
 
 const notification: NotificationService = {
@@ -255,6 +259,9 @@ const notification: NotificationService = {
 	},
 	showBottom({ message, status, button, link }: BottomNotificationOptions): void {
 		this.notification.showBottom({ message, status, button, link });
+	},
+	debug(): void {
+		this.notification.debug();
 	},
 };
 

@@ -33,12 +33,13 @@ export type NotificationService = {
 	notification: InstanceType<typeof import('./src/notification').Notification>;
 	showInline(options: InlineNotificationOptions): Promise<void>;
 	showBottom(options: BottomNotificationOptions): void;
+	debug(): void;
 };
 
 declare global {
 	interface Window {
 		Zeit?: {
-			notify?: NotificationService;
+			notification?: NotificationService;
 		};
 	}
 }

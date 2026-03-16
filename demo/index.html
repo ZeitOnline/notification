@@ -205,8 +205,16 @@
 				</article>
 			</section>
 		</main>
-		<script type="module">
+		<script>
+			// Initialize window.Zeit before any modules load
+			window.Zeit = window.Zeit || {};
+		</script>
+		<script async type="module">
+
+			console.log('Loading notification demo...');
+
 			import notification from "/index.js";
+			console.log('Notification module loaded.');
 
 			const messages = {
 				success: {
