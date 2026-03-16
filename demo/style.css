@@ -4,54 +4,7 @@
 }
 
 :root {
-	/* Color Palette - Based on Scrolleo Mascot */
-	/* Dark Colors */
-	--color-dark: #211e1e;
-	--color-dark-red: #a42421;
-
-	/* Primary Colors */
-	--color-primary: #211e1e;
-	--color-primary-red: #da342c;
-	--color-primary-red-dark: #a42421;
-
-	/* Accent Colors */
-	--color-accent: #f0a430;
-	--color-accent-gold: #f0a430;
-
-	/* Background Colors */
-	--color-bg: #f4ebcc;
-	--color-bg-light: #fefefd;
-	--color-bg-dark: #f3f3f3;
-
-	/* Text Colors */
-	--color-text: #211e1e;
-	--color-text-light: #8a8a8a;
-	--color-text-muted: #6b6b6b;
-
-	/* Utility Colors */
-	--color-white: #fefefd;
-	--color-black: #211e1e;
-	--color-secondary: #8a8a8a;
-
-	/* Spacing */
-	--spacing-xs: 0.5rem;
-	--spacing-sm: 1rem;
-	--spacing-md: 2rem;
-	--spacing-lg: 4rem;
-	--spacing-xl: 8rem;
-
-	/* Typography */
-	--font-size-base: 1rem;
-	--font-size-lg: 1.5rem;
-	--font-size-xl: 2rem;
-
-	/* Shadows */
-	--shadow-sm: 0 2px 4px rgba(33, 30, 30, 0.1);
-	--shadow-md: 0 2px 8px rgba(33, 30, 30, 0.1);
-	--shadow-lg: 0 4px 16px rgba(33, 30, 30, 0.15);
-
 	/* Other */
-	--border-radius: 8px;
 	--transition: 0.2s ease;
 }
 
