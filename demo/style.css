@@ -1,0 +1,114 @@
+/* Modern CSS Reset and Base Styles */
+* {
+	box-sizing: border-box;
+}
+
+:root {
+	/* Other */
+	--transition: 0.2s ease;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family:
+		BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+		Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+	min-height: 100vh;
+	color: var(--color-text);
+	font-size: var(--font-size-base);
+	line-height: 1.6;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	margin: 0;
+	font-weight: 400;
+}
+
+a {
+	color: var(--color-primary);
+	text-decoration: none;
+	border-bottom: 2px solid currentColor;
+	transition: opacity var(--transition);
+}
+
+a:hover {
+	opacity: 0.7;
+}
+
+/* Navigation */
+nav {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background: var(--color-white);
+	padding: var(--spacing-sm);
+	flex-wrap: wrap;
+	gap: var(--spacing-sm);
+	position: relative;
+}
+
+nav > a {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-xs);
+	border-bottom: none;
+}
+
+.nav__examples {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--spacing-xs);
+}
+
+.nav__examples > * {
+	margin-right: var(--spacing-xs);
+}
+
+/* Intro Section */
+#intro {
+	max-width: 40rem;
+	margin: var(--spacing-md) auto;
+	text-align: center;
+}
+
+.intro__hed {
+	font-size: var(--font-size-xl);
+	margin: var(--spacing-md) auto var(--spacing-xs) auto;
+}
+
+.intro__dek {
+	color: var(--color-text-light);
+	font-size: var(--font-size-base);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	:root {
+		--font-size-base: 0.875rem;
+		--font-size-lg: 1.25rem;
+		--font-size-xl: 1.5rem;
+	}
+
+	nav {
+		flex-direction: column;
+	}
+}
+
+@media (min-width: 840px) {
+	.nav__examples {
+		margin-top: 0;
+		margin-left: var(--spacing-md);
+	}
+}

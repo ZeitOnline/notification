@@ -1,0 +1,731 @@
+@use "sass:color";
+@use "sass:map";
+@use "sass:meta";
+@use "sass:math";
+@use "sass:list";
+@use "sass:string";
+
+@use "utils";
+@use "functions";
+@use "constants";
+
+@mixin link {
+	&:link,
+	&:visited {
+		@content;
+	}
+}
+
+@mixin on-interaction($use-focus-visible: false) {
+	@if $use-focus-visible {
+		&:hover,
+		&:active,
+		&:focus-visible {
+			@content;
+		}
+	} @else {
+		&:hover,
+		&:active,
+		&:focus {
+			@content;
+		}
+	}
+}
+
+@mixin dark-mode {
+	@if #{&} == ":root" {
+		@at-root {
+			@media (prefers-color-scheme: dark) {
+				html:not(.color-scheme-light) {
+					@content;
+				}
+			}
+
+			html.color-scheme-dark {
+				@content;
+			}
+		}
+	} @else {
+		@media (prefers-color-scheme: dark) {
+			html:not(.color-scheme-light) & {
+				@content;
+			}
+		}
+
+		html.color-scheme-dark & {
+			@content;
+		}
+	}
+}
+
+@mixin custom-properties-by-type($color-schemes, $type) {
+	@each $prefix, $colors in $color-schemes {
+		@each $name, $color in $colors {
+			$property-value: map.get($color, $type);
+			--#{$prefix}-#{$name}: #{$property-value};
+
+			@if map.get($color, "rgb") {
+				--#{$prefix}-#{$name}--rgb: #{functions.rgb-triplet($property-value)};
+			}
+		}
+	}
+}
+
+@mixin custom-properties($color-schemes) {
+	@include custom-properties-by-type($color-schemes, "light");
+
+	@include dark-mode {
+		@include custom-properties-by-type($color-schemes, "dark");
+	}
+}
+
+@mixin default-article-textlink(
+	$color: var(--z-color-link),
+	$hover: var(--z-color-link-hover),
+	$border-color: rgba(var(--z-color-link--rgb), 0.5),
+	$border-color--hover: rgba(var(--z-color-link-hover--rgb), 0.5)
+) {
+	a {
+		border-bottom: 1px solid $border-color;
+		color: $color;
+		overflow-wrap: anywhere;
+		transition-duration: 0.2s;
+		transition-property: border-bottom-color, color;
+		@include on-interaction {
+			border-bottom-color: $border-color--hover;
+			color: $hover;
+		}
+	}
+}
+
+@mixin plain-transparent-overlay($color: #000, $alpha: 0.3) {
+	position: relative;
+	&::after {
+		background-color: rgba($color, $alpha);
+		bottom: 0;
+		content: "";
+		left: 0;
+		position: absolute;
+		right: 0;
+		top: 0;
+	}
+}
+
+@mixin teaser-image-dark-overlay($variant: "default", $color: constants.$color-image-overlay) {
+	$angle: to top;
+	$gradient:
+		rgba($color, 0.7) 0%,
+		rgba($color, 0) 80%;
+
+	@if $variant == "magazin" {
+		$gradient:
+			rgba($color, 0.8) 0%,
+			rgba($color, 0) 60%;
+	}
+
+	background-color: $color;
+	overflow: hidden;
+	position: relative;
+	&::after {
+		background-image: linear-gradient($angle, $gradient);
+		bottom: 0;
+		content: "";
+		height: 100%;
+		left: 0;
+		position: absolute;
+		right: 0;
+		top: 0;
+		width: 100%;
+	}
+}
+
+@mixin zwe-teaser-image-overlay(
+	$variant: "default",
+	$color: constants.$color-image-overlay,
+	$position: relative
+) {
+	$angle: to top;
+	$gradient:
+		rgba($color, 0.7) 0%,
+		rgba($color, 0) 85%;
+
+	@if $variant == "from-top-right" {
+		$angle: 225deg;
+	} @else if $variant == "from-top-left" {
+		$angle: 150deg;
+		$gradient:
+			rgba($color, 0.3) 0%,
+			rgba($color, 0) 25%;
+	}
+
+	background-color: $color;
+	overflow: hidden;
+	position: $position;
+	&::after {
+		background-image: linear-gradient($angle, $gradient);
+		bottom: 0;
+		content: "";
+		height: 100%;
+		left: 0;
+		position: absolute;
+		right: 0;
+		top: 0;
+		width: 100%;
+	}
+}
+
+@mixin teaser-text-on-image-gradient {
+	background-image: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.6) 50%);
+	padding: functions.rem(128px) var(--z-ds-space-m) var(--z-ds-space-m);
+	@include utils.respond-min(constants.$break-phablet-min) {
+		padding: functions.rem(128px) var(--z-ds-space-l) var(--z-ds-space-l);
+	}
+}
+
+@mixin teaser-text-on-image-gradient-100($color: #000, $gradient-height: 10.5rem) {
+	background-image:
+		linear-gradient(
+			180deg,
+			rgba($color, 0) 0%,
+			rgba($color, 0.0086) 6.67%,
+			rgba($color, 0.0355) 13.33%,
+			rgba($color, 0.0817) 20%,
+			rgba($color, 0.1474) 26.67%,
+			rgba($color, 0.2318) 33.33%,
+			rgba($color, 0.3319) 40%,
+			rgba($color, 0.4427) 46.67%,
+			rgba($color, 0.5573) 53.33%,
+			rgba($color, 0.6681) 60%,
+			rgba($color, 0.7682) 66.67%,
+			rgba($color, 0.8526) 73.33%,
+			rgba($color, 0.9183) 80%,
+			rgba($color, 0.9645) 86.67%,
+			rgba($color, 0.9914) 93.33%,
+			rgba($color) 100%
+		),
+		linear-gradient(rgba($color) 0% 100%);
+	background-position-y: top, bottom;
+	background-repeat: no-repeat;
+	background-size:
+		100% $gradient-height,
+		100% calc(100% - $gradient-height);
+}
+
+@mixin teaser-text-on-image-gradient-70($color: #000, $gradient-height: 10.5rem) {
+	background-image:
+		linear-gradient(
+			180deg,
+			rgba($color, 0) 0%,
+			rgba($color, 0.01) 6.67%,
+			rgba($color, 0.02) 13.33%,
+			rgba($color, 0.06) 20%,
+			rgba($color, 0.1) 26.67%,
+			rgba($color, 0.16) 33.33%,
+			rgba($color, 0.23) 40%,
+			rgba($color, 0.31) 46.67%,
+			rgba($color, 0.39) 53.33%,
+			rgba($color, 0.47) 60%,
+			rgba($color, 0.54) 66.67%,
+			rgba($color, 0.6) 73.33%,
+			rgba($color, 0.64) 80%,
+			rgba($color, 0.68) 86.67%,
+			rgba($color, 0.69) 93.33%,
+			rgba($color, 0.7) 100%
+		),
+		linear-gradient(rgba($color, 0.7) 0% 70%);
+	background-position-y: top, bottom;
+	background-repeat: no-repeat;
+	background-size:
+		100% $gradient-height,
+		100% calc(100% - $gradient-height);
+}
+
+@mixin teaser-image-text-shadow {
+	text-shadow: 0 0 functions.rem(10px) rgba(0, 0, 0, 0.4);
+}
+
+// if you change this, please change =unpadded accordingly
+@mixin padded {
+	padding-inline: var(--z-gap);
+}
+
+// should be =padded inverted
+@mixin unpadded {
+	margin-inline: calc(var(--z-gap) * -1);
+}
+
+@mixin visuallyhidden {
+	border: 0;
+	clip-path: rect(0 0 0 0);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+}
+
+@mixin ir {
+	display: block;
+	overflow: hidden;
+	text-indent: 150%;
+	white-space: nowrap;
+}
+
+@mixin body-type-zoom {
+	font-size: functions.em(18px);
+	@include utils.respond-min(constants.$break-desktop-min) {
+		font-size: functions.em(20px);
+	}
+}
+
+@mixin animated-interaction($color: var(--z-color-link-hover), $border-color: false) {
+	@if $border-color == false {
+		$border-color: $color;
+	}
+	border-bottom: 1px solid transparent;
+	transition-duration: 0.2s;
+	transition-property: border-bottom-color, color;
+	@include on-interaction {
+		border-color: $border-color;
+		color: $color;
+	}
+}
+
+// mac font smoothing switching
+// please use extremely carefully http://usabilitypost.com/2012/11/05/stop-fixing-font-smoothing/
+// rather use case may be **light text on dark background**
+@mixin font-smoothing {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+}
+
+@mixin reset-button($padding: 0) {
+	background-color: transparent;
+	border-width: 0;
+	color: inherit;
+	cursor: pointer;
+	font: inherit;
+	letter-spacing: inherit;
+	line-height: inherit;
+	margin: 0;
+	@if $padding != unset {
+		padding: $padding;
+	}
+}
+
+@mixin clearfix {
+	overflow: hidden;
+}
+
+@mixin pie-clearfix {
+	&::after {
+		clear: both;
+		content: "";
+		display: block; // http://cssmojo.com/the-very-latest-clearfix-reloaded/
+	}
+}
+
+//  Background svg mixin
+@mixin background-svg($svg) {
+	background-image: functions.svg-url($svg);
+}
+
+@function get-ratio-from-variant($variant) {
+	$ratio: math.div(100%, 16) * 9; // image variant 'wide' is fallback
+
+	@if $variant == "wide" {
+		$ratio: math.div(100%, 16) * 9;
+	} @else if $variant == "cinema" {
+		$ratio: math.div(100%, 5) * 2;
+	} @else if $variant == "portrait" {
+		$ratio: math.div(100%, 3) * 4;
+	} @else if $variant == "tile" {
+		$ratio: math.div(100%, 4) * 5;
+	} @else if $variant == "standard" {
+		$ratio: math.div(100%, 4) * 3;
+	} @else if $variant == "panorama" {
+		$ratio: math.div(100%, 7) * 2;
+	} @else if $variant == "super" {
+		$ratio: math.div(100%, 3) * 2;
+	} @else if $variant == "narrow" {
+		$ratio: math.div(100%, 2) * 3;
+	} @else if $variant == "square" {
+		$ratio: 100%;
+	}
+
+	@return $ratio;
+}
+
+@mixin image-box(
+	$mobile-variant: "wide",
+	$desktop-variant: false,
+	$background-color: var(--z-background-90)
+) {
+	@if $background-color {
+		background-color: $background-color;
+	}
+	height: 0;
+	overflow: hidden;
+	padding-bottom: get-ratio-from-variant($mobile-variant);
+	position: relative; // for icons, badges and co
+	@if $desktop-variant {
+		@include utils.respond-min(constants.$break-tablet-min) {
+			padding-bottom: get-ratio-from-variant($desktop-variant);
+		}
+	}
+}
+
+// Set a custom property to a lh value if supported, otherwise set a fallback value
+// This makes it possible to use lh values in calc() functions that would otherwise
+// break in browsers that don't support lh units.
+//
+// @param {string} $variable-name - the name of the custom property
+// @param {number} $value - the lh value to be set
+// @param {number} $fallback - the fallback value to be set
+@mixin use-lh-variable($variable-name: "--lh-value", $value, $fallback) {
+	#{$variable-name}: $fallback;
+
+	@supports (top: 1lh) {
+		#{$variable-name}: $value * 1lh;
+	}
+}
+
+// use grid & grid-template-rows to animate content height
+// see https://css-tricks.com/css-grid-can-do-auto-height-transitions/
+//
+// This is fairly low-level, consider using the wrappable component instead.
+//
+// If you set --grid-animate-height-min-em, have a look at the JS in wrappable and also set
+// --grid-animate-height-min-fr for a smoother transition.
+//
+// @param {string} $unwrapped-selector - the selector that matches an unwrapped element
+// @param {string} $content-selector - the selector for the content
+// @param {string} $grid-template-rows-prefix - an optional prefix for grid-template-rows
+// @param {string} $time - the transition time, default 200ms
+// @param {bool}   $fully-hidden - whether the content should be hidden after the animation
+@mixin grid-animate-height(
+	$unwrapped-selector,
+	$content-selector,
+	$grid-template-rows-prefix: null,
+	$time: 200ms,
+	$fully-hidden: true
+) {
+	display: grid;
+	grid-template-rows: $grid-template-rows-prefix var(--grid-animate-height-min-fr, 0fr);
+
+	@media screen and (prefers-reduced-motion: no-preference) {
+		transition: grid-template-rows $time ease-out;
+	}
+
+	#{$unwrapped-selector} {
+		grid-template-rows: $grid-template-rows-prefix 1fr;
+	}
+
+	#{$content-selector} {
+		min-height: var(--grid-animate-height-min-em, 0);
+		overflow: hidden;
+
+		@if $fully-hidden {
+			opacity: 0;
+			visibility: hidden;
+
+			@media screen and (prefers-reduced-motion: no-preference) {
+				transition:
+					opacity $time ease-out,
+					visibility $time;
+			}
+		}
+	}
+
+	@if $fully-hidden {
+		#{$unwrapped-selector} #{$content-selector} {
+			opacity: 1;
+			visibility: unset;
+		}
+	}
+}
+
+// This mixin generates a timeline with dots and lines connecting them as seen
+// in the liveblog highlighted-events and liveblog teaser.
+//
+// @param {number} $date-height - The height of the date element.
+// @param {number} $item-block-padding - The vertical padding of each item block (or its immediate child).
+// @param {string} $list-item-selector - The selector for the list item.
+// @param {boolean} $debug - Whether to show debug colors.
+@mixin connected-dot-timeline(
+	$date-height: 0,
+	$item-block-padding: 0,
+	$list-item-selector: "",
+	$debug: false
+) {
+	--timeline-dot-size: #{functions.rem(6px)};
+	--timeline-dot-color: var(--z-ds-color-text-40);
+	--timeline-line-width: #{functions.rem(2px)};
+	--timeline-line-color: var(--z-ds-color-border-100);
+
+	&::before {
+		// this is the line connecting the dots
+		background-color: var(--timeline-line-color);
+		content: "";
+		height: calc(100% + #{$date-height} + 2 * #{$item-block-padding});
+		left: calc(
+			-1 * var(--z-ds-space-m) + var(--timeline-dot-size) / 2 - var(--timeline-line-width) / 2
+		);
+		position: absolute;
+		top: calc(-1 * (#{$date-height} + #{$item-block-padding}));
+		width: var(--timeline-line-width);
+	}
+
+	&::after {
+		// this is the dot
+		@include use-lh-variable(--lh, 0.5, 13px);
+		background-color: var(--timeline-dot-color);
+		border-radius: 50%;
+		content: "";
+		display: inline-block;
+		height: var(--timeline-dot-size);
+		left: calc(-1 * var(--z-ds-space-m));
+		position: absolute;
+		top: calc(var(--lh) - var(--timeline-dot-size) / 2);
+		width: var(--timeline-dot-size);
+	}
+
+	#{$list-item-selector}:first-child &::before {
+		// this makes the first line of the timeline start at the height of the dot
+		@include use-lh-variable(--lh, 0.5, 13px);
+		height: calc(100% + #{$item-block-padding} - var(--lh));
+		top: var(--lh);
+	}
+
+	#{$list-item-selector}:last-child &::before {
+		// this fades out the final line of the timeline
+		background: linear-gradient(to bottom, var(--timeline-line-color) 75%, transparent);
+	}
+
+	// DEBUG UTILITY:
+	// Used to visually debug the timeline-dots and lines.
+	// This is not bundled in the final CSS as long as $debug is set to false
+	@if $debug {
+		#{$list-item-selector}:nth-child(odd) {
+			background: ghostwhite;
+		}
+
+		#{$list-item-selector}:nth-child(even) {
+			background: lightgray;
+		}
+
+		#{$list-item-selector}:nth-child(odd) &::before {
+			background: tomato;
+		}
+
+		#{$list-item-selector}:nth-child(even) &::before {
+			background: yellowgreen;
+		}
+	}
+}
+
+// Enable pretty hyphenation for browsers that support it. Non-supporting browsers
+// get the overflow-wrap: break-word fallback (which is very unlikely to show up
+// since we usually don't have extremely long words in titles).
+//
+// In case we have long words, we want to enforce a stricter hyphenation for
+// browsers which do not support hyphenate-limit-chars. But only there, because
+// it is too greedy in general (splitting "An-gela" and such).
+//
+// @see https://caniuse.com/mdn-css_properties_hyphenate-limit-chars
+@mixin hyphenation($hyphenate-limit-chars: auto 5 5) {
+	hyphens: none;
+	overflow-wrap: break-word;
+	// use "balance" for firefox that doesn't support "text-wrap: pretty" as of 2025-01-07
+	text-wrap: balance;
+	text-wrap: pretty;
+
+	@supports (hyphenate-limit-chars: $hyphenate-limit-chars) {
+		hyphenate-limit-chars: $hyphenate-limit-chars;
+		hyphens: auto;
+	}
+
+	// use limit-before/-after for safari that doesn't support hyphenate-limit-chars as of 2026-02-12
+	@supports (-webkit-hyphenate-limit-before: 5) {
+		$limit-after: list.nth($hyphenate-limit-chars, 3);
+		$limit-before: list.nth($hyphenate-limit-chars, 2);
+		-webkit-hyphenate-limit-after: $limit-after;
+		-webkit-hyphenate-limit-before: $limit-before;
+		hyphens: auto;
+	}
+
+	// Set via template-filter for teasers with long words.
+	@supports not (hyphenate-limit-chars: $hyphenate-limit-chars) {
+		&.force-hyphenation,
+		.force-hyphenation {
+			hyphens: auto;
+			overflow-wrap: anywhere;
+		}
+	}
+}
+
+// This mixin generates a smooth gradient background using an approximation
+// of an eased gradient (called "scrim" in the code). It takes a start color in
+// RGB format and a direction.
+//
+// @see https://css-tricks.com/easing-linear-gradients/
+// @param {string} $start-color-rgb - The start color in RGB format, e.g. 255, 0, 39 (literally)
+// @param {string} $direction - The direction of the gradient (default is 'to bottom').
+@mixin smooth-gradient($start-color-rgb, $direction: "to bottom") {
+	// this mixin is based on https://gist.github.com/nikola-wd/55b550daa56e4edf2a071cb192ea4800
+	$scrim-coordinates: (
+		0: 1,
+		19: 0.738,
+		34: 0.541,
+		47: 0.382,
+		56.5: 0.278,
+		65: 0.194,
+		73: 0.126,
+		80.2: 0.075,
+		86.1: 0.042,
+		91: 0.021,
+		95.2: 0.008,
+		98.2: 0.002,
+		100: 0,
+	);
+
+	$stops: ();
+
+	@each $colorStop, $alphaValue in $scrim-coordinates {
+		$stop: rgba($start-color-rgb, $alphaValue) math.percentage(math.div($colorStop, 100));
+		$stops: list.append($stops, $stop, comma);
+	}
+
+	background: linear-gradient(string.unquote($direction), $stops);
+}
+
+@mixin button-link($variant: "standard") {
+	// when using the unindented parameter keep in mind to set display: [inline-]block or [inline-]flex.
+	align-items: center;
+	border-radius: var(--z-ds-border-radius-4);
+	color: var(--z-ds-color-text-70);
+	display: inline-flex;
+	font-size: var(--z-ds-fontsize-14);
+	gap: var(--z-ds-space-8);
+	transition: background-color 200ms ease-out;
+
+	@if $variant == "wide" {
+		padding: var(--z-ds-space-6) var(--z-ds-space-8);
+	} @else {
+		padding: var(--z-ds-space-4);
+	}
+
+	@include utils.respond-min(constants.$break-tablet-min) {
+		padding: var(--z-ds-space-6) var(--z-ds-space-8);
+	}
+
+	@include on-interaction {
+		color: var(--z-ds-color-text-100); // override default link color of red
+	}
+
+	&:hover,
+	&[aria-expanded="true"] {
+		background-color: var(--z-ds-color-background-10);
+	}
+
+	span {
+		white-space: nowrap;
+	}
+}
+
+@mixin button-icon($variant: "primary") {
+	border-radius: 50%;
+	color: var(--z-ds-color-general-white-100);
+	height: functions.rem(42px);
+	padding: var(--z-ds-space-s);
+	transition: background-color 200ms ease-out;
+	width: functions.rem(42px);
+
+	.svg-symbol {
+		pointer-events: none;
+	}
+
+	@if $variant == "translucent" {
+		background-color: var(--z-ds-color-general-black-80);
+		@include on-interaction {
+			background-color: var(--z-ds-color-general-black-60);
+		}
+	} @else {
+		background-color: var(--z-ds-color-text-100);
+		@include on-interaction {
+			background-color: var(--z-ds-color-text-55);
+		}
+	}
+
+	&:disabled {
+		pointer-events: none; // suppress hover state and styles
+
+		svg {
+			opacity: 0.6;
+		}
+	}
+}
+
+@mixin centerpage-content-wide() {
+	// Consider page padding, and the box should never exceed the content width
+	// (892px on centerpages, 660px on article pages - not implemented yet :)
+	// Note: 100% considers scrollbar, 100vw would not consider scrollbar
+	margin-inline: auto;
+	max-width: min(calc(100% - 2 * var(--z-gap)), var(--z-ds-content-width));
+}
+
+@mixin button-standard() {
+	background-color: var(--z-ds-color-background-10);
+	border: none;
+	border-radius: var(--z-ds-border-radius-4);
+	color: var(--z-ds-color-text-100);
+	display: inline-block;
+	font-size: var(--z-ds-fontsize-16);
+	font-weight: bold;
+	line-height: functions.rem(20px);
+	margin: 0;
+	padding: var(--z-ds-space-10) var(--z-ds-space-16);
+	text-align: center;
+	transition: background-color 200ms ease-out;
+	white-space: nowrap;
+
+	@include on-interaction {
+		background-color: var(--z-ds-color-background-20);
+		color: var(--z-ds-color-text-100);
+	}
+}
+
+@mixin tooltip() {
+	background-color: var(--z-ds-color-background-modal);
+	border-radius: var(--z-ds-border-radius-4);
+	color: var(--z-ds-color-text-100);
+	filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.2)) drop-shadow(0 0 20px rgba(0, 0, 0, 0.05));
+	padding: var(--z-ds-space-6) var(--z-ds-space-8);
+	position: relative;
+
+	&::after {
+		border-color: var(--z-ds-color-background-modal) transparent;
+		border-style: solid;
+		border-width: functions.rem(11px 11px 0 11px);
+		bottom: functions.rem(-10px);
+		content: "";
+		left: var(--z-ds-space-16);
+		position: absolute;
+	}
+}
+
+// maybe can be renamed when used in other parts (e.g articles)
+@mixin textlink-in-markup($color: var(--z-ds-color-text-70)) {
+	a {
+		border-bottom: 0.5px solid currentColor;
+		color: $color;
+		transition-duration: 0.2s;
+		transition-property: border-bottom-color, color;
+		@include on-interaction {
+			border-bottom-color: currentColor;
+			color: var(--z-ds-color-accent-100);
+		}
+	}
+}

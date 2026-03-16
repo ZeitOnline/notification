@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<title>Notifications</title>
+		<meta
+			name="description"
+			content="Notifications - to keep you informed about results, warnings and errors."
+		/>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="../src/assets/css/design-system.css" />
+		<link rel="stylesheet" href="../src/scss/notification.scss" />
+		<link rel="stylesheet" href="style.css" />
+		<style>
+			body {
+				min-height: 100vh;
+				padding: var(--z-ds-space-m);
+			}
+
+			.hero {
+				text-align: center;
+				padding: var(--z-ds-space-s) 0 var(--z-ds-space-m);
+				background: var(--z-ds-color-general-white-100);
+				margin-bottom: var(--z-ds-space-xl);
+				position: relative;
+			}
+
+			.hero .mascot {
+				height: 240px;
+				width: auto;
+				display: block;
+				margin-left: auto;
+				margin-right: auto;
+			}
+
+			.hero h1 {
+				font-size: 3rem;
+				color: var(--z-ds-color-text);
+				font-weight: 600;
+				letter-spacing: -0.01em;
+				display: inline-block;
+			}
+
+			.hero h1::after {
+				content: '';
+				position: absolute;
+				bottom: 0;
+				left: 50%;
+				transform: translateX(-50%) skewX(-2deg);
+				width: 80%;
+				height: 1px;
+				background: var(--z-ds-color-text);
+			}
+
+			.hero p {
+				font-size: var(--z-ds-fontsize-20);
+				/* max-width: 600px; */
+				margin: 0 auto;
+				line-height: 1.2;
+			}
+
+			nav {
+				padding: 0;
+			}
+
+			.demo {
+				margin: 0 auto;
+				text-align: center;
+				display: flex;
+				flex-direction: column;
+				gap: var(--z-ds-space-l);
+			}
+
+			.demo h2 {
+				font-size: var(--z-ds-fontsize-24);
+				font-weight: 600;
+				margin-bottom: var(--z-ds-space-xs);
+			}
+
+			.demo p {
+				color: var(--z-ds-color-text-muted);
+				margin-bottom: var(--z-ds-space-m);
+			}
+
+			.button-group {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: var(--z-ds-space-s);
+			}
+
+
+			.demo-button {
+				appearance: none;
+				border: 1px solid transparent;
+				border-radius: var(--z-ds-border-radius-4);
+				background: var(--z-ds-color-general-black-100);
+				color: var(--z-ds-color-general-white-100);
+				cursor: pointer;
+				font: inherit;
+				transition:
+					transform var(--transition),
+					opacity var(--transition),
+					background-color var(--transition);
+			}
+
+			.demo-button:hover {
+				opacity: 0.92;
+				transform: translateY(-1px);
+			}
+
+			.demo-button:focus-visible {
+				outline: 2px solid var(--z-ds-color-accent);
+				outline-offset: 2px;
+			}
+
+			@media (max-width: 768px) {
+				.hero .mascot {
+					height: 250px;
+				}
+
+				.hero h1 {
+					font-size: 2rem;
+				}
+
+				.demo-grid {
+					grid-template-columns: 1fr;
+					padding: var(--z-ds-space-m);
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<nav>
+				<a href="index.html">
+					start - Notifications
+				</a>
+				<div class="nav__examples">
+					<p>Demos</p>
+				</div>
+			</nav>
+
+			<section class="hero">
+				<img src="logo-meerkat.png" height="600" width="420" alt="notifications mascot" class="mascot" />
+				<h1>Notifications</h1>
+				<p>
+					Notifications keep you informed about<br/>results, warnings and errors.
+				</p>
+			</section>
+			<section class="demo" aria-label="Notify demos">
+				<article>
+					<h2>Bottom notifications</h2>
+					<p>
+					Trigger the different bottom variants and verify timing, stacking
+					and actions.
+					</p>
+					<div class="button-group">
+					<button
+						type="button"
+						class="demo-button"
+						data-demo-action="success"
+					>
+						Show success
+					</button>
+					<button
+						type="button"
+						class="demo-button"
+						data-demo-action="warning"
+						data-variant="secondary"
+					>
+						Show warning
+					</button>
+					<button
+						type="button"
+						class="demo-button"
+						data-demo-action="error"
+						data-variant="accent"
+					>
+						Show error with action
+					</button>
+					<button
+						type="button"
+						class="demo-button"
+						data-demo-action="link"
+						data-variant="secondary"
+					>
+						Show link CTA
+					</button>
+					</div>
+				</article>
+
+				<article class="demo-card">
+					<h2>Inline notifications</h2>
+					<p>
+					Use the anchor button to verify placement, dismissal on scroll and
+					timeout handling.
+					</p>
+					<div class="button-group">
+					<button type="button" class="demo-button" id="inline-target">
+						Show inline message
+					</button>
+					</div>
+				</article>
+			</section>
+		</main>
+		<script type="module">
+			import notify from "/index.js";
+
+			const messages = {
+				success: {
+				message: "Profile saved successfully.",
+				status: "success",
+				},
+				warning: {
+				message: "Connection is unstable. Changes may sync later.",
+				status: "warning",
+				},
+				error: {
+				message: "Publishing failed. Check the form and try again.",
+				status: "error",
+				button: {
+					text: "Retry",
+					onClick: () => {
+					notify.showBottom({
+						message: "Retry triggered from the notification action.",
+						status: "info",
+					});
+					},
+				},
+				},
+				link: {
+				message: "A new version of Notify is available.",
+				status: "info",
+				link: {
+					text: "Open docs",
+					href: "https://github.com/ZeitOnline/notify",
+				},
+				},
+			};
+
+			document.querySelectorAll("[data-demo-action]").forEach((button) => {
+				button.addEventListener("click", () => {
+				const action = button.getAttribute("data-demo-action");
+				if (!action) return;
+
+				notify.showBottom(messages[action]);
+				});
+			});
+
+			const inlineTarget = document.querySelector("#inline-target");
+			inlineTarget?.addEventListener("click", () => {
+				notify.showInline({
+				element: inlineTarget,
+				message: "This message is attached to the button you clicked.",
+				});
+			});
+			</script>
+	</body>
+</html>

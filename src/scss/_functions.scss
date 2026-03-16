@@ -1,0 +1,220 @@
+@use "sass:color";
+@use "sass:math";
+@use "sass:string";
+@use "sass:list";
+@use "sass:meta";
+
+$base-font-size: 16px !default;
+
+@function rgb-triplet($color) {
+	$red: color.channel($color, "red", $space: rgb);
+	$green: color.channel($color, "green", $space: rgb);
+	$blue: color.channel($color, "blue", $space: rgb);
+
+	@return $red, $green, $blue;
+}
+
+// Get the result of a mathematic division
+// @function div
+// @param    $dividend	{Number} is being divided
+// @param    $divisor	{Number} divides the dividend
+// @return   {Number}	result of divisuin
+@function div($dividend, $divisor) {
+	@return math.div($dividend, $divisor);
+}
+
+// Get font-size in point size (em)
+// @function em
+// @param    $values   {Number} list of values
+// @param    $contex   {Number} base font size in pixel
+// @return   {Number}  font-size in em
+@function em($values, $context: $base-font-size) {
+	$list: ();
+
+	// there can be CSS attributes with more than one value
+	@each $value in $values {
+		$unit: math.unit($value);
+
+		@if $unit == "em" or $unit == "" {
+			// em or unitless values, like in 'margin: 0 16em'
+			$list: list.append($list, $value);
+		} @else if $unit == math.unit($context) {
+			// conversion to em
+			// stylelint-disable-next-line length-zero-no-unit
+			$list: list.append($list, math.div($value, $context) + 0em);
+		} @else if $unit == "rem" {
+			// transliterate to em
+			// stylelint-disable-next-line length-zero-no-unit
+			$list: list.append($list, math.div($value, 1rem) + 0em);
+		} @else {
+			$base: math.unit($context);
+			@warn "Incompatible units: '#{$unit}' and '#{$base}'";
+		}
+	}
+
+	// mimic legacy behaviour
+	@if list.length($list) == 1 {
+		@return list.nth($list, 1);
+	}
+
+	@return $list;
+}
+
+@function em-to-rem($em) {
+	@return math.div($em, 1em) * 1rem;
+}
+
+// Round a value to specified precision
+//
+// @example
+//     round-to-precision(0.123456)   => 0.123
+//     round-to-precision(0.123, 0)   => 0
+//     round-to-precision(0.123, 2)   => 0.12
+//     round-to-precision(0.666666em) => 0.667em
+//     round-to-precision(0.666em, 0) => 1em
+//     round-to-precision(0.666em, 1) => 0.7em
+
+@function round-to-precision($value, $precision: 3) {
+	$n: 1;
+
+	@if $precision > 0 {
+		@for $i from 1 through $precision {
+			$n: $n * 10;
+		}
+	}
+
+	@return math.div(math.round($value * $n), $n);
+}
+
+@function parse-int($n) {
+	@return math.div($n, ($n * 0 + 1));
+}
+
+$rem-to-px-base: 16px !default;
+
+// converts pixel values to rem
+//
+// the conversion base for px to rem conversions can be configuried
+// via $rem-to-px-base and defaults to 16px (as in most browsers)
+//
+// based on work by David Walsh: http://davidwalsh.name/rem-px-browser-function-sass
+//
+// @param  {String} $values One or more px values
+// @return {String} values in rem
+//
+// @example
+// margin: rem(32px 0 24px 0)
+// returns: margin: 2rem 0 1.5rem 0
+
+@function rem($values) {
+	// sanity-check
+	@if not(meta.global-variable-exists(rem-to-px-base)) {
+		@error 'Please provide variable named $rem-to-px-base';
+	}
+
+	$list: ();
+
+	// there can be CSS attributes with more than one value
+	@each $value in $values {
+		@if $value == "auto" {
+			$list: list.append($list, $value);
+		} @else {
+			$unit: math.unit($value);
+			@if $unit == "rem" or $unit == "" {
+				// rem or unitless values, like in 'margin: 0 2rem'
+				$list: list.append($list, $value);
+			} @else if $unit == math.unit($rem-to-px-base) {
+				// conversion to rem
+				// stylelint-disable-next-line length-zero-no-unit
+				$list: list.append($list, math.div($value, $rem-to-px-base) + 0rem);
+			} @else if $unit == "em" {
+				// transliterate to rem
+				// stylelint-disable-next-line length-zero-no-unit
+				$list: list.append($list, math.div($value, 1em) + 0rem);
+			} @else {
+				@warn 'There is currently no unit conversion for #{$unit}';
+			}
+		}
+	}
+
+	// do not return single value list - e.g. this makes math operations simpler
+	@if list.length($list) == 1 {
+		@return list.nth($list, 1);
+	}
+
+	@return $list;
+}
+
+// Dummy function to warn at the use of our deprecated remify() function.
+// Otherwise it would just be passed to CSS and ignored.
+@function remify($values) {
+	@error "remify() has been removed. Use rem() instead.";
+	@return $values;
+}
+
+//  Function to create an optimized svg url
+//
+@function svg-url($svg) {
+	//
+	//  Add missing namespace
+	//
+	@if not string.index($svg, xmlns) {
+		$svg: str-replace($svg, "<svg", '<svg xmlns="http://www.w3.org/2000/svg"');
+	}
+	//
+	//  Chunk up string in order to avoid
+	//  "stack level too deep" error
+	//
+	$encoded: "";
+	$slice: 2000;
+	$index: 0;
+	$loops: math.ceil(math.div(string.length($svg), $slice));
+	@for $i from 1 through $loops {
+		$chunk: string.slice($svg, $index, $index + $slice - 1);
+		//
+		//   Encode
+		//
+		$chunk: str-replace($chunk, '"', "'");
+		$chunk: str-replace($chunk, "%", "%25");
+		$chunk: str-replace($chunk, "&", "%26");
+		$chunk: str-replace($chunk, "#", "%23");
+		$chunk: str-replace($chunk, "{", "%7B");
+		$chunk: str-replace($chunk, "}", "%7D");
+		$chunk: str-replace($chunk, "<", "%3C");
+		$chunk: str-replace($chunk, ">", "%3E");
+
+		//
+		//    The maybe list
+		//
+		//    Keep size and compile time down
+		//    ... only add on documented fail
+		//
+		//  $chunk: str-replace($chunk, '|', '%7C')
+		//  $chunk: str-replace($chunk, '[', '%5B')
+		//  $chunk: str-replace($chunk, ']', '%5D')
+		//  $chunk: str-replace($chunk, '^', '%5E')
+		//  $chunk: str-replace($chunk, '`', '%60')
+		//  $chunk: str-replace($chunk, ';', '%3B')
+		//  $chunk: str-replace($chunk, '?', '%3F')
+		//  $chunk: str-replace($chunk, ':', '%3A')
+		//  $chunk: str-replace($chunk, '@', '%40')
+		//  $chunk: str-replace($chunk, '=', '%3D')
+
+		$encoded: #{$encoded}#{$chunk};
+		$index: $index + $slice;
+	}
+
+	@return url("data:image/svg+xml,#{$encoded}");
+}
+
+//  Helper function to replace characters in a string
+@function str-replace($string, $search, $replace: "") {
+	$index: string.index($string, $search);
+	/* stylelint-disable scss/operator-no-newline-after */
+	@return if(
+		sass($index): string.slice($string, 1, $index - 1) + $replace +
+			str-replace(string.slice($string, $index + string.length($search)), $search, $replace) ;
+			else: $string
+	);
+	/* stylelint-enable scss/operator-no-newline-after */
+}
