@@ -1,6 +1,6 @@
 INHERIT: /zon/common_config.yaml
 site_name: ZEIT ONLINE Docs
-repo_url: https://github.com/ZeitOnline/notify
+repo_url: https://github.com/ZeitOnline/notification
 team: team-engagement
 
 nav:

@@ -1,22 +1,22 @@
 {
-  "name": "@zeitonline/notify",
+  "name": "@zeitonline/notification",
   "version": "0.1.1",
-  "description": "Notify keeps you informed about results, warnings and errors.",
+  "description": "Notifications keep you informed about results, warnings and errors.",
   "author": {
     "name": "DIE ZEIT",
     "email": "engineering@zeit.de"
   },
-  "homepage": "https://github.com/ZeitOnline/notify#readme",
+  "homepage": "https://github.com/ZeitOnline/notification#readme",
   "license": "MIT",
   "type": "module",
-  "main": "./dist/notify.js",
-  "module": "./dist/notify.js",
+  "main": "./dist/notification.js",
+  "module": "./dist/notification.js",
   "types": "./index.d.ts",
   "exports": {
     ".": {
       "types": "./index.d.ts",
-      "import": "./dist/notify.js",
-      "default": "./dist/notify.js"
+      "import": "./dist/notification.js",
+      "default": "./dist/notification.js"
     }
   },
   "files": [
@@ -45,7 +45,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ZeitOnline/notify.git"
+    "url": "https://github.com/ZeitOnline/notification.git"
   },
   "keywords": [
     "ui",

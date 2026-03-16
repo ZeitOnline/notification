@@ -13,7 +13,7 @@ import type {
 	InlineNotification,
 	NotificationElement,
 	NotificationService,
-} from '../index.d.ts';
+} from '../index';
 
 const CLOSE_BUTTON_HTML = `
 	<button class="z-notification-bottom__close-btn" aria-label="Schließen">
@@ -23,20 +23,20 @@ const CLOSE_BUTTON_HTML = `
 		</svg>
 	</button>`;
 
-// Notify manages ui elements and keep you informed about results, warnings and errors.
+// Notifications manage ui elements and keep you informed about results, warnings and errors.
 // This includes deciding which type of notification to show (e.g., inline or bottom).
-export class Notify {
-	static instance: Notify | undefined;
+export class Notification {
+	static instance: Notification | undefined;
 	notifications!: HTMLElement[];
 	maxNotifications!: number;
 	container!: HTMLDialogElement | HTMLDivElement | null;
 	notificationTimeout!: number;
 
 	constructor() {
-		if (Notify.instance) {
-			return Notify.instance;
+		if (Notification.instance) {
+			return Notification.instance;
 		}
-		Notify.instance = this;
+		Notification.instance = this;
 		this.notifications = [];
 		this.maxNotifications = 3;
 		this.container = null;
@@ -248,19 +248,19 @@ export class Notify {
 	}
 }
 
-const notify: NotificationService = {
-	notify: new Notify(),
+const notification: NotificationService = {
+	notification: new Notification(),
 	showInline({ message, element }: InlineNotificationOptions): Promise<void> {
-		return this.notify.showInline({ message, element });
+		return this.notification.showInline({ message, element });
 	},
 	showBottom({ message, status, button, link }: BottomNotificationOptions): void {
-		this.notify.showBottom({ message, status, button, link });
+		this.notification.showBottom({ message, status, button, link });
 	},
 };
 
 // for debugging purposes in zeit.web
 if (window.Zeit) {
-	window.Zeit.notify = notify;
+	window.Zeit.notification = notification;
 }
 
-export default notify;
+export default notification;

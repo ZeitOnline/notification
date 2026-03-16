@@ -11,11 +11,11 @@ export default defineConfig({
 	build: {
 		lib: {
 			entry: {
-                notify: './index.js',
-                styles: './src/scss/notify.scss'  // Add CSS entry
+                notification: './index.js',
+                styles: './src/scss/notification.scss'  // Add CSS entry
             },
-			name: 'notify',
-			fileName: 'notify',
+			name: 'notification',
+			fileName: 'notification',
 			formats: ['es'],
 		},
 		outDir: 'dist',

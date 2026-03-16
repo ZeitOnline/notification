@@ -30,7 +30,7 @@ export interface NotificationElement extends HTMLElement {
 }
 
 export type NotificationService = {
-	notify: InstanceType<typeof import('./src/notify').Notify>;
+	notification: InstanceType<typeof import('./src/notification').Notification>;
 	showInline(options: InlineNotificationOptions): Promise<void>;
 	showBottom(options: BottomNotificationOptions): void;
 };
