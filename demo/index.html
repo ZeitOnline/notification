@@ -149,7 +149,7 @@
 					Notifications keep you informed about<br/>results, warnings and errors.
 				</p>
 			</section>
-			<section class="demo" aria-label="Notify demos">
+			<section class="demo" aria-label="Notification demos">
 				<article>
 					<h2>Bottom notifications</h2>
 					<p>
@@ -206,7 +206,7 @@
 			</section>
 		</main>
 		<script type="module">
-			import notify from "/index.js";
+			import notification from "/index.js";
 
 			const messages = {
 				success: {
@@ -223,7 +223,7 @@
 				button: {
 					text: "Retry",
 					onClick: () => {
-					notify.showBottom({
+					notification.showBottom({
 						message: "Retry triggered from the notification action.",
 						status: "info",
 					});
@@ -231,11 +231,11 @@
 				},
 				},
 				link: {
-				message: "A new version of Notify is available.",
+				message: "A new version of Notification is available.",
 				status: "info",
 				link: {
 					text: "Open docs",
-					href: "https://github.com/ZeitOnline/notify",
+					href: "https://github.com/ZeitOnline/notification",
 				},
 				},
 			};
@@ -245,13 +245,13 @@
 				const action = button.getAttribute("data-demo-action");
 				if (!action) return;
 
-				notify.showBottom(messages[action]);
+				notification.showBottom(messages[action]);
 				});
 			});
 
 			const inlineTarget = document.querySelector("#inline-target");
 			inlineTarget?.addEventListener("click", () => {
-				notify.showInline({
+				notification.showInline({
 				element: inlineTarget,
 				message: "This message is attached to the button you clicked.",
 				});
