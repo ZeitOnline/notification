@@ -2,18 +2,18 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	css: {
-      preprocessorOptions: {
-        scss: {
-          api: 'modern-compiler',
-        },
-      },
-    },
+		preprocessorOptions: {
+			scss: {
+				api: 'modern-compiler',
+			},
+		},
+	},
 	build: {
 		lib: {
 			entry: {
-                notification: './index.js',
-                styles: './src/scss/notification.scss'  // Add CSS entry
-            },
+				notification: './index.js',
+				styles: './src/scss/notification.scss', // Add CSS entry
+			},
 			name: 'notification',
 			fileName: 'notification',
 			formats: ['es'],
