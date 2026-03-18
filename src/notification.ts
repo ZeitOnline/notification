@@ -166,7 +166,7 @@ export class Notification {
 			actionHtml = `<button class="z-notification-bottom__action-btn" role="button">${button.text}</button>`;
 		}
 
-		notification.innerHTML = `${CLOSE_BUTTON_HTML}<p class="z-notification-bottom__message">${message}</p>${actionHtml}`;
+		notification.innerHTML = `<p class="z-notification-bottom__message">${message}</p>${actionHtml}${CLOSE_BUTTON_HTML}`;
 		(this.container as HTMLElement).appendChild(notification);
 
 		if (button && button.onClick) {
