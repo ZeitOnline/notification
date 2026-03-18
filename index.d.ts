@@ -27,6 +27,8 @@ export type InlineNotification = {
 export interface NotificationElement extends HTMLElement {
 	isPaused: boolean;
 	timeoutID: number;
+	elapsed: number;
+	startedAt: number;
 }
 
 export type NotificationService = {
