@@ -76,8 +76,7 @@
 	flex: 1;
 }
 
-.z-notification-bottom__action-btn,
-.z-notification-bottom__close-btn {
+.z-notification-bottom__action-btn {
 	align-self: center;
 	background: none;
 	border: none;
@@ -91,5 +90,65 @@
 
 	@include mixins.on-interaction {
 		color: var(--z-ds-color-accent-100);
+	}
+}
+
+.z-notification-bottom__close-btn {
+	align-items: center;
+	align-self: center;
+	background: none;
+	border: none;
+	color: var(--z-ds-color-background-0);
+	cursor: pointer;
+	display: flex;
+	flex-shrink: 0;
+	height: 42px; // no DS token between 32px and 56px; intentional touch target
+	justify-content: center;
+	margin-inline: var(--z-ds-space-4);
+	padding: 0;
+	position: relative;
+	width: 42px;
+
+	svg:last-child {
+		opacity: 0.6;
+		transition: opacity 0.15s ease;
+	}
+
+	@include mixins.on-interaction {
+		svg:last-child {
+			opacity: 1;
+		}
+	}
+
+	&::before {
+		border: 2px solid currentColor;
+		border-radius: 50%;
+		content: "";
+		inset: 5px;
+		opacity: 0.1;
+		position: absolute;
+	}
+}
+
+.z-notification-bottom__close-ring {
+	inset: 2px;
+	pointer-events: none;
+	position: absolute;
+	transform: rotate(-90deg);
+
+	circle {
+		animation: z-notification-countdown var(--z-notification-duration, 4000ms) linear forwards;
+		fill: none;
+		stroke: currentColor;
+		stroke-dasharray: 50.27;
+		stroke-dashoffset: 0;
+		stroke-linecap: butt;
+		stroke-width: 0.8;
+	}
+}
+
+@keyframes z-notification-countdown {
+	to {
+		stroke-dashoffset: -50.27;
 	}
 }
