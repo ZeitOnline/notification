@@ -182,8 +182,10 @@ export class Notification {
 		const closeButton = notification.querySelector(
 			'.z-notification-bottom__close-btn',
 		) as HTMLElement;
+		closeButton.style.setProperty('--z-notification-duration', `${this.notificationTimeout}ms`);
 		closeButton.onclick = () => this.removeNotification(notification);
 
+		notification.elapsed = 0;
 		notification.isPaused = false;
 		this.addPauseResumeEvents(notification);
 
@@ -210,25 +212,43 @@ export class Notification {
 		}
 	}
 
-	startTimeout(notification: HTMLElement): void {
+	startTimeout(notification: HTMLElement, duration = this.notificationTimeout): void {
 		const notif = notification as NotificationElement;
+		notif.startedAt = Date.now();
 		notif.timeoutID = setTimeout(() => {
 			if (!notif.isPaused) {
 				this.removeNotification(notification);
 			}
-		}, this.notificationTimeout);
+		}, duration);
 	}
 
 	addPauseResumeEvents(notification: HTMLElement): void {
 		const notif = notification as NotificationElement;
+		const ring = notification.querySelector(
+			'.z-notification-bottom__close-ring circle',
+		) as SVGCircleElement | null;
+
 		const pause = () => {
 			notif.isPaused = true;
+			notif.elapsed += Date.now() - notif.startedAt;
 			clearTimeout(notif.timeoutID);
+			if (ring) {
+				ring.style.animationPlayState = 'paused';
+			}
 		};
 
 		const resume = () => {
 			notif.isPaused = false;
-			this.startTimeout(notif);
+			notif.startedAt = Date.now();
+			const remaining = this.notificationTimeout - notif.elapsed;
+			if (remaining <= 0) {
+				this.removeNotification(notif);
+				return;
+			}
+			this.startTimeout(notif, remaining);
+			if (ring) {
+				ring.style.animationPlayState = 'running';
+			}
 		};
 
 		notification.addEventListener('pointerenter', pause);
