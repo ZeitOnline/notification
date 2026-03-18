@@ -111,13 +111,13 @@
 	position: relative;
 	width: 42px;
 
-	svg:last-child {
+	.z-notification-bottom__close-cross {
 		opacity: 0.6;
 		transition: opacity 0.15s ease;
 	}
 
 	@include mixins.on-interaction {
-		svg:last-child {
+		.z-notification-bottom__close-cross {
 			opacity: 1;
 		}
 	}
