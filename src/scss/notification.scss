@@ -46,7 +46,8 @@
 	margin: auto auto var(--z-ds-space-xs);
 	opacity: 1;
 	padding-block: var(--z-ds-space-12);
-	padding-inline: var(--z-ds-space-16) var(--z-ds-space-12);
+	padding-inline: var(--z-ds-space-16) var(--z-ds-space-56);
+	position: relative;
 	transform: translateY(0);
 	will-change: transform, opacity;
 
@@ -104,12 +105,12 @@
 	cursor: pointer;
 	display: flex;
 	flex-shrink: 0;
-	height: 42px; // no DS token between 32px and 56px; intentional touch target
+	height: 26px;
 	justify-content: center;
-	margin-inline: var(--z-ds-space-4);
 	padding: 0;
-	position: relative;
-	width: 42px;
+	position: absolute;
+	right: var(--z-ds-space-12);
+	width: 26px;
 
 	.z-notification-bottom__close-cross {
 		opacity: 0.6;
@@ -126,14 +127,12 @@
 		border: 2px solid currentColor;
 		border-radius: 50%;
 		content: "";
-		inset: 5px;
 		opacity: 0.1;
 		position: absolute;
 	}
 }
 
 .z-notification-bottom__close-ring {
-	inset: 2px;
 	pointer-events: none;
 	position: absolute;
 	transform: rotate(-90deg);
