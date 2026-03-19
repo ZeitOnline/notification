@@ -17,8 +17,8 @@ import type {
 
 const CLOSE_BUTTON_HTML = `
 	<button class="z-notification-bottom__close-btn" aria-label="Schließen">
-		<svg class="z-notification-bottom__close-ring" viewBox="0 0 20 20" aria-hidden="true">
-			<circle cx="10" cy="10" r="8"/>
+		<svg class="z-notification-bottom__close-ring" viewBox="0 0 24 24" aria-hidden="true">
+			<circle cx="12" cy="12" r="11.5"/>
 		</svg>
 		<svg class="z-notification-bottom__close-cross" width="12" height="12" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 			<path d="M15 15L2.99999 3.00001" stroke="currentColor" stroke-width="1.5"/>
