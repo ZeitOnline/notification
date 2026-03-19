@@ -124,7 +124,7 @@
 	}
 
 	&::before {
-		border: 2px solid currentColor;
+		border: 1px solid currentColor;
 		border-radius: 50%;
 		content: "";
 		opacity: 0.1;
@@ -133,6 +133,10 @@
 }
 
 .z-notification-bottom__close-ring {
+	--z-stroke-dasharray: 76; // exact value = 72.256 = 2*π*r * 11.5 (radius circle svg)
+	--z-stroke-dasharray-neg: -76;
+	// using 76 makes the animation end a little bit earlier,
+	// this looks better and the ring is fully hidden at the end of the animation
 	pointer-events: none;
 	position: absolute;
 	transform: rotate(-90deg);
@@ -141,15 +145,14 @@
 		animation: z-notification-countdown var(--z-notification-duration, 4000ms) linear forwards;
 		fill: none;
 		stroke: currentColor;
-		stroke-dasharray: 50.27;
+		stroke-dasharray: var(--z-stroke-dasharray);
 		stroke-dashoffset: 0;
 		stroke-linecap: butt;
-		stroke-width: 0.8;
+		stroke-width: 1;
 	}
-}
-
-@keyframes z-notification-countdown {
-	to {
-		stroke-dashoffset: -50.27;
+	@keyframes z-notification-countdown {
+		to {
+			stroke-dashoffset: var(--z-stroke-dasharray-neg);
+		}
 	}
 }
