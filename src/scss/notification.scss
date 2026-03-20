@@ -153,6 +153,10 @@
 	position: absolute;
 	transform: rotate(-90deg);
 
+	.z-notification-bottom__item--error & {
+		color: var(--z-ds-color-general-white-100);
+	}
+
 	circle {
 		animation: z-notification-countdown var(--z-notification-duration, 4000ms) linear forwards;
 		fill: none;
