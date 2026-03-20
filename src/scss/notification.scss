@@ -94,10 +94,10 @@
 	cursor: pointer;
 	display: flex;
 	font-size: var(--z-ds-fontsize-14);
-	font-weight: bold;
 	height: auto;
+	text-decoration: underline;
 
-	@include mixins.on-interaction {
+	@include mixins.on-interaction($use-focus-visible: true) {
 		color: var(--z-ds-color-accent-100);
 	}
 	.z-notification-bottom__item--error & {
