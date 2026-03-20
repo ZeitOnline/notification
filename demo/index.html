@@ -73,7 +73,7 @@
 
 			.demo p {
 				color: var(--z-ds-color-text-muted);
-				margin-bottom: var(--z-ds-space-m);
+				margin-bottom: var(--z-ds-space-s);
 			}
 
 			.button-group {
@@ -81,6 +81,7 @@
 				flex-wrap: wrap;
 				justify-content: center;
 				gap: var(--z-ds-space-s);
+				margin-bottom: var(--z-ds-space-s)
 			}
 
 			.button {
@@ -149,11 +150,17 @@
 				<article>
 					<h2>Bottom notifications</h2>
 					<p>Trigger the different bottom variants and verify timing, stacking and actions.</p>
+					<p>Action / Links:</p>
+					<div class="button-group">
+						<button type="button" class="button" data-action="add-bookmark">Add Bookmark with Link</button>
+						<button type="button" class="button" data-action="remove-bookmark">Remove Bookmark with Callback</button>
+						<button type="button" class="button" data-action="link">Link</button>
+					</div>
+					<p>Status:</p>
 					<div class="button-group">
 						<button type="button" class="button" data-action="success">Success</button>
 						<button type="button" class="button" data-action="warning">Warning</button>
-						<button type="button" class="button" data-action="error">Error with callBack</button>
-						<button type="button" class="button" data-action="link">with Link</button>
+						<button type="button" class="button" data-action="error-with-callback">Error with CallBack</button>
 					</div>
 				</article>
 				<article>
@@ -177,20 +184,58 @@
 				if (target.hasAttribute('data-action')) {
 					const action = target.getAttribute('data-action');
 					switch (action) {
+
+						// ACTION/LINK VARIANTS
+
+						case 'add-bookmark':
+							notification.show({
+								position: "bottom",
+								status: "success",
+								icon: "bookmark",
+								link: {
+									text: "Der Artikel wurde gespeichert. Zur Merkliste &#8594;",
+									href: "https://www.zeit.de/konto/listen/merkliste",
+								}
+							});
+							break;
+						case 'remove-bookmark':
+							notification.show({
+								status: "success",
+								icon: "bookmark",
+								message: "Der Artikel wurde von der Merkliste entfernt.",
+								button: {
+									text: "Rückgängig",
+									onClick: () => callBack('Retry triggered from the notification action.'),
+								}
+							});
+							break;
+						case 'link':
+							notification.show({
+								status: "info",
+								message: "A new version of Notification is available.",
+								link: {
+									text: "Open docs",
+									href: "https://github.com/ZeitOnline/notification",
+								}
+							});
+							break;
+
+						// STATUS VARIANTS
+
 						case 'success':
-							notification.showBottom({
+							notification.show({
 								status: 'success',
 								message: 'Profile saved successfully.'
 							});
 							break;
 						case 'warning':
-							notification.showBottom({
+							notification.show({
 								status: "warning",
 								message: "Connection is unstable. Changes may sync later."
 							});
 							break;
-						case 'error':
-							notification.showBottom({
+						case 'error-with-callback':
+							notification.show({
 								status: "error",
 								icon: "bookmark",
 								message: "Publishing failed. Check the form and try again.",
@@ -200,16 +245,9 @@
 								}
 							});
 							break;
-						case 'link':
-							notification.showBottom({
-								status: "info",
-								message: "A new version of Notification is available.",
-								link: {
-									text: "Open docs",
-									href: "https://github.com/ZeitOnline/notification",
-								}
-							});
-							break;
+
+						// INLINE VARIANT
+
 						case 'inline':
 							notification.showInline({
 								element: target,
