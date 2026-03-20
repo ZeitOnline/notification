@@ -16,11 +16,11 @@ import type {
 } from '../index';
 
 const CLOSE_BUTTON_HTML = `
-	<button class="z-notification-bottom__close-btn" aria-label="Schließen">
-		<svg class="z-notification-bottom__close-ring" viewBox="0 0 24 24" aria-hidden="true">
+	<button class="z-notification__close-btn" aria-label="Schließen">
+		<svg class="z-notification__close-ring" viewBox="0 0 24 24" aria-hidden="true">
 			<circle cx="12" cy="12" r="11.5"/>
 		</svg>
-		<svg class="z-notification-bottom__close-cross" width="12" height="12" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+		<svg class="z-notification__close-cross" width="12" height="12" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 			<path d="M15 15L2.99999 3.00001" stroke="currentColor" stroke-width="1.5"/>
 			<path d="M15 3.00001L3.00001 15" stroke="currentColor" stroke-width="1.5"/>
 		</svg>
@@ -46,7 +46,7 @@ export class Notification {
 		this.notificationTimeout = 4000;
 	}
 	showBottom({ icon, message, status, button, link }: BottomNotificationOptions): void {
-		this.container = this.createBottomContainer();
+		this.container = this.createContainer();
 
 		let notification = this.createNotification({ icon, message, status, button, link });
 		this.notifications.push(notification);
@@ -136,13 +136,13 @@ export class Notification {
 		return container;
 	}
 
-	createBottomContainer(): HTMLDialogElement {
+	createContainer(): HTMLDialogElement {
 		let container = document.querySelector(
-			'.z-notification-bottom',
+			'.z-notification',
 		) as HTMLDialogElement | null;
 		if (!container) {
 			container = document.createElement('dialog');
-			container.className = 'z-notification-bottom';
+			container.className = 'z-notification z-notification--' + (position === 'top' ? 'top' : 'bottom');
 			document.body.insertAdjacentElement('beforeend', container);
 		}
 		return container;
@@ -150,22 +150,22 @@ export class Notification {
 
 	createNotification({ icon, message, status, button, link }: BottomNotificationOptions): HTMLElement {
 		const notification = document.createElement('div') as unknown as NotificationElement;
-		const modError = status === 'error' ? ' z-notification-bottom__item--error' : '';
-		const modAction = button || link ? ' z-notification-bottom__item--action' : '';
-		notification.className = `z-notification-bottom__item${modError}${modAction}`;
+		const modError = status === 'error' ? ' z-notification__item--error' : '';
+		const modAction = button || link ? ' z-notification__item--action' : '';
+		notification.className = `z-notification__item${modError}${modAction}`;
 		notification.setAttribute('role', 'alert');
 		notification.setAttribute('aria-live', 'assertive');
 
-		notification.innerHTML = `${this.getSvgIcon(icon)}<span class="z-notification-bottom__message">${message}</span>
-			${link ? `<a href="${link.href}" class="z-notification-bottom__action-btn" role="link">${link.text}</a>` : ''}
-			${!link && button ? `<button class="z-notification-bottom__action-btn" role="button">${button.text}</button>` : ''}
+		notification.innerHTML = `${this.getSvgIcon(icon)}<span class="z-notification__message">${message}</span>
+			${link ? `<a href="${link.href}" class="z-notification__action-btn" role="link">${link.text}</a>` : ''}
+			${!link && button ? `<button class="z-notification__action-btn" role="button">${button.text}</button>` : ''}
 			${link || button ? CLOSE_BUTTON_HTML : ''}`;
 
 		(this.container as HTMLElement).appendChild(notification);
 
 		if (button && button.onClick) {
 			const actionElement = notification.querySelector(
-				'.z-notification-bottom__action-btn',
+				'.z-notification__action-btn',
 			) as HTMLElement;
 			actionElement.onclick = () => {
 				button.onClick();
@@ -174,7 +174,7 @@ export class Notification {
 		}
 
 		const closeButton = notification.querySelector(
-			'.z-notification-bottom__close-btn',
+			'.z-notification__close-btn',
 		) as HTMLElement;
 		if(closeButton){
 			closeButton.style.setProperty('--z-notification-duration', `${this.notificationTimeout}ms`);
@@ -191,7 +191,7 @@ export class Notification {
 	getSvgIcon(icon: string | undefined): string {
 		if(!icon) return '';
 		if (document.querySelector(`#svg-${icon}`) as SVGUseElement | null) {
-			return `<svg class="svg-symbol z-notification-bottom__icon" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+			return `<svg class="svg-symbol z-notification__icon" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
 				<use xlink:href="#svg-${icon}" />
 			</svg>`;
 		}
@@ -231,7 +231,7 @@ export class Notification {
 	addPauseResumeEvents(notification: HTMLElement): void {
 		const notif = notification as NotificationElement;
 		const ring = notification.querySelector(
-			'.z-notification-bottom__close-ring circle',
+			'.z-notification__close-ring circle',
 		) as SVGCircleElement | null;
 
 		const pause = () => {
