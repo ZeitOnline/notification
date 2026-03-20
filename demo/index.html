@@ -137,73 +137,30 @@
 		</div>
 		<main>
 			<nav>
-				<a href="index.html">
-					start - Notifications
-				</a>
-				<div class="nav__examples">
-					<p>Demos</p>
-				</div>
+				<a href="index.html">home</a>
 			</nav>
-
 			<section class="hero">
 				<img src="logo-meerkat.png" height="600" width="420" alt="notifications mascot" class="mascot" />
 				<h1>Notifications</h1>
-				<p>
-					Notifications keep you informed about<br/>results, warnings and errors.
-				</p>
+				<p>Notifications keep you informed about<br/>results, warnings and errors.</p>
 			</section>
+
 			<section class="demo" aria-label="Notification demos">
 				<article>
 					<h2>Bottom notifications</h2>
-					<p>
-					Trigger the different bottom variants and verify timing, stacking
-					and actions.
-					</p>
+					<p>Trigger the different bottom variants and verify timing, stacking and actions.</p>
 					<div class="button-group">
-					<button
-						type="button"
-						class="demo-button"
-						data-demo-action="success"
-					>
-						Show success
-					</button>
-					<button
-						type="button"
-						class="demo-button"
-						data-demo-action="warning"
-						data-variant="secondary"
-					>
-						Show warning
-					</button>
-					<button
-						type="button"
-						class="demo-button"
-						data-demo-action="error"
-						data-variant="accent"
-					>
-						Show error with action
-					</button>
-					<button
-						type="button"
-						class="demo-button"
-						data-demo-action="link"
-						data-variant="secondary"
-					>
-						Show link CTA
-					</button>
+						<button type="button" class="button" data-action="success">Success</button>
+						<button type="button" class="button" data-action="warning">Warning</button>
+						<button type="button" class="button" data-action="error">Error with callBack</button>
+						<button type="button" class="button" data-action="link">with Link</button>
 					</div>
 				</article>
-
-				<article class="demo-card">
+				<article>
 					<h2>Inline notifications</h2>
-					<p>
-					Use the anchor button to verify placement, dismissal on scroll and
-					timeout handling.
-					</p>
+					<p>Use the anchor button to verify placement, dismissal on scroll and timeout handling.</p>
 					<div class="button-group">
-					<button type="button" class="demo-button" id="inline-target">
-						Show inline message
-					</button>
+						<button type="button" class="button" data-action="inline">inline message</button>
 					</div>
 				</article>
 			</section>
@@ -213,60 +170,64 @@
 			window.Zeit = window.Zeit || {};
 		</script>
 		<script async type="module">
-
-			console.log('Loading notification demo...');
-
 			import notification from "/index.js";
-			console.log('Notification module loaded.');
 
-			const messages = {
-				success: {
-				message: "Profile saved successfully.",
-				status: "success",
-				},
-				warning: {
-				message: "Connection is unstable. Changes may sync later.",
-				status: "warning",
-				},
-				error: {
-				message: "Publishing failed. Check the form and try again.",
-				status: "error",
-				button: {
-					text: "Retry",
-					onClick: () => {
-					notification.showBottom({
-						message: "Retry triggered from the notification action.",
-						status: "info",
-					});
-					},
-				},
-				},
-				link: {
-				message: "A new version of Notification is available.",
-				status: "info",
-				link: {
-					text: "Open docs",
-					href: "https://github.com/ZeitOnline/notification",
-				},
-				},
-			};
+			function handleEvent(event) {
+				const target = event.target;
+				if (target.hasAttribute('data-action')) {
+					const action = target.getAttribute('data-action');
+					switch (action) {
+						case 'success':
+							notification.showBottom({
+								status: 'success',
+								message: 'Profile saved successfully.'
+							});
+							break;
+						case 'warning':
+							notification.showBottom({
+								status: "warning",
+								message: "Connection is unstable. Changes may sync later."
+							});
+							break;
+						case 'error':
+							notification.showBottom({
+								status: "error",
+								icon: "bookmark",
+								message: "Publishing failed. Check the form and try again.",
+								button: {
+									text: "Retry",
+									onClick: () => callBack('Retry triggered from the notification action.'),
+								}
+							});
+							break;
+						case 'link':
+							notification.showBottom({
+								status: "info",
+								message: "A new version of Notification is available.",
+								link: {
+									text: "Open docs",
+									href: "https://github.com/ZeitOnline/notification",
+								}
+							});
+							break;
+						case 'inline':
+							notification.showInline({
+								element: target,
+								message: "This message is attached to the button you clicked.",
+							});
+							break;
+						default:
+							break;
+					}
+				}
+			}
 
-			document.querySelectorAll("[data-demo-action]").forEach((button) => {
-				button.addEventListener("click", () => {
-				const action = button.getAttribute("data-demo-action");
-				if (!action) return;
+			document.addEventListener('click', handleEvent, true);
 
-				notification.showBottom(messages[action]);
-				});
-			});
+			function callBack(message){
+				alert(message);
+			}
 
-			const inlineTarget = document.querySelector("#inline-target");
-			inlineTarget?.addEventListener("click", () => {
-				notification.showInline({
-				element: inlineTarget,
-				message: "This message is attached to the button you clicked.",
-				});
-			});
-			</script>
+		</script>
 	</body>
 </html>
