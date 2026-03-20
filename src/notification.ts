@@ -156,19 +156,11 @@ export class Notification {
 		notification.setAttribute('role', 'alert');
 		notification.setAttribute('aria-live', 'assertive');
 
-		if (!button && !link) {
-			notification.classList.add('z-notification-bottom__item--no-action');
-		}
+		notification.innerHTML = `<span class="z-notification-bottom__message">${message}</span>
+			${link ? `<a href="${link.href}" class="z-notification-bottom__action-btn" role="link">${link.text}</a>` : ''}
+			${!link && button ? `<button class="z-notification-bottom__action-btn" role="button">${button.text}</button>` : ''}
+			${link || button ? CLOSE_BUTTON_HTML : ''}`;
 
-		let actionHtml = '';
-
-		if (link) {
-			actionHtml = `<a href="${link.href}" class="z-notification-bottom__action-btn" role="link">${link.text}</a>`;
-		} else if (button) {
-			actionHtml = `<button class="z-notification-bottom__action-btn" role="button">${button.text}</button>`;
-		}
-
-		notification.innerHTML = `<p class="z-notification-bottom__message">${message}</p>${actionHtml}${CLOSE_BUTTON_HTML}`;
 		(this.container as HTMLElement).appendChild(notification);
 
 		if (button && button.onClick) {
