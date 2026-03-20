@@ -30,6 +30,11 @@
 	&--bottom {
 		top: auto;
 		bottom: var(--z-ds-space-s);
+	}
+	&--top {
+		top: var(--z-ds-space-s);
+		bottom: auto;
+	}
 
 	@include utils.respond-max(constants.$break-phablet-min) {
 		width: 90vw;

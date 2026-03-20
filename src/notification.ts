@@ -45,8 +45,8 @@ export class Notification {
 		this.container = null;
 		this.notificationTimeout = 4000;
 	}
-	showBottom({ icon, message, status, button, link }: BottomNotificationOptions): void {
-		this.container = this.createContainer();
+	show({ position = 'bottom', icon, message, status, button, link }: BottomNotificationOptions): void {
+		this.container = this.createContainer(position);
 
 		let notification = this.createNotification({ icon, message, status, button, link });
 		this.notifications.push(notification);
@@ -136,7 +136,7 @@ export class Notification {
 		return container;
 	}
 
-	createContainer(): HTMLDialogElement {
+	createContainer(position: string): HTMLDialogElement {
 		let container = document.querySelector(
 			'.z-notification',
 		) as HTMLDialogElement | null;
@@ -297,8 +297,8 @@ const notification: NotificationService = {
 	showInline({ message, element }: InlineNotificationOptions): Promise<void> {
 		return this.notification.showInline({ message, element });
 	},
-	showBottom({ icon, message, status, button, link }: BottomNotificationOptions): void {
-		this.notification.showBottom({ icon, message, status, button, link });
+	show({ position, icon, message, status, button, link }: BottomNotificationOptions): void {
+		this.notification.show({ position, icon, message, status, button, link });
 	},
 	debug(): void {
 		this.notification.debug();
