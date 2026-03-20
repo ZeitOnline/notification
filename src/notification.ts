@@ -176,8 +176,10 @@ export class Notification {
 		const closeButton = notification.querySelector(
 			'.z-notification-bottom__close-btn',
 		) as HTMLElement;
-		closeButton.style.setProperty('--z-notification-duration', `${this.notificationTimeout}ms`);
-		closeButton.onclick = () => this.removeNotification(notification);
+		if(closeButton){
+			closeButton.style.setProperty('--z-notification-duration', `${this.notificationTimeout}ms`);
+			closeButton.onclick = () => this.removeNotification(notification);
+		}
 
 		notification.elapsed = 0;
 		notification.isPaused = false;
