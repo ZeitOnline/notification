@@ -14,6 +14,8 @@
 		<link rel="stylesheet" href="style.css" />
 		<style>
 			body {
+				background: linear-gradient(to bottom, #fcf5e9 20%, transparent 40%);
+				color: var(--z-ds-color-text-100);
 				min-height: 100vh;
 				padding: var(--z-ds-space-m);
 			}
@@ -25,10 +27,7 @@
 
 			.hero {
 				text-align: center;
-				padding: var(--z-ds-space-s) 0 var(--z-ds-space-m);
-				background: var(--z-ds-color-general-white-100);
-				margin-bottom: var(--z-ds-space-xl);
-				position: relative;
+				padding: var(--z-ds-space-m);
 			}
 
 			.hero .mascot {
@@ -41,21 +40,10 @@
 
 			.hero h1 {
 				font-size: 3rem;
-				color: var(--z-ds-color-text);
+				color: var(--z-ds-color-text-100);
 				font-weight: 600;
 				letter-spacing: -0.01em;
 				display: inline-block;
-			}
-
-			.hero h1::after {
-				content: '';
-				position: absolute;
-				bottom: 0;
-				left: 50%;
-				transform: translateX(-50%) skewX(-2deg);
-				width: 80%;
-				height: 1px;
-				background: var(--z-ds-color-text);
 			}
 
 			.hero p {
@@ -70,11 +58,11 @@
 			}
 
 			.demo {
-				margin: 0 auto;
 				text-align: center;
 				display: flex;
 				flex-direction: column;
 				gap: var(--z-ds-space-l);
+				margin-top: var(--z-ds-space-m)
 			}
 
 			.demo h2 {
@@ -95,27 +83,21 @@
 				gap: var(--z-ds-space-s);
 			}
 
-
-			.demo-button {
+			.button {
 				appearance: none;
 				border: 1px solid transparent;
 				border-radius: var(--z-ds-border-radius-4);
-				background: var(--z-ds-color-general-black-100);
-				color: var(--z-ds-color-general-white-100);
+				background: var(--z-ds-color-text-100);
+				color: var(--z-ds-color-background-0);
 				cursor: pointer;
 				font: inherit;
-				transition:
-					transform var(--transition),
-					opacity var(--transition),
-					background-color var(--transition);
 			}
 
-			.demo-button:hover {
-				opacity: 0.92;
-				transform: translateY(-1px);
+			.button:hover {
+				background-color: rgb(155, 6, 210);
 			}
 
-			.demo-button:focus-visible {
+			.button:focus-visible {
 				outline: 2px solid var(--z-ds-color-accent);
 				outline-offset: 2px;
 			}
@@ -124,12 +106,22 @@
 				.hero h1 {
 					font-size: 2rem;
 				}
+			}
 
-				.demo-grid {
-					grid-template-columns: 1fr;
-					padding: var(--z-ds-space-m);
+			@media (prefers-color-scheme: dark) {
+				body {
+					background: var(--z-ds-color-background-10);
+				}
+				.button {
+					background-color: var(--z-ds-color-general-white-40);
+					color: var(--z-ds-color-text-100);
+				}
+				.button:hover {
+					background-color: rgb(155, 6, 210);
+					color: var(--z-ds-color-text-100);
 				}
 			}
+
 		</style>
 	</head>
 	<body>
