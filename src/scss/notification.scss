@@ -75,6 +75,13 @@
 	}
 }
 
+.z-notification-bottom__icon {
+	stroke: none;
+	fill: currentColor;
+	height: var(--z-ds-fontsize-18);
+	width: auto;
+}
+
 .z-notification-bottom__message {
 	flex: 1;
 }

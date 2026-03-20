@@ -9,6 +9,7 @@ export type LinkOptions = {
 };
 
 export type BottomNotificationOptions = {
+	icon?: string;
 	message: string;
 	status?: 'error' | 'success' | 'warning' | 'info';
 	button?: ButtonOptions;

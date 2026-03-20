@@ -45,10 +45,10 @@ export class Notification {
 		this.container = null;
 		this.notificationTimeout = 4000;
 	}
-	showBottom({ message, status, button, link }: BottomNotificationOptions): void {
+	showBottom({ icon, message, status, button, link }: BottomNotificationOptions): void {
 		this.container = this.createBottomContainer();
 
-		let notification = this.createNotification({ message, status, button, link });
+		let notification = this.createNotification({ icon, message, status, button, link });
 		this.notifications.push(notification);
 
 		if (this.notifications.length > this.maxNotifications) {
@@ -148,7 +148,7 @@ export class Notification {
 		return container;
 	}
 
-	createNotification({ message, status, button, link }: BottomNotificationOptions): HTMLElement {
+	createNotification({ icon, message, status, button, link }: BottomNotificationOptions): HTMLElement {
 		const notification = document.createElement('div') as unknown as NotificationElement;
 		const modError = status === 'error' ? ' z-notification-bottom__item--error' : '';
 		const modAction = button || link ? ' z-notification-bottom__item--action' : '';
@@ -156,7 +156,7 @@ export class Notification {
 		notification.setAttribute('role', 'alert');
 		notification.setAttribute('aria-live', 'assertive');
 
-		notification.innerHTML = `<span class="z-notification-bottom__message">${message}</span>
+		notification.innerHTML = `${this.getSvgIcon(icon)}<span class="z-notification-bottom__message">${message}</span>
 			${link ? `<a href="${link.href}" class="z-notification-bottom__action-btn" role="link">${link.text}</a>` : ''}
 			${!link && button ? `<button class="z-notification-bottom__action-btn" role="button">${button.text}</button>` : ''}
 			${link || button ? CLOSE_BUTTON_HTML : ''}`;
@@ -186,6 +186,16 @@ export class Notification {
 		this.addPauseResumeEvents(notification);
 
 		return notification;
+	}
+
+	getSvgIcon(icon: string | undefined): string {
+		if(!icon) return '';
+		if (document.querySelector(`#svg-${icon}`) as SVGUseElement | null) {
+			return `<svg class="svg-symbol z-notification-bottom__icon" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+				<use xlink:href="#svg-${icon}" />
+			</svg>`;
+		}
+		return '';
 	}
 
 	inlinePositioning(element: HTMLElement, container: HTMLElement): void {
@@ -286,8 +296,8 @@ const notification: NotificationService = {
 	showInline({ message, element }: InlineNotificationOptions): Promise<void> {
 		return this.notification.showInline({ message, element });
 	},
-	showBottom({ message, status, button, link }: BottomNotificationOptions): void {
-		this.notification.showBottom({ message, status, button, link });
+	showBottom({ icon, message, status, button, link }: BottomNotificationOptions): void {
+		this.notification.showBottom({ icon, message, status, button, link });
 	},
 	debug(): void {
 		this.notification.debug();
