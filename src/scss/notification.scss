@@ -41,12 +41,12 @@
 	color: var(--z-ds-color-background-0);
 	display: flex;
 	font-size: var(--z-ds-fontsize-14);
-	justify-content: space-between;
+	gap: var(--z-ds-space-6);
 	line-height: var(--z-ds-lineheight-12);
 	margin: auto auto var(--z-ds-space-xs);
 	opacity: 1;
 	padding-block: var(--z-ds-space-12);
-	padding-inline: var(--z-ds-space-16) var(--z-ds-space-56);
+	padding-inline: var(--z-ds-space-16);
 	position: relative;
 	transform: translateY(0);
 	will-change: transform, opacity;
@@ -96,7 +96,6 @@
 	font-size: var(--z-ds-fontsize-14);
 	font-weight: bold;
 	height: auto;
-	padding-inline: var(--z-ds-space-16);
 
 	@include mixins.on-interaction {
 		color: var(--z-ds-color-accent-100);
