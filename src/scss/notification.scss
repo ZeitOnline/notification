@@ -51,11 +51,11 @@
 	transform: translateY(0);
 	will-change: transform, opacity;
 
-	&--no-action {
-		padding-right: var(--z-ds-space-m);
+	&--action {
+		padding-right: var(--z-ds-space-56);
 	}
 
-	&--state-error {
+	&--error {
 		background-color: var(--z-ds-color-error-70);
 		color: var(--z-ds-color-general-white-100);
 		.z-notification-bottom__close-btn svg path {
@@ -93,6 +93,12 @@
 
 	@include mixins.on-interaction {
 		color: var(--z-ds-color-accent-100);
+	}
+	.z-notification-bottom__item--error & {
+		color: var(--z-ds-color-general-white-100);
+		@include mixins.on-interaction($use-focus-visible: true) {
+			color: var(--z-ds-color-general-white-100);
+		}
 	}
 }
 

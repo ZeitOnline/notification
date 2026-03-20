@@ -150,7 +150,9 @@ export class Notification {
 
 	createNotification({ message, status, button, link }: BottomNotificationOptions): HTMLElement {
 		const notification = document.createElement('div') as unknown as NotificationElement;
-		notification.className = `z-notification-bottom__item ${status === 'error' ? 'z-notification-bottom__item--state-error' : ''}`;
+		const modError = status === 'error' ? ' z-notification-bottom__item--error' : '';
+		const modAction = button || link ? ' z-notification-bottom__item--action' : '';
+		notification.className = `z-notification-bottom__item${modError}${modAction}`;
 		notification.setAttribute('role', 'alert');
 		notification.setAttribute('aria-live', 'assertive');
 
