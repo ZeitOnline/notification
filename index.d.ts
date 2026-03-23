@@ -9,6 +9,8 @@ export type LinkOptions = {
 };
 
 export type BottomNotificationOptions = {
+	position?: 'top' | 'bottom';
+	icon?: string;
 	message: string;
 	status?: 'error' | 'success' | 'warning' | 'info';
 	button?: ButtonOptions;
@@ -34,7 +36,7 @@ export interface NotificationElement extends HTMLElement {
 export type NotificationService = {
 	notification: InstanceType<typeof import('./src/notification').Notification>;
 	showInline(options: InlineNotificationOptions): Promise<void>;
-	showBottom(options: BottomNotificationOptions): void;
+	show(options: BottomNotificationOptions): void;
 	debug(): void;
 };
 

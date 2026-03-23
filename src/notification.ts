@@ -16,11 +16,11 @@ import type {
 } from '../index';
 
 const CLOSE_BUTTON_HTML = `
-	<button class="z-notification-bottom__close-btn" aria-label="Schließen">
-		<svg class="z-notification-bottom__close-ring" viewBox="0 0 24 24" aria-hidden="true">
+	<button class="z-notification__close-btn" aria-label="Schließen">
+		<svg class="z-notification__close-ring" viewBox="0 0 24 24" aria-hidden="true">
 			<circle cx="12" cy="12" r="11.5"/>
 		</svg>
-		<svg class="z-notification-bottom__close-cross" width="12" height="12" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+		<svg class="z-notification__close-cross" width="12" height="12" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 			<path d="M15 15L2.99999 3.00001" stroke="currentColor" stroke-width="1.5"/>
 			<path d="M15 3.00001L3.00001 15" stroke="currentColor" stroke-width="1.5"/>
 		</svg>
@@ -45,10 +45,17 @@ export class Notification {
 		this.container = null;
 		this.notificationTimeout = 4000;
 	}
-	showBottom({ message, status, button, link }: BottomNotificationOptions): void {
-		this.container = this.createBottomContainer();
+	show({
+		position = 'bottom',
+		icon,
+		message,
+		status,
+		button,
+		link,
+	}: BottomNotificationOptions): void {
+		this.container = this.createContainer(position);
 
-		let notification = this.createNotification({ message, status, button, link });
+		let notification = this.createNotification({ icon, message, status, button, link });
 		this.notifications.push(notification);
 
 		if (this.notifications.length > this.maxNotifications) {
@@ -136,42 +143,42 @@ export class Notification {
 		return container;
 	}
 
-	createBottomContainer(): HTMLDialogElement {
-		let container = document.querySelector(
-			'.z-notification-bottom',
-		) as HTMLDialogElement | null;
+	createContainer(position: string): HTMLDialogElement {
+		let container = document.querySelector('.z-notification') as HTMLDialogElement | null;
 		if (!container) {
 			container = document.createElement('dialog');
-			container.className = 'z-notification-bottom';
+			container.className =
+				'z-notification z-notification--' + (position === 'top' ? 'top' : 'bottom');
 			document.body.insertAdjacentElement('beforeend', container);
 		}
 		return container;
 	}
 
-	createNotification({ message, status, button, link }: BottomNotificationOptions): HTMLElement {
+	createNotification({
+		icon,
+		message,
+		status,
+		button,
+		link,
+	}: BottomNotificationOptions): HTMLElement {
 		const notification = document.createElement('div') as unknown as NotificationElement;
-		notification.className = `z-notification-bottom__item ${status === 'error' ? 'z-notification-bottom__item--state-error' : ''}`;
+		const modError = status === 'error' ? ' z-notification__item--error' : '';
+		const modAction = button || link ? ' z-notification__item--action' : '';
+		notification.className = `z-notification__item${modError}${modAction}`;
 		notification.setAttribute('role', 'alert');
 		notification.setAttribute('aria-live', 'assertive');
 
-		if (!button && !link) {
-			notification.classList.add('z-notification-bottom__item--no-action');
-		}
+		notification.innerHTML = `${this.getSvgIcon(icon)}
+			${message ? `<span class="z-notification__message">${message}</span>` : ''}
+			${link ? `<a href="${link.href}" class="z-notification__action-btn" role="link">${link.text}</a>` : ''}
+			${!link && button ? `<button class="z-notification__action-btn" role="button">${button.text}</button>` : ''}
+			${link || button ? CLOSE_BUTTON_HTML : ''}`;
 
-		let actionHtml = '';
-
-		if (link) {
-			actionHtml = `<a href="${link.href}" class="z-notification-bottom__action-btn" role="link">${link.text}</a>`;
-		} else if (button) {
-			actionHtml = `<button class="z-notification-bottom__action-btn" role="button">${button.text}</button>`;
-		}
-
-		notification.innerHTML = `<p class="z-notification-bottom__message">${message}</p>${actionHtml}${CLOSE_BUTTON_HTML}`;
 		(this.container as HTMLElement).appendChild(notification);
 
 		if (button && button.onClick) {
 			const actionElement = notification.querySelector(
-				'.z-notification-bottom__action-btn',
+				'.z-notification__action-btn',
 			) as HTMLElement;
 			actionElement.onclick = () => {
 				button.onClick();
@@ -179,17 +186,30 @@ export class Notification {
 			};
 		}
 
-		const closeButton = notification.querySelector(
-			'.z-notification-bottom__close-btn',
-		) as HTMLElement;
-		closeButton.style.setProperty('--z-notification-duration', `${this.notificationTimeout}ms`);
-		closeButton.onclick = () => this.removeNotification(notification);
+		const closeButton = notification.querySelector('.z-notification__close-btn') as HTMLElement;
+		if (closeButton) {
+			closeButton.style.setProperty(
+				'--z-notification-duration',
+				`${this.notificationTimeout}ms`,
+			);
+			closeButton.onclick = () => this.removeNotification(notification);
+		}
 
 		notification.elapsed = 0;
 		notification.isPaused = false;
 		this.addPauseResumeEvents(notification);
 
 		return notification;
+	}
+
+	getSvgIcon(icon: string | undefined): string {
+		if (!icon) return '';
+		if (document.querySelector(`#svg-${icon}`) as SVGUseElement | null) {
+			return `<svg class="svg-symbol z-notification__icon" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+				<use xlink:href="#svg-${icon}" />
+			</svg>`;
+		}
+		return '';
 	}
 
 	inlinePositioning(element: HTMLElement, container: HTMLElement): void {
@@ -225,7 +245,7 @@ export class Notification {
 	addPauseResumeEvents(notification: HTMLElement): void {
 		const notif = notification as NotificationElement;
 		const ring = notification.querySelector(
-			'.z-notification-bottom__close-ring circle',
+			'.z-notification__close-ring circle',
 		) as SVGCircleElement | null;
 
 		const pause = () => {
@@ -290,8 +310,8 @@ const notification: NotificationService = {
 	showInline({ message, element }: InlineNotificationOptions): Promise<void> {
 		return this.notification.showInline({ message, element });
 	},
-	showBottom({ message, status, button, link }: BottomNotificationOptions): void {
-		this.notification.showBottom({ message, status, button, link });
+	show({ position, icon, message, status, button, link }: BottomNotificationOptions): void {
+		this.notification.show({ position, icon, message, status, button, link });
 	},
 	debug(): void {
 		this.notification.debug();
