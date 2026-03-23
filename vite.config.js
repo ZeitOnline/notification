@@ -8,6 +8,9 @@ export default defineConfig({
 			},
 		},
 	},
+	test: {
+    	environment: "jsdom",
+  	},
 	build: {
 		lib: {
 			entry: {

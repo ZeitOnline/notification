@@ -33,13 +33,23 @@
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"prepublishOnly": "npm run build",
+		"prepare": "lefthook install",
+		"test": "vitest run src/tests/notification.test.ts",
+		"test:guidepup": "vitest run src/tests/notification.guidepup.test.ts --test-timeout=30000 --maxWorkers=1",
+		"test:all": "npm test && npm run test:guidepup",
 		"copy:zds": "mkdir -p ./src/assets/css && cp node_modules/@zeitonline/design-system/design-system.css ./src/assets/css/design-system.css"
 	},
 	"devDependencies": {
+		"@guidepup/virtual-screen-reader": "^0.32.1",
+		"@testing-library/dom": "^10.4.1",
+		"@testing-library/user-event": "^14.6.1",
 		"@zeitonline/design-system": "^0.3.4",
+		"jsdom": "^29.0.0",
+		"lefthook": "^2.1.4",
 		"prettier": "^3.8.1",
 		"sass": "^1.98.0",
-		"vite": "^7.3.1"
+		"vite": "^7.3.1",
+		"vitest": "^4.1.0"
 	},
 	"publishConfig": {
 		"access": "public"
