@@ -33,8 +33,7 @@
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"prepublishOnly": "npm run build",
-		"copy:zds": "mkdir -p ./src/assets/css && cp node_modules/@zeitonline/design-system/design-system.css ./src/assets/css/design-system.css",
-		"copy:icons": "mkdir -p ./src/assets/svg && cp -r node_modules/@zeitonline/icons/svg/. ./src/assets/svg"
+		"copy:zds": "mkdir -p ./src/assets/css && cp node_modules/@zeitonline/design-system/design-system.css ./src/assets/css/design-system.css"
 	},
 	"devDependencies": {
 		"@zeitonline/design-system": "^0.3.4",
