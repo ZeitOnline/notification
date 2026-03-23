@@ -45,7 +45,14 @@ export class Notification {
 		this.container = null;
 		this.notificationTimeout = 4000;
 	}
-	show({ position = 'bottom', icon, message, status, button, link }: BottomNotificationOptions): void {
+	show({
+		position = 'bottom',
+		icon,
+		message,
+		status,
+		button,
+		link,
+	}: BottomNotificationOptions): void {
 		this.container = this.createContainer(position);
 
 		let notification = this.createNotification({ icon, message, status, button, link });
@@ -137,18 +144,23 @@ export class Notification {
 	}
 
 	createContainer(position: string): HTMLDialogElement {
-		let container = document.querySelector(
-			'.z-notification',
-		) as HTMLDialogElement | null;
+		let container = document.querySelector('.z-notification') as HTMLDialogElement | null;
 		if (!container) {
 			container = document.createElement('dialog');
-			container.className = 'z-notification z-notification--' + (position === 'top' ? 'top' : 'bottom');
+			container.className =
+				'z-notification z-notification--' + (position === 'top' ? 'top' : 'bottom');
 			document.body.insertAdjacentElement('beforeend', container);
 		}
 		return container;
 	}
 
-	createNotification({ icon, message, status, button, link }: BottomNotificationOptions): HTMLElement {
+	createNotification({
+		icon,
+		message,
+		status,
+		button,
+		link,
+	}: BottomNotificationOptions): HTMLElement {
 		const notification = document.createElement('div') as unknown as NotificationElement;
 		const modError = status === 'error' ? ' z-notification__item--error' : '';
 		const modAction = button || link ? ' z-notification__item--action' : '';
@@ -174,11 +186,12 @@ export class Notification {
 			};
 		}
 
-		const closeButton = notification.querySelector(
-			'.z-notification__close-btn',
-		) as HTMLElement;
-		if(closeButton){
-			closeButton.style.setProperty('--z-notification-duration', `${this.notificationTimeout}ms`);
+		const closeButton = notification.querySelector('.z-notification__close-btn') as HTMLElement;
+		if (closeButton) {
+			closeButton.style.setProperty(
+				'--z-notification-duration',
+				`${this.notificationTimeout}ms`,
+			);
 			closeButton.onclick = () => this.removeNotification(notification);
 		}
 
@@ -190,7 +203,7 @@ export class Notification {
 	}
 
 	getSvgIcon(icon: string | undefined): string {
-		if(!icon) return '';
+		if (!icon) return '';
 		if (document.querySelector(`#svg-${icon}`) as SVGUseElement | null) {
 			return `<svg class="svg-symbol z-notification__icon" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
 				<use xlink:href="#svg-${icon}" />
