@@ -36,9 +36,6 @@ describe.sequential('notification spoken accessibility', () => {
 	});
 
 	afterEach(async () => {
-		document.body.innerHTML = '';
-		Notification.instance = undefined;
-
 		try {
 			await virtual.stop();
 		} catch {
