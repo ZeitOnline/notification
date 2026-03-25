@@ -44,9 +44,9 @@
 .z-notification__item {
 	align-items: center;
 	animation: slide-in-from-bottom 0.3s ease-out;
-	background-color: var(--z-ds-color-text-100);
+	background-color: var(--z-ds-color-text-100); // #252525 | #ffffff (lightmode | darkmode)
 	border-radius: var(--z-ds-border-radius-4);
-	color: var(--z-ds-color-background-0);
+	color: var(--z-ds-color-background-0); // #ffffff | #232323
 	display: flex;
 	font-size: var(--z-ds-fontsize-14);
 	gap: var(--z-ds-space-6);
@@ -96,7 +96,7 @@
 	align-self: center;
 	background: none;
 	border: none;
-	color: var(--z-ds-color-background-0);
+	color: var(--z-ds-color-border-100); // #cccccf | #363636 (figma: #bababa | #444444)
 	cursor: pointer;
 	display: flex;
 	font-size: var(--z-ds-fontsize-14);
@@ -104,12 +104,9 @@
 	text-decoration: underline;
 
 	@include mixins.on-interaction($use-focus-visible: true) {
-		color: var(--z-ds-color-accent-100);
-	}
-	.z-notification__item--error & {
-		color: var(--z-ds-color-general-white-100);
-		@include mixins.on-interaction($use-focus-visible: true) {
-			color: var(--z-ds-color-general-white-100);
+		color: var(--z-ds-color-general-white-100); // #ffffff
+		@include mixins.dark-mode {
+			color: var(--z-ds-color-background-10); // #232323
 		}
 	}
 }
