@@ -163,8 +163,7 @@ export class Notification {
 	}: BottomNotificationOptions): HTMLElement {
 		const notification = document.createElement('div') as unknown as NotificationElement;
 		const modError = status === 'error' ? ' z-notification__item--error' : '';
-		const modAction = button || link ? ' z-notification__item--action' : '';
-		notification.className = `z-notification__item${modError}${modAction}`;
+		notification.className = `z-notification__item${modError}`;
 		notification.setAttribute('role', 'alert');
 		notification.setAttribute('aria-live', 'assertive');
 
@@ -172,7 +171,7 @@ export class Notification {
 			${message ? `<span class="z-notification__message">${message}</span>` : ''}
 			${link ? `<a href="${link.href}" class="z-notification__action-btn" role="link">${link.text}</a>` : ''}
 			${!link && button ? `<button class="z-notification__action-btn" role="button">${button.text}</button>` : ''}
-			${link || button ? CLOSE_BUTTON_HTML : ''}`;
+			${CLOSE_BUTTON_HTML}`;
 
 		(this.container as HTMLElement).appendChild(notification);
 
