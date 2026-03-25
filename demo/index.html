@@ -14,7 +14,7 @@
 		<link rel="stylesheet" href="style.css" />
 		<style>
 			body {
-				background: linear-gradient(to bottom, #fcf5e9 20%, transparent 40%);
+				background: var(--z-ds-color-background-0);
 				color: var(--z-ds-color-text-100);
 				min-height: 100vh;
 				padding: var(--z-ds-space-m);
@@ -95,7 +95,7 @@
 			}
 
 			.button:hover {
-				background-color: rgb(155, 6, 210);
+				background-color: var(--z-ds-color-accent-100);
 			}
 
 			.button:focus-visible {
@@ -106,20 +106,6 @@
 			@media (max-width: 768px) {
 				.hero h1 {
 					font-size: 2rem;
-				}
-			}
-
-			@media (prefers-color-scheme: dark) {
-				body {
-					background: var(--z-ds-color-background-10);
-				}
-				.button {
-					background-color: var(--z-ds-color-general-white-40);
-					color: var(--z-ds-color-text-100);
-				}
-				.button:hover {
-					background-color: rgb(155, 6, 210);
-					color: var(--z-ds-color-text-100);
 				}
 			}
 
