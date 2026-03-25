@@ -167,11 +167,11 @@ export class Notification {
 		notification.setAttribute('role', 'alert');
 		notification.setAttribute('aria-live', 'assertive');
 
-		notification.innerHTML = `${this.getSvgIcon(icon)}
-			${message ? `<span class="z-notification__message">${message}</span>` : ''}
-			${link ? `<a href="${link.href}" class="z-notification__action-btn" role="link">${link.text}</a>` : ''}
-			${!link && button ? `<button class="z-notification__action-btn" role="button">${button.text}</button>` : ''}
-			${CLOSE_BUTTON_HTML}`;
+		notification.innerHTML = this.getSvgIcon(icon)
+			+ (message ? `<span class="z-notification__message">${message}</span>` : '')
+			+ (link ? `<a href="${link.href}" class="z-notification__action-btn" role="link">${link.text}</a>` : '')
+			+ (!link && button ? `<button class="z-notification__action-btn" role="button">${button.text}</button>` : '')
+			+ CLOSE_BUTTON_HTML;
 
 		(this.container as HTMLElement).appendChild(notification);
 
