@@ -144,8 +144,8 @@
 					</div>
 					<p>Status:</p>
 					<div class="button-group">
-						<button type="button" class="button" data-action="success">Success</button>
-						<button type="button" class="button" data-action="warning">Warning</button>
+						<button type="button" class="button" data-action="info">Info</button>
+						<button type="button" class="button" data-action="error">Error</button>
 						<button type="button" class="button" data-action="error-with-callback">Error with CallBack</button>
 					</div>
 				</article>
@@ -153,7 +153,7 @@
 					<h2>Inline notifications</h2>
 					<p>Use the anchor button to verify placement, dismissal on scroll and timeout handling.</p>
 					<div class="button-group">
-						<button type="button" class="button" data-action="inline">inline message</button>
+						<button type="button" class="button" data-action="info-inline">inline message</button>
 					</div>
 				</article>
 			</section>
@@ -178,15 +178,15 @@
 								position: "bottom",
 								status: "success",
 								icon: "bookmark",
+								message: "Der Artikel wurde gespeichert.",
 								link: {
-									text: "Der Artikel wurde gespeichert. Zur Merkliste &#8594;",
+									text: "Merkliste öffnen",
 									href: "https://www.zeit.de/konto/listen/merkliste",
 								}
 							});
 							break;
 						case 'remove-bookmark':
 							notification.show({
-								status: "success",
 								icon: "bookmark",
 								message: "Der Artikel wurde von der Merkliste entfernt.",
 								button: {
@@ -208,15 +208,14 @@
 
 						// STATUS VARIANTS
 
-						case 'success':
+						case 'info':
 							notification.show({
-								status: 'success',
 								message: 'Profile saved successfully.'
 							});
 							break;
-						case 'warning':
+						case 'error':
 							notification.show({
-								status: "warning",
+								status: "error",
 								message: "Connection is unstable. Changes may sync later."
 							});
 							break;
@@ -234,7 +233,7 @@
 
 						// INLINE VARIANT
 
-						case 'inline':
+						case 'info-inline':
 							notification.showInline({
 								element: target,
 								message: "This message is attached to the button you clicked.",
