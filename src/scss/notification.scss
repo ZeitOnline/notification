@@ -60,10 +60,10 @@
 	will-change: transform, opacity;
 
 	&--error {
-		background-color: var(--z-ds-color-error-70);
-		color: var(--z-ds-color-general-white-100);
-		.z-notification__close-btn svg path {
-			stroke: var(--z-ds-color-general-white-100);
+		// using color-mix to create a custom background color for error notifications (see figma file)
+		background: color-mix(in sRGB, var(--z-ds-color-error-70) 45%, var(--z-ds-color-text-100) 55%);
+		@include mixins.dark-mode {
+			background: color-mix(in sRGB, var(--z-ds-color-error-70) 40%, var(--z-ds-color-text-70) 60%);
 		}
 	}
 
@@ -163,10 +163,6 @@
 	pointer-events: none;
 	position: absolute;
 	transform: rotate(-90deg);
-
-	.z-notification__item--error & {
-		color: var(--z-ds-color-general-white-100);
-	}
 
 	circle {
 		animation: z-notification-countdown var(--z-notification-duration, 4000ms) linear forwards;
