@@ -92,6 +92,8 @@
 
 .z-notification__message {
 	flex: 1;
+	font-weight: bold;
+	@include mixins.font-smoothing;
 }
 
 .z-notification__action-btn {
