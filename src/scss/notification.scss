@@ -61,9 +61,17 @@
 
 	&--error {
 		// using color-mix to create a custom background color for error notifications (see figma file)
-		background: color-mix(in sRGB, var(--z-ds-color-error-70) 45%, var(--z-ds-color-text-100) 55%);
+		background: color-mix(
+			in sRGB,
+			var(--z-ds-color-error-70) 45%,
+			var(--z-ds-color-text-100) 55%
+		);
 		@include mixins.dark-mode {
-			background: color-mix(in sRGB, var(--z-ds-color-error-70) 40%, var(--z-ds-color-text-70) 60%);
+			background: color-mix(
+				in sRGB,
+				var(--z-ds-color-error-70) 40%,
+				var(--z-ds-color-text-70) 60%
+			);
 		}
 	}
 
