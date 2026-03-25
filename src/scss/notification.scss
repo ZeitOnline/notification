@@ -133,8 +133,10 @@
 	width: 26px;
 
 	.z-notification__close-cross {
+		height: 12px;
 		opacity: 0.6;
 		transition: opacity 0.15s ease;
+		width: 12px;
 	}
 
 	@include mixins.on-interaction {
@@ -147,8 +149,11 @@
 		border: 1px solid currentColor;
 		border-radius: 50%;
 		content: "";
+		height: 24px;
+		inset: 0;
 		opacity: 0.1;
 		position: absolute;
+		width: 24px;
 	}
 }
 
