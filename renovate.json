@@ -1,18 +1,17 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "dependencyDashboard": true,
-  "lockFileMaintenance": { "enabled": true },
-  "schedule": ["before 5am every weekday"],
-  "ignorePaths": [],
-  "addLabels": ["renovate: {{manager}}"],
-  "packageRules":
-  [
-    {
-      "description": "Group (minor) Node package updates into single PRs",
-      "groupName": "node",
-      "automerge": true,
-      "matchUpdateTypes": ["minor", "patch", "lockFileMaintenance"],
-      "matchManagers": ["npm"]
-    }
-  ]
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"dependencyDashboard": true,
+	"lockFileMaintenance": { "enabled": true },
+	"schedule": ["before 5am every weekday"],
+	"ignorePaths": [],
+	"addLabels": ["renovate: {{manager}}"],
+	"packageRules": [
+		{
+			"description": "Group (minor) Node package updates into single PRs",
+			"groupName": "node",
+			"automerge": true,
+			"matchUpdateTypes": ["minor", "patch", "lockFileMaintenance"],
+			"matchManagers": ["npm"]
+		}
+	]
 }

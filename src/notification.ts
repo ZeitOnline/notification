@@ -20,9 +20,9 @@ const CLOSE_BUTTON_HTML = `
 		<svg class="z-notification__close-ring" viewBox="0 0 24 24" aria-hidden="true">
 			<circle cx="12" cy="12" r="11.5"/>
 		</svg>
-		<svg class="z-notification__close-cross" width="12" height="12" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-			<path d="M15 15L2.99999 3.00001" stroke="currentColor" stroke-width="1.5"/>
-			<path d="M15 3.00001L3.00001 15" stroke="currentColor" stroke-width="1.5"/>
+		<svg class="z-notification__close-cross" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+			<path d="M15 15L3 3" stroke="currentColor" stroke-width="1.5"/>
+			<path d="M15 3L3 15" stroke="currentColor" stroke-width="1.5"/>
 		</svg>
 	</button>`;
 
@@ -163,16 +163,17 @@ export class Notification {
 	}: BottomNotificationOptions): HTMLElement {
 		const notification = document.createElement('div') as unknown as NotificationElement;
 		const modError = status === 'error' ? ' z-notification__item--error' : '';
-		const modAction = button || link ? ' z-notification__item--action' : '';
-		notification.className = `z-notification__item${modError}${modAction}`;
+		notification.className = `z-notification__item${modError}`;
 		notification.setAttribute('role', 'alert');
 		notification.setAttribute('aria-live', 'assertive');
 
-		notification.innerHTML = `${this.getSvgIcon(icon)}
-			${message ? `<span class="z-notification__message">${message}</span>` : ''}
-			${link ? `<a href="${link.href}" class="z-notification__action-btn" role="link">${link.text}</a>` : ''}
-			${!link && button ? `<button class="z-notification__action-btn" role="button">${button.text}</button>` : ''}
-			${link || button ? CLOSE_BUTTON_HTML : ''}`;
+		// prettier-ignore-start
+		notification.innerHTML = this.getSvgIcon(icon) +
+			(message ? `<span class="z-notification__message">${message}</span>` : '') +
+			(link ? `<a href="${link.href}" class="z-notification__action-btn">${link.text}</a>` : '') +
+			(!link && button ? `<button class="z-notification__action-btn">${button.text}</button>` : '') +
+			CLOSE_BUTTON_HTML;
+		// prettier-ignore-end
 
 		(this.container as HTMLElement).appendChild(notification);
 

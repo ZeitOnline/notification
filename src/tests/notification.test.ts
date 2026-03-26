@@ -264,10 +264,9 @@ describe('notification accessibility behavior', () => {
 
 	it('renders top-positioned notifications with an icon when a matching symbol exists', async () => {
 		document.body.innerHTML = `
-      <svg aria-hidden="true">
-        <symbol id="svg-info" viewBox="0 0 18 18"></symbol>
-      </svg>
-    `;
+			<svg aria-hidden="true">
+				<symbol id="svg-info" viewBox="0 0 18 18"></symbol>
+			</svg>`;
 
 		notification.show({
 			position: 'top',
@@ -281,5 +280,14 @@ describe('notification accessibility behavior', () => {
 
 		expect(container?.className).toContain('z-notification--top');
 		expect(icon).not.toBeNull();
+	});
+
+	it('renders a notification displaying users an error message', async () => {
+		notification.show({
+			message: 'This is an error notification.',
+			status: 'error',
+		});
+		const container = document.querySelector('.z-notification__item');
+		expect(container?.className).toContain('z-notification__item--error');
 	});
 });

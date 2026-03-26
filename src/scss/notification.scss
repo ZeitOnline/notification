@@ -44,9 +44,9 @@
 .z-notification__item {
 	align-items: center;
 	animation: slide-in-from-bottom 0.3s ease-out;
-	background-color: var(--z-ds-color-text-100);
+	background-color: var(--z-ds-color-text-100); // #252525 | #ffffff (lightmode | darkmode)
 	border-radius: var(--z-ds-border-radius-4);
-	color: var(--z-ds-color-background-0);
+	color: var(--z-ds-color-background-0); // #ffffff | #232323
 	display: flex;
 	font-size: var(--z-ds-fontsize-14);
 	gap: var(--z-ds-space-6);
@@ -54,20 +54,24 @@
 	margin: auto auto var(--z-ds-space-xs);
 	opacity: 1;
 	padding-block: var(--z-ds-space-12);
-	padding-inline: var(--z-ds-space-16);
+	padding-inline: var(--z-ds-space-16) var(--z-ds-space-56);
 	position: relative;
 	transform: translateY(0);
 	will-change: transform, opacity;
 
-	&--action {
-		padding-right: var(--z-ds-space-56);
-	}
-
 	&--error {
-		background-color: var(--z-ds-color-error-70);
-		color: var(--z-ds-color-general-white-100);
-		.z-notification__close-btn svg path {
-			stroke: var(--z-ds-color-general-white-100);
+		// using color-mix to create a custom background color for error notifications (see figma file)
+		background: color-mix(
+			in sRGB,
+			var(--z-ds-color-error-70) 45%,
+			var(--z-ds-color-text-100) 55%
+		);
+		@include mixins.dark-mode {
+			background: color-mix(
+				in sRGB,
+				var(--z-ds-color-error-70) 40%,
+				var(--z-ds-color-text-70) 60%
+			);
 		}
 	}
 
@@ -92,13 +96,15 @@
 
 .z-notification__message {
 	flex: 1;
+	font-weight: bold;
+	@include mixins.font-smoothing;
 }
 
 .z-notification__action-btn {
 	align-self: center;
 	background: none;
 	border: none;
-	color: var(--z-ds-color-background-0);
+	color: var(--z-ds-color-border-100); // #cccccf | #363636 (figma: #bababa | #444444)
 	cursor: pointer;
 	display: flex;
 	font-size: var(--z-ds-fontsize-14);
@@ -106,12 +112,9 @@
 	text-decoration: underline;
 
 	@include mixins.on-interaction($use-focus-visible: true) {
-		color: var(--z-ds-color-accent-100);
-	}
-	.z-notification__item--error & {
-		color: var(--z-ds-color-general-white-100);
-		@include mixins.on-interaction($use-focus-visible: true) {
-			color: var(--z-ds-color-general-white-100);
+		color: var(--z-ds-color-general-white-100); // #ffffff
+		@include mixins.dark-mode {
+			color: var(--z-ds-color-background-10); // #232323
 		}
 	}
 }
@@ -133,8 +136,10 @@
 	width: 26px;
 
 	.z-notification__close-cross {
+		height: 12px;
 		opacity: 0.6;
 		transition: opacity 0.15s ease;
+		width: 12px;
 	}
 
 	@include mixins.on-interaction {
@@ -147,8 +152,11 @@
 		border: 1px solid currentColor;
 		border-radius: 50%;
 		content: "";
+		height: 24px;
+		inset: 0;
 		opacity: 0.1;
 		position: absolute;
+		width: 24px;
 	}
 }
 
@@ -160,10 +168,6 @@
 	pointer-events: none;
 	position: absolute;
 	transform: rotate(-90deg);
-
-	.z-notification__item--error & {
-		color: var(--z-ds-color-general-white-100);
-	}
 
 	circle {
 		animation: z-notification-countdown var(--z-notification-duration, 4000ms) linear forwards;
