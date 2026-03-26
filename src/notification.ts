@@ -170,8 +170,8 @@ export class Notification {
 		// prettier-ignore-start
 		notification.innerHTML = this.getSvgIcon(icon) +
 			(message ? `<span class="z-notification__message">${message}</span>` : '') +
-			(link ? `<a href="${link.href}" class="z-notification__action-btn" role="link">${link.text}</a>` : '') +
-			(!link && button ? `<button class="z-notification__action-btn" role="button">${button.text}</button>` : '') +
+			(link ? `<a href="${link.href}" class="z-notification__action-btn">${link.text}</a>` : '') +
+			(!link && button ? `<button class="z-notification__action-btn">${button.text}</button>` : '') +
 			CLOSE_BUTTON_HTML;
 		// prettier-ignore-end
 
