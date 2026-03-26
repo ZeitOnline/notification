@@ -1,6 +1,8 @@
 pre-commit:
   parallel: true
   commands:
+    tests:
+      run: npm test && npm run test:guidepup
     eslint:
       glob: "*.{js,ts}"
       root: src/
