@@ -264,10 +264,9 @@ describe('notification accessibility behavior', () => {
 
 	it('renders top-positioned notifications with an icon when a matching symbol exists', async () => {
 		document.body.innerHTML = `
-      <svg aria-hidden="true">
-        <symbol id="svg-info" viewBox="0 0 18 18"></symbol>
-      </svg>
-    `;
+			<svg aria-hidden="true">
+				<symbol id="svg-info" viewBox="0 0 18 18"></symbol>
+			</svg>`;
 
 		notification.show({
 			position: 'top',
