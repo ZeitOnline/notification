@@ -281,4 +281,13 @@ describe('notification accessibility behavior', () => {
 		expect(container?.className).toContain('z-notification--top');
 		expect(icon).not.toBeNull();
 	});
+
+	it('renders a notification displaying users an error message', async () => {
+		notification.show({
+			message: 'This is an error notification.',
+			status: 'error',
+		});
+		const container = document.querySelector('.z-notification__item');
+		expect(container?.className).toContain('z-notification__item--error');
+	});
 });
