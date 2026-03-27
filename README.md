@@ -1,3 +1,3 @@
 # Notification
 
-TBD A
+Here comes the readme text.
