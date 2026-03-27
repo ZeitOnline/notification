@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.2](https://github.com/ZeitOnline/notification/compare/notification-v1.1.1...notification-v1.1.2) (2026-03-27)
+
+
+### 🐛 Bug Fixes
+
+* add NODE_AUTH_TOKEN to environment variable ([d051f9a](https://github.com/ZeitOnline/notification/commit/d051f9ab52ae4f037423171ab22da9dec9e151b7))
+* add text to read me to start release ([25a9964](https://github.com/ZeitOnline/notification/commit/25a99640660031fb7a84fbad17c9f26bac23fca8))
+* correct punctuation in README text ([4458334](https://github.com/ZeitOnline/notification/commit/44583347ae52675f908854166c2d2c6e94eeae38))
+
 ## [1.1.1](https://github.com/ZeitOnline/notification/compare/notification-v1.1.0...notification-v1.1.1) (2026-03-27)
 
 
