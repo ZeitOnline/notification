@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/ZeitOnline/notification/compare/v1.0.1...v1.0.2) (2026-03-27)
+
+
+### Bug Fixes
+
+* refresh lockfile for cross-platform rollup deps ([ffd0789](https://github.com/ZeitOnline/notification/commit/ffd0789ef66fd852c969b620571c096651440e67))
+
 ## [1.0.1](https://github.com/ZeitOnline/notification/compare/v1.0.0...v1.0.1) (2026-03-27)
 
 
