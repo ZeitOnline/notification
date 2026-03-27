@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.5](https://github.com/ZeitOnline/notification/compare/v1.0.4...v1.0.5) (2026-03-27)
+
+
+### Bug Fixes
+
+* update README to remove redundant text ([a9f4eb3](https://github.com/ZeitOnline/notification/commit/a9f4eb36d4b85e2480d83b0b330479902f2b95b4))
+
 ## [1.0.4](https://github.com/ZeitOnline/notification/compare/v1.0.3...v1.0.4) (2026-03-27)
 
 
