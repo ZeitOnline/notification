@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.7](https://github.com/ZeitOnline/notification/compare/v1.0.6...v1.0.7) (2026-03-27)
+
+
+### Bug Fixes
+
+* update release job to use ubuntu-latest and remove OIDC debug step ([d0db51a](https://github.com/ZeitOnline/notification/commit/d0db51a2e8050b6496809662e0652110eae522af))
+
 ## [1.0.6](https://github.com/ZeitOnline/notification/compare/v1.0.5...v1.0.6) (2026-03-27)
 
 
