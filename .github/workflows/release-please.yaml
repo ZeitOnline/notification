@@ -1,4 +1,4 @@
-name: release-please
+name: Release and Publish
 
 on:
   push:
@@ -13,38 +13,54 @@ permissions:
 
 jobs:
   release-please:
-    runs-on: ubuntu-latest
+    runs-on: zon-ubuntu-general-dind
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
     steps:
+      - uses: actions/checkout@v6
       - uses: googleapis/release-please-action@v4
         id: release
         with:
-          release-type: node
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: .release-please-config.json
 
-      - uses: actions/checkout@v4
-        if: ${{ steps.release.outputs.release_created == 'true' }}
-
-      - name: Setup Node.js for publishing
-        if: ${{ steps.release.outputs.release_created == 'true' }}
-        uses: actions/setup-node@v4
+  publish:
+    needs: release-please
+    if: needs.release-please.outputs.releases_created == 'true'
+    runs-on: zon-ubuntu-general-dind
+    steps:
+      - uses: actions/checkout@v6
         with:
-          node-version: 22
-          registry-url: https://registry.npmjs.org
-          scope: "@zeitonline"
+          ref: main
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          registry-url: 'https://registry.npmjs.org'
+          scope: '@zeitonline'
+
+      - name: Check if version already published
+        id: check_version
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Checking if $PACKAGE_NAME@$VERSION already exists on npm..."
+          if npm view "$PACKAGE_NAME@$VERSION" version > /dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "Skipping publish because $PACKAGE_NAME@$VERSION already exists"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "Publishing $PACKAGE_NAME@$VERSION"
+          fi
 
       - name: Install dependencies
-        if: ${{ steps.release.outputs.release_created == 'true' }}
+        if: steps.check_version.outputs.published == 'false'
         run: npm ci
 
-      - name: Build package
-        if: ${{ steps.release.outputs.release_created == 'true' }}
+      - name: Build
+        if: steps.check_version.outputs.published == 'false'
         run: npm run build
 
       - name: Publish to npm
-        if: ${{ steps.release.outputs.release_created == 'true' }}
-        run: npm publish --provenance --access public
-
-      - name: Upload release artifacts
-        if: ${{ steps.release.outputs.release_created == 'true' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ steps.release.outputs.tag_name }} ./dist/notification.css ./dist/notification.js ./dist/notification.js.map
+        if: steps.check_version.outputs.published == 'false'
+        run: npm publish --access public --provenance=false
