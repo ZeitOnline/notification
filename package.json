@@ -33,7 +33,6 @@
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"prepublishOnly": "npm run build",
-		"prepare": "lefthook install",
 		"test": "vitest run src/tests/notification.test.ts",
 		"test:guidepup": "vitest run src/tests/notification.guidepup.test.ts --test-timeout=30000 --maxWorkers=1",
 		"test:all": "npm test && npm run test:guidepup",
