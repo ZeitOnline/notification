@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/ZeitOnline/notification/compare/notification-v1.1.0...notification-v1.1.1) (2026-03-27)
+
+
+### 🐛 Bug Fixes
+
+* update README with placeholder text ([da9abcb](https://github.com/ZeitOnline/notification/commit/da9abcb71a1bb12c3b357c5d3a532f813322cba5))
+
 ## [1.1.0](https://github.com/ZeitOnline/notification/compare/notification-v1.0.7...notification-v1.1.0) (2026-03-27)
 
 
