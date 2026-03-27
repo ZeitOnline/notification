@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/ZeitOnline/notification/compare/v1.0.2...v1.0.3) (2026-03-27)
+
+
+### Bug Fixes
+
+* update repository URL format in package.json ([4872fe4](https://github.com/ZeitOnline/notification/commit/4872fe44ae9e8bb54b2f5c1450693f59b0ebb7b9))
+
 ## [1.0.2](https://github.com/ZeitOnline/notification/compare/v1.0.1...v1.0.2) (2026-03-27)
 
 
