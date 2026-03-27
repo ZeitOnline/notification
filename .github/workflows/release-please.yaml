@@ -39,19 +39,16 @@ jobs:
         if: ${{ steps.release.outputs.release_created == 'true' }}
         run: npm run build
 
-      - name: Debug npm auth
+      - name: Debug OIDC context
         if: ${{ steps.release.outputs.release_created == 'true' }}
         run: |
-          npm config get registry
-          npm whoami
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          test -n "${ACTIONS_ID_TOKEN_REQUEST_URL}"
+          echo "OIDC token endpoint is available"
+          echo "Runner: ${RUNNER_NAME} (${RUNNER_OS})"
 
       - name: Publish to npm
         if: ${{ steps.release.outputs.release_created == 'true' }}
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Upload release artifacts
         if: ${{ steps.release.outputs.release_created == 'true' }}
