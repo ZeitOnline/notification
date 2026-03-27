@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/ZeitOnline/notification/compare/v1.0.0...v1.0.1) (2026-03-27)
+
+
+### Bug Fixes
+
+* update README.md to include placeholder text ([157ecb9](https://github.com/ZeitOnline/notification/commit/157ecb9c5fbfe0565f263c819df286c24219da1b))
+* update README.md to include placeholder text ([2213901](https://github.com/ZeitOnline/notification/commit/2213901340fe9a48e8ed3110720cc9a8fa9a2a8b))
+
 ## 1.0.0 (2026-03-27)
 
 
