@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/ZeitOnline/notification/compare/v1.0.3...v1.0.4) (2026-03-27)
+
+
+### Bug Fixes
+
+* add npm auth debug step and update README ([a38c7a0](https://github.com/ZeitOnline/notification/commit/a38c7a08023f7a5e20ac4f71f135262162df0b4c))
+
 ## [1.0.3](https://github.com/ZeitOnline/notification/compare/v1.0.2...v1.0.3) (2026-03-27)
 
 
