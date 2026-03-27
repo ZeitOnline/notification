@@ -39,9 +39,19 @@ jobs:
         if: ${{ steps.release.outputs.release_created == 'true' }}
         run: npm run build
 
+      - name: Debug npm auth
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        run: |
+          npm config get registry
+          npm whoami
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish to npm
         if: ${{ steps.release.outputs.release_created == 'true' }}
         run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Upload release artifacts
         if: ${{ steps.release.outputs.release_created == 'true' }}
