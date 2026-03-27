@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.6](https://github.com/ZeitOnline/notification/compare/v1.0.5...v1.0.6) (2026-03-27)
+
+
+### Bug Fixes
+
+* update release workflow to debug OIDC context ([9cde851](https://github.com/ZeitOnline/notification/commit/9cde85158d058cc0e04dabccb1144252f2723d33))
+
 ## [1.0.5](https://github.com/ZeitOnline/notification/compare/v1.0.4...v1.0.5) (2026-03-27)
 
 
