@@ -1,6 +1,6 @@
 <div align="center">
 
-![logo-url](https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Die_Zeit-Logo-Bremen.svg/3840px-Die_Zeit-Logo-Bremen.svg.png)
+<img src="https://assets.codepen.io/t-1493/logo-meerkat.png" width="180" alt="" />
 
 # **Notification**
 
