@@ -1,3 +1,104 @@
-# Notification
+<div align="center">
 
-Here comes the readme text!
+![logo-url](https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Die_Zeit-Logo-Bremen.svg/3840px-Die_Zeit-Logo-Bremen.svg.png)
+
+# **Notification**
+
+Notifications keep you informed about results, warnings and errors.
+
+</div>
+
+## Installing the notification package
+
+Install the package together with the ZEIT ONLINE design system, because the notification styles use design-system variables:
+
+```sh
+npm install @zeitonline/notification @zeitonline/design-system
+# or
+yarn add @zeitonline/notification @zeitonline/design-system
+```
+
+## Recommendation
+
+A practical setup is to copy both CSS files from `node_modules` into your application styles directory and load them from there.
+
+```json
+{
+	"scripts": {
+		"copy:zds": "mkdir -p ./src/assets/css && cp node_modules/@zeitonline/design-system/design-system.css ./src/assets/css/design-system.css",
+		"copy:notification": "mkdir -p ./src/assets/css && cp node_modules/@zeitonline/notification/dist/notification.css ./src/assets/css/notification.css"
+	}
+}
+```
+
+Then include the styles in this order:
+
+```html
+<link rel="stylesheet" href="./src/assets/css/design-system.css" />
+<link rel="stylesheet" href="./src/assets/css/notification.css" />
+```
+
+## Usage
+
+```js
+import notification from '@zeitonline/notification';
+
+notification.show({
+	status: 'success',
+	message: 'Der Artikel wurde gespeichert.',
+	link: {
+		text: 'Merkliste öffnen',
+		href: 'https://www.zeit.de/konto/listen/merkliste',
+	},
+});
+
+const trigger = document.querySelector('[data-copy-link]');
+
+trigger?.addEventListener('click', () => {
+	notification.showInline({
+		element: trigger,
+		message: 'Link copied to clipboard.',
+	});
+});
+```
+
+If you use the `icon` option, the notification expects an SVG symbol in the page with the id pattern `svg-<name>`.
+
+```html
+<svg aria-hidden="true" style="display:none">
+	<symbol id="svg-bookmark" viewBox="0 0 18 18">
+		<path d="..." />
+	</symbol>
+</svg>
+```
+
+```js
+notification.show({
+	icon: 'bookmark',
+	message: 'Der Artikel wurde von der Merkliste entfernt.',
+	button: {
+		text: 'Rückgängig',
+		onClick: () => {
+			console.log('Undo');
+		},
+	},
+});
+```
+
+## What the package provides
+
+- Bottom notifications with `top` or `bottom` placement.
+- Status variants for `success`, `warning`, `info` and `error`.
+- Optional action button or link.
+- Inline notifications anchored to the element that triggered them.
+- Accessible live regions: bottom notifications use `role="alert"`, inline notifications use `role="status"`.
+- Auto-dismiss after 4 seconds, with pause and resume on pointer hover.
+- Stacking of up to 3 bottom notifications at the same time.
+
+## Updates
+
+Take a look at the [CHANGELOG.md](./CHANGELOG.md) to see what changed in the latest releases.
+
+## Contact
+
+If you want to give feedback about the package, write to [zon-frontend@zeit.de](mailto:zon-frontend@zeit.de).
