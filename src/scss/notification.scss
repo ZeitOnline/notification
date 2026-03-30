@@ -75,6 +75,18 @@
 		}
 	}
 
+	&--info {
+		background-color: var(--z-ds-color-text-100);
+	}
+
+	&--success {
+		background-color: var(--z-ds-color-background-success);
+	}
+
+	&--warning {
+		background-color: var(--z-ds-color-background-warning);
+	}
+
 	@keyframes slide-in-from-bottom {
 		0% {
 			opacity: 0;
