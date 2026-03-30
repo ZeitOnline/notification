@@ -159,13 +159,12 @@ export class Notification {
 		notification.setAttribute('role', 'alert');
 		notification.setAttribute('aria-live', 'assertive');
 
-		// prettier-ignore-start
+		// prettier-ignore
 		notification.innerHTML = this.getSvgIcon(icon) +
 			(message ? `<span class="z-notification__message">${message}</span>` : '') +
 			(link ? `<a href="${link.href}" class="z-notification__action-btn">${link.text}</a>` : '') +
 			(!link && button ? `<button class="z-notification__action-btn">${button.text}</button>` : '') +
 			this.getCloseButtonHTML();
-		// prettier-ignore-end
 
 		(this.container as HTMLElement).appendChild(notification);
 
