@@ -200,14 +200,15 @@ export class Notification {
 			<circle cx="12" cy="12" r="11.5"/>
 		</svg>`;
 		const modTimer = this.hasTimer ? ' z-notification__close-btn--timer' : '';
-		const timer = this.hasTimer ? TIMER_HTML : '';
-		return `<button class="z-notification__close-btn ${modTimer}" aria-label="Schließen">
-			${timer}
-			<svg class="z-notification__close-cross" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+		return (
+			`<button class="z-notification__close-btn ${modTimer}" aria-label="Schließen">` +
+			(this.hasTimer ? TIMER_HTML : '') +
+			`<svg class="z-notification__close-cross" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 				<path d="M15 15L3 3" stroke="currentColor" stroke-width="1.5"/>
 				<path d="M15 3L3 15" stroke="currentColor" stroke-width="1.5"/>
 			</svg>
-		</button>`;
+		</button>`
+		);
 	}
 
 	getSvgIcon(icon: string | undefined): string {
