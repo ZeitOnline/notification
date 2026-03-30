@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/ZeitOnline/notification/compare/notification-v1.1.2...notification-v1.1.3) (2026-03-30)
+
+
+### 🐛 Bug Fixes
+
+* update Node.js version in .nvmrc to 24 ([#28](https://github.com/ZeitOnline/notification/issues/28)) ([f7ffae8](https://github.com/ZeitOnline/notification/commit/f7ffae86eb226923ac569471d16ceef76ab7302e))
+
 ## [1.1.2](https://github.com/ZeitOnline/notification/compare/notification-v1.1.1...notification-v1.1.2) (2026-03-27)
 
 
