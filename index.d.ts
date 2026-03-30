@@ -15,6 +15,7 @@ export type BottomNotificationOptions = {
 	status?: 'error' | 'success' | 'warning' | 'info';
 	button?: ButtonOptions;
 	link?: LinkOptions;
+	timer?: boolean;
 };
 
 export type InlineNotificationOptions = {
