@@ -15,17 +15,6 @@ import type {
 	NotificationService,
 } from '../index';
 
-const CLOSE_BUTTON_HTML = `
-	<button class="z-notification__close-btn" aria-label="Schließen">
-		<svg class="z-notification__close-ring" viewBox="0 0 24 24" aria-hidden="true">
-			<circle cx="12" cy="12" r="11.5"/>
-		</svg>
-		<svg class="z-notification__close-cross" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-			<path d="M15 15L3 3" stroke="currentColor" stroke-width="1.5"/>
-			<path d="M15 3L3 15" stroke="currentColor" stroke-width="1.5"/>
-		</svg>
-	</button>`;
-
 // Notifications manage ui elements and keep you informed about results, warnings and errors.
 // This includes deciding which type of notification to show (e.g., inline or bottom).
 export class Notification {
@@ -34,6 +23,7 @@ export class Notification {
 	maxNotifications!: number;
 	container!: HTMLDialogElement | HTMLDivElement | null;
 	notificationTimeout!: number;
+	hasTimer!: boolean;
 
 	constructor() {
 		if (Notification.instance) {
@@ -52,8 +42,10 @@ export class Notification {
 		status,
 		button,
 		link,
+		timer = false,
 	}: BottomNotificationOptions): void {
 		this.container = this.createContainer(position);
+		this.hasTimer = timer;
 
 		let notification = this.createNotification({ icon, message, status, button, link });
 		this.notifications.push(notification);
@@ -172,7 +164,7 @@ export class Notification {
 			(message ? `<span class="z-notification__message">${message}</span>` : '') +
 			(link ? `<a href="${link.href}" class="z-notification__action-btn">${link.text}</a>` : '') +
 			(!link && button ? `<button class="z-notification__action-btn">${button.text}</button>` : '') +
-			CLOSE_BUTTON_HTML;
+			this.getCloseButtonHTML();
 		// prettier-ignore-end
 
 		(this.container as HTMLElement).appendChild(notification);
@@ -201,6 +193,20 @@ export class Notification {
 		this.addPauseResumeEvents(notification);
 
 		return notification;
+	}
+
+	getCloseButtonHTML(): string {
+		const TIMER_HTML = `<svg class="z-notification__close-ring" viewBox="0 0 24 24" aria-hidden="true">
+			<circle cx="12" cy="12" r="11.5"/>
+		</svg>`;
+		const timer = this.hasTimer ? TIMER_HTML : '';
+		return `<button class="z-notification__close-btn" aria-label="Schließen">
+			${timer}
+			<svg class="z-notification__close-cross" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+				<path d="M15 15L3 3" stroke="currentColor" stroke-width="1.5"/>
+				<path d="M15 3L3 15" stroke="currentColor" stroke-width="1.5"/>
+			</svg>
+		</button>`;
 	}
 
 	getSvgIcon(icon: string | undefined): string {
@@ -234,6 +240,7 @@ export class Notification {
 	}
 
 	startTimeout(notification: HTMLElement, duration = this.notificationTimeout): void {
+		if (!this.hasTimer) return;
 		const notif = notification as NotificationElement;
 		notif.startedAt = Date.now();
 		notif.timeoutID = setTimeout(() => {
@@ -311,8 +318,16 @@ const notification: NotificationService = {
 	showInline({ message, element }: InlineNotificationOptions): Promise<void> {
 		return this.notification.showInline({ message, element });
 	},
-	show({ position, icon, message, status, button, link }: BottomNotificationOptions): void {
-		this.notification.show({ position, icon, message, status, button, link });
+	show({
+		position,
+		icon,
+		message,
+		status,
+		button,
+		link,
+		timer,
+	}: BottomNotificationOptions): void {
+		this.notification.show({ position, icon, message, status, button, link, timer });
 	},
 	debug(): void {
 		this.notification.debug();
