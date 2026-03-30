@@ -145,6 +145,7 @@
 					<p>Status:</p>
 					<div class="button-group">
 						<button type="button" class="button" data-action="info">Info</button>
+						<button type="button" class="button" data-action="info-without-timer">Info without Timer</button>
 						<button type="button" class="button" data-action="error">Error</button>
 						<button type="button" class="button" data-action="error-with-callback">Error with CallBack</button>
 					</div>
@@ -182,7 +183,8 @@
 								link: {
 									text: "Merkliste öffnen",
 									href: "https://www.zeit.de/konto/listen/merkliste",
-								}
+								},
+								timer: true,
 							});
 							break;
 						case 'remove-bookmark':
@@ -192,7 +194,8 @@
 								button: {
 									text: "Rückgängig",
 									onClick: () => callBack('Retry triggered from the notification action.'),
-								}
+								},
+								timer: true,
 							});
 							break;
 						case 'link':
@@ -202,7 +205,8 @@
 								link: {
 									text: "Open docs",
 									href: "https://github.com/ZeitOnline/notification",
-								}
+								},
+								timer: true,
 							});
 							break;
 
@@ -210,13 +214,21 @@
 
 						case 'info':
 							notification.show({
-								message: 'Profile saved successfully.'
+								message: 'Profile saved successfully.',
+								timer: true,
+							});
+							break;
+						case 'info-without-timer':
+							notification.show({
+								icon: "bookmark",
+								message: 'Bookmark saved successfully.'
 							});
 							break;
 						case 'error':
 							notification.show({
 								status: "error",
-								message: "Connection is unstable. Changes may sync later."
+								message: "Connection is unstable. Changes may sync later.",
+								timer: true,
 							});
 							break;
 						case 'error-with-callback':
@@ -227,7 +239,8 @@
 								button: {
 									text: "Retry",
 									onClick: () => callBack('Retry triggered from the notification action.'),
-								}
+								},
+								timer: true,
 							});
 							break;
 
