@@ -68,6 +68,7 @@ describe('notification accessibility behavior', () => {
 				text: 'Retry',
 				onClick: vi.fn(),
 			},
+			timer: true,
 		});
 
 		const user = userEvent.setup({
@@ -95,6 +96,7 @@ describe('notification accessibility behavior', () => {
 				text: 'Open docs',
 				href: 'https://example.com/docs',
 			},
+			timer: true,
 		});
 
 		const user = userEvent.setup({
@@ -178,6 +180,7 @@ describe('notification accessibility behavior', () => {
 		notification.show({
 			message: 'Publishing failed. Check the form and try again.',
 			status: 'error',
+			timer: true,
 		});
 
 		expect(screen.getByRole('alert')).not.toBeNull();
@@ -191,6 +194,7 @@ describe('notification accessibility behavior', () => {
 		notification.show({
 			message: 'Publishing failed. Check the form and try again.',
 			status: 'error',
+			timer: true,
 		});
 
 		const alert = screen.getByRole('alert');
@@ -222,6 +226,7 @@ describe('notification accessibility behavior', () => {
 				text: 'Retry',
 				onClick,
 			},
+			timer: true,
 		});
 
 		await user.click(screen.getByRole('button', { name: 'Retry' }));
@@ -242,6 +247,7 @@ describe('notification accessibility behavior', () => {
 				text: 'Open docs',
 				href: 'https://example.com/docs',
 			},
+			timer: true,
 		});
 
 		await user.click(screen.getByRole('button', { name: 'Schließen' }));
@@ -250,10 +256,10 @@ describe('notification accessibility behavior', () => {
 	});
 
 	it('keeps only the most recent maxNotifications bottom notifications', async () => {
-		notification.show({ message: 'First notification', status: 'info' });
-		notification.show({ message: 'Second notification', status: 'info' });
-		notification.show({ message: 'Third notification', status: 'info' });
-		notification.show({ message: 'Fourth notification', status: 'info' });
+		notification.show({ message: 'First notification', status: 'info', timer: true });
+		notification.show({ message: 'Second notification', status: 'info', timer: true });
+		notification.show({ message: 'Third notification', status: 'info', timer: true });
+		notification.show({ message: 'Fourth notification', status: 'info', timer: true });
 
 		expect(screen.queryAllByRole('alert')).toHaveLength(3);
 		expect(screen.queryByText('First notification')).toBeNull();
@@ -273,6 +279,7 @@ describe('notification accessibility behavior', () => {
 			icon: 'info',
 			message: 'Heads up.',
 			status: 'info',
+			timer: true,
 		});
 
 		const container = document.querySelector('.z-notification');
@@ -286,8 +293,28 @@ describe('notification accessibility behavior', () => {
 		notification.show({
 			message: 'This is an error notification.',
 			status: 'error',
+			timer: true,
 		});
 		const container = document.querySelector('.z-notification__item');
 		expect(container?.className).toContain('z-notification__item--error');
+	});
+
+	it('renders notification with timer', async () => {
+		notification.show({
+			message: 'This is an error notification with timer.',
+			status: 'error',
+			timer: true,
+		});
+		const closeButton = document.querySelector('.z-notification__close-btn');
+		expect(closeButton?.className).toContain('z-notification__close-btn--timer');
+	});
+
+	it('renders notification without timer being visible permanently', async () => {
+		notification.show({
+			message: 'This is an error notification without timer.',
+			status: 'error',
+		});
+		const closeButton = document.querySelector('.z-notification__close-btn');
+		expect(closeButton?.className).not.toContain('z-notification__close-btn--timer');
 	});
 });
