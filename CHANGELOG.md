@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0](https://github.com/ZeitOnline/notification/compare/notification-v1.1.3...notification-v1.2.0) (2026-03-31)
+
+
+### 🚀 Features
+
+* make timer for closing notification automagically optional ([#30](https://github.com/ZeitOnline/notification/issues/30)) ([d24957f](https://github.com/ZeitOnline/notification/commit/d24957faf8a0cf193cf54e9226a236d36a6e9bae))
+* make timer for closing notification automagically optional ([#30](https://github.com/ZeitOnline/notification/issues/30)) ([20a04ea](https://github.com/ZeitOnline/notification/commit/20a04eaee9b86063f6f2e49246237f9b7aa46eef))
+
+
+### 📝 Other Changes
+
+* update README with instructions and other details ([#31](https://github.com/ZeitOnline/notification/issues/31)) ([cac2539](https://github.com/ZeitOnline/notification/commit/cac25394f2c82c48391ee94b03bb3eef38ab19bd))
+
 ## [1.1.3](https://github.com/ZeitOnline/notification/compare/notification-v1.1.2...notification-v1.1.3) (2026-03-30)
 
 
