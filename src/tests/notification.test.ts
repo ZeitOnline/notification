@@ -68,7 +68,6 @@ describe('notification accessibility behavior', () => {
 				text: 'Retry',
 				onClick: vi.fn(),
 			},
-			timer: true,
 		});
 
 		const user = userEvent.setup({
@@ -96,7 +95,6 @@ describe('notification accessibility behavior', () => {
 				text: 'Open docs',
 				href: 'https://example.com/docs',
 			},
-			timer: true,
 		});
 
 		const user = userEvent.setup({
@@ -226,7 +224,6 @@ describe('notification accessibility behavior', () => {
 				text: 'Retry',
 				onClick,
 			},
-			hasTimer: true,
 		});
 
 		await user.click(screen.getByRole('button', { name: 'Retry' }));
@@ -247,7 +244,6 @@ describe('notification accessibility behavior', () => {
 				text: 'Open docs',
 				href: 'https://example.com/docs',
 			},
-			hasTimer: true,
 		});
 
 		await user.click(screen.getByRole('button', { name: 'Schließen' }));
@@ -256,10 +252,10 @@ describe('notification accessibility behavior', () => {
 	});
 
 	it('keeps only the most recent maxNotifications bottom notifications', async () => {
-		notification.show({ message: 'First notification', status: 'info', hasTimer: true });
-		notification.show({ message: 'Second notification', status: 'info', hasTimer: true });
-		notification.show({ message: 'Third notification', status: 'info', hasTimer: true });
-		notification.show({ message: 'Fourth notification', status: 'info', hasTimer: true });
+		notification.show({ message: 'First notification', status: 'info' });
+		notification.show({ message: 'Second notification', status: 'info' });
+		notification.show({ message: 'Third notification', status: 'info' });
+		notification.show({ message: 'Fourth notification', status: 'info' });
 
 		expect(screen.queryAllByRole('alert')).toHaveLength(3);
 		expect(screen.queryByText('First notification')).toBeNull();
@@ -279,7 +275,6 @@ describe('notification accessibility behavior', () => {
 			icon: 'info',
 			message: 'Heads up.',
 			status: 'info',
-			hasTimer: true,
 		});
 
 		const container = document.querySelector('.z-notification');
@@ -293,7 +288,6 @@ describe('notification accessibility behavior', () => {
 		notification.show({
 			message: 'This is an error notification.',
 			status: 'error',
-			hasTimer: true,
 		});
 		const container = document.querySelector('.z-notification__item');
 		expect(container?.className).toContain('z-notification__item--error');
