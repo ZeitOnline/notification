@@ -61,7 +61,7 @@ export class Notification {
 
 		(this.container as HTMLDialogElement).show();
 
-		this.startTimeout(notification);
+		this.startTimeout(notification as NotificationElement);
 	}
 
 	/**
