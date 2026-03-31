@@ -8,7 +8,7 @@
  */
 
 import type {
-	BottomNotificationOptions,
+	NotificationOptions,
 	InlineNotificationOptions,
 	InlineNotification,
 	NotificationElement,
@@ -43,7 +43,7 @@ export class Notification {
 		button,
 		link,
 		timer = false,
-	}: BottomNotificationOptions): void {
+	}: NotificationOptions): void {
 		this.container = this.createContainer(position);
 		this.hasTimer = timer;
 
@@ -152,7 +152,7 @@ export class Notification {
 		status = 'info',
 		button,
 		link,
-	}: BottomNotificationOptions): HTMLElement {
+	}: NotificationOptions): HTMLElement {
 		const notification = document.createElement('div') as unknown as NotificationElement;
 		const modStatus = `z-notification__item--${status}`;
 		notification.className = `z-notification__item ${modStatus}`;
@@ -327,8 +327,8 @@ const notification: NotificationService = {
 		button,
 		link,
 		timer,
-	}: BottomNotificationOptions): void {
 		this.notification.show({ position, icon, message, status, button, link, timer });
+	}: NotificationOptions): void {
 	},
 	debug(): void {
 		this.notification.debug();
