@@ -307,6 +307,7 @@ describe('notification accessibility behavior', () => {
 		notification.show({
 			message: 'This is an error notification without timer.',
 			status: 'error',
+			hasTimer: false,
 		});
 		const closeButton = document.querySelector('.z-notification__close-btn');
 		expect(closeButton?.className).not.toContain('z-notification__close-btn--timer');
