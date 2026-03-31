@@ -15,7 +15,7 @@ export type NotificationOptions = {
 	status?: 'error' | 'success' | 'warning' | 'info';
 	button?: ButtonOptions;
 	link?: LinkOptions;
-	timer?: boolean;
+	hasTimer?: boolean;
 };
 
 export type InlineNotificationOptions = {
@@ -28,6 +28,7 @@ export type InlineNotification = {
 };
 
 export interface NotificationElement extends HTMLElement {
+	hasTimer: boolean;
 	isPaused: boolean;
 	timeoutID: number;
 	elapsed: number;

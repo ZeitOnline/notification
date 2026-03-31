@@ -184,7 +184,7 @@
 									text: "Merkliste öffnen",
 									href: "https://www.zeit.de/konto/listen/merkliste",
 								},
-								timer: true,
+								hasTimer: true,
 							});
 							break;
 						case 'remove-bookmark':
@@ -195,7 +195,7 @@
 									text: "Rückgängig",
 									onClick: () => callBack('Retry triggered from the notification action.'),
 								},
-								timer: true,
+								hasTimer: true,
 							});
 							break;
 						case 'link':
@@ -206,7 +206,7 @@
 									text: "Open docs",
 									href: "https://github.com/ZeitOnline/notification",
 								},
-								timer: true,
+								hasTimer: true,
 							});
 							break;
 
@@ -215,7 +215,7 @@
 						case 'info':
 							notification.show({
 								message: 'Profile saved successfully.',
-								timer: true,
+								hasTimer: true,
 							});
 							break;
 						case 'info-without-timer':
@@ -228,7 +228,7 @@
 							notification.show({
 								status: "error",
 								message: "Connection is unstable. Changes may sync later.",
-								timer: true,
+								hasTimer: true,
 							});
 							break;
 						case 'error-with-callback':
@@ -240,7 +240,7 @@
 									text: "Retry",
 									onClick: () => callBack('Retry triggered from the notification action.'),
 								},
-								timer: true,
+								hasTimer: true,
 							});
 							break;
 

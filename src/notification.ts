@@ -42,12 +42,18 @@ export class Notification {
 		status,
 		button,
 		link,
-		timer = false,
+		hasTimer,
 	}: NotificationOptions): void {
 		this.container = this.createContainer(position);
-		this.hasTimer = timer;
 
-		let notification = this.createNotification({ icon, message, status, button, link });
+		let notification = this.createNotification({
+			icon,
+			message,
+			status,
+			button,
+			link,
+			hasTimer,
+		});
 		this.notifications.push(notification);
 
 		if (this.notifications.length > this.maxNotifications) {
@@ -152,6 +158,7 @@ export class Notification {
 		status = 'info',
 		button,
 		link,
+		hasTimer,
 	}: NotificationOptions): HTMLElement {
 		const notification = document.createElement('div') as unknown as NotificationElement;
 		const modStatus = `z-notification__item--${status}`;
@@ -189,6 +196,7 @@ export class Notification {
 
 		notification.elapsed = 0;
 		notification.isPaused = false;
+		notification.hasTimer = !!hasTimer;
 		this.addPauseResumeEvents(notification);
 
 		return notification;
@@ -240,41 +248,40 @@ export class Notification {
 		}
 	}
 
-	startTimeout(notification: HTMLElement, duration = this.notificationTimeout): void {
-		if (!this.hasTimer) return;
-		const notif = notification as NotificationElement;
-		notif.startedAt = Date.now();
-		notif.timeoutID = setTimeout(() => {
-			if (!notif.isPaused) {
+	startTimeout(notification: NotificationElement, duration = this.notificationTimeout): void {
+		if (!notification.hasTimer) return;
+		notification.startedAt = Date.now();
+		notification.timeoutID = setTimeout(() => {
+			if (!notification.isPaused) {
 				this.removeNotification(notification);
 			}
 		}, duration);
 	}
 
-	addPauseResumeEvents(notification: HTMLElement): void {
-		const notif = notification as NotificationElement;
+	addPauseResumeEvents(notification: NotificationElement): void {
+		if (!notification.hasTimer) return;
 		const ring = notification.querySelector(
 			'.z-notification__close-ring circle',
 		) as SVGCircleElement | null;
 
 		const pause = () => {
-			notif.isPaused = true;
-			notif.elapsed += Date.now() - notif.startedAt;
-			clearTimeout(notif.timeoutID);
+			notification.isPaused = true;
+			notification.elapsed += Date.now() - notification.startedAt;
+			clearTimeout(notification.timeoutID);
 			if (ring) {
 				ring.style.animationPlayState = 'paused';
 			}
 		};
 
 		const resume = () => {
-			notif.isPaused = false;
-			notif.startedAt = Date.now();
-			const remaining = this.notificationTimeout - notif.elapsed;
+			notification.isPaused = false;
+			notification.startedAt = Date.now();
+			const remaining = this.notificationTimeout - notification.elapsed;
 			if (remaining <= 0) {
-				this.removeNotification(notif);
+				this.removeNotification(notification);
 				return;
 			}
-			this.startTimeout(notif, remaining);
+			this.startTimeout(notification, remaining);
 			if (ring) {
 				ring.style.animationPlayState = 'running';
 			}
@@ -319,16 +326,8 @@ const notification: NotificationService = {
 	showInline({ message, element }: InlineNotificationOptions): Promise<void> {
 		return this.notification.showInline({ message, element });
 	},
-	show({
-		position,
-		icon,
-		message,
-		status,
-		button,
-		link,
-		timer,
-		this.notification.show({ position, icon, message, status, button, link, timer });
-	}: NotificationOptions): void {
+	show({ position, icon, message, status, button, link, hasTimer }: NotificationOptions): void {
+		this.notification.show({ position, icon, message, status, button, link, hasTimer });
 	},
 	debug(): void {
 		this.notification.debug();
