@@ -160,7 +160,7 @@
 		}
 	}
 
-	&::before {
+	&--timer::before {
 		border: 1px solid currentColor;
 		border-radius: 50%;
 		content: "";

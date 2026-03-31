@@ -178,6 +178,7 @@ describe('notification accessibility behavior', () => {
 		notification.show({
 			message: 'Publishing failed. Check the form and try again.',
 			status: 'error',
+			hasTimer: true,
 		});
 
 		expect(screen.getByRole('alert')).not.toBeNull();
@@ -191,6 +192,7 @@ describe('notification accessibility behavior', () => {
 		notification.show({
 			message: 'Publishing failed. Check the form and try again.',
 			status: 'error',
+			hasTimer: true,
 		});
 
 		const alert = screen.getByRole('alert');
@@ -289,5 +291,25 @@ describe('notification accessibility behavior', () => {
 		});
 		const container = document.querySelector('.z-notification__item');
 		expect(container?.className).toContain('z-notification__item--error');
+	});
+
+	it('renders notification with timer', async () => {
+		notification.show({
+			message: 'This is an error notification with timer.',
+			status: 'error',
+			hasTimer: true,
+		});
+		const closeButton = document.querySelector('.z-notification__close-btn');
+		expect(closeButton?.className).toContain('z-notification__close-btn--timer');
+	});
+
+	it('renders notification without timer being visible permanently', async () => {
+		notification.show({
+			message: 'This is an error notification without timer.',
+			status: 'error',
+			hasTimer: false,
+		});
+		const closeButton = document.querySelector('.z-notification__close-btn');
+		expect(closeButton?.className).not.toContain('z-notification__close-btn--timer');
 	});
 });

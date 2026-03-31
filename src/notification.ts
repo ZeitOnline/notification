@@ -8,23 +8,12 @@
  */
 
 import type {
-	BottomNotificationOptions,
+	NotificationOptions,
 	InlineNotificationOptions,
 	InlineNotification,
 	NotificationElement,
 	NotificationService,
 } from '../index';
-
-const CLOSE_BUTTON_HTML = `
-	<button class="z-notification__close-btn" aria-label="Schließen">
-		<svg class="z-notification__close-ring" viewBox="0 0 24 24" aria-hidden="true">
-			<circle cx="12" cy="12" r="11.5"/>
-		</svg>
-		<svg class="z-notification__close-cross" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-			<path d="M15 15L3 3" stroke="currentColor" stroke-width="1.5"/>
-			<path d="M15 3L3 15" stroke="currentColor" stroke-width="1.5"/>
-		</svg>
-	</button>`;
 
 // Notifications manage ui elements and keep you informed about results, warnings and errors.
 // This includes deciding which type of notification to show (e.g., inline or bottom).
@@ -52,10 +41,18 @@ export class Notification {
 		status,
 		button,
 		link,
-	}: BottomNotificationOptions): void {
+		hasTimer,
+	}: NotificationOptions): void {
 		this.container = this.createContainer(position);
 
-		let notification = this.createNotification({ icon, message, status, button, link });
+		let notification = this.createNotification({
+			icon,
+			message,
+			status,
+			button,
+			link,
+			hasTimer,
+		});
 		this.notifications.push(notification);
 
 		if (this.notifications.length > this.maxNotifications) {
@@ -64,7 +61,7 @@ export class Notification {
 
 		(this.container as HTMLDialogElement).show();
 
-		this.startTimeout(notification);
+		this.startTimeout(notification as NotificationElement);
 	}
 
 	/**
@@ -160,20 +157,20 @@ export class Notification {
 		status = 'info',
 		button,
 		link,
-	}: BottomNotificationOptions): HTMLElement {
+		hasTimer,
+	}: NotificationOptions): HTMLElement {
 		const notification = document.createElement('div') as unknown as NotificationElement;
 		const modStatus = `z-notification__item--${status}`;
 		notification.className = `z-notification__item ${modStatus}`;
 		notification.setAttribute('role', 'alert');
 		notification.setAttribute('aria-live', 'assertive');
 
-		// prettier-ignore-start
+		// prettier-ignore
 		notification.innerHTML = this.getSvgIcon(icon) +
 			(message ? `<span class="z-notification__message">${message}</span>` : '') +
 			(link ? `<a href="${link.href}" class="z-notification__action-btn">${link.text}</a>` : '') +
 			(!link && button ? `<button class="z-notification__action-btn">${button.text}</button>` : '') +
-			CLOSE_BUTTON_HTML;
-		// prettier-ignore-end
+			this.getCloseButtonHTML(!!hasTimer);
 
 		(this.container as HTMLElement).appendChild(notification);
 
@@ -198,9 +195,26 @@ export class Notification {
 
 		notification.elapsed = 0;
 		notification.isPaused = false;
+		notification.hasTimer = !!hasTimer;
 		this.addPauseResumeEvents(notification);
 
 		return notification;
+	}
+
+	getCloseButtonHTML(hasTimer: boolean): string {
+		const modTimer = hasTimer ? ' z-notification__close-btn--timer' : '';
+		const TIMER_HTML = `<svg class="z-notification__close-ring" viewBox="0 0 24 24" aria-hidden="true">
+			<circle cx="12" cy="12" r="11.5"/>
+		</svg>`;
+		return (
+			`<button class="z-notification__close-btn${modTimer}" aria-label="Schließen">` +
+			(hasTimer ? TIMER_HTML : '') +
+			`<svg class="z-notification__close-cross" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+				<path d="M15 15L3 3" stroke="currentColor" stroke-width="1.5"/>
+				<path d="M15 3L3 15" stroke="currentColor" stroke-width="1.5"/>
+			</svg>
+		</button>`
+		);
 	}
 
 	getSvgIcon(icon: string | undefined): string {
@@ -233,40 +247,40 @@ export class Notification {
 		}
 	}
 
-	startTimeout(notification: HTMLElement, duration = this.notificationTimeout): void {
-		const notif = notification as NotificationElement;
-		notif.startedAt = Date.now();
-		notif.timeoutID = setTimeout(() => {
-			if (!notif.isPaused) {
+	startTimeout(notification: NotificationElement, duration = this.notificationTimeout): void {
+		if (!notification.hasTimer) return;
+		notification.startedAt = Date.now();
+		notification.timeoutID = setTimeout(() => {
+			if (!notification.isPaused) {
 				this.removeNotification(notification);
 			}
 		}, duration);
 	}
 
-	addPauseResumeEvents(notification: HTMLElement): void {
-		const notif = notification as NotificationElement;
+	addPauseResumeEvents(notification: NotificationElement): void {
+		if (!notification.hasTimer) return;
 		const ring = notification.querySelector(
 			'.z-notification__close-ring circle',
 		) as SVGCircleElement | null;
 
 		const pause = () => {
-			notif.isPaused = true;
-			notif.elapsed += Date.now() - notif.startedAt;
-			clearTimeout(notif.timeoutID);
+			notification.isPaused = true;
+			notification.elapsed += Date.now() - notification.startedAt;
+			clearTimeout(notification.timeoutID);
 			if (ring) {
 				ring.style.animationPlayState = 'paused';
 			}
 		};
 
 		const resume = () => {
-			notif.isPaused = false;
-			notif.startedAt = Date.now();
-			const remaining = this.notificationTimeout - notif.elapsed;
+			notification.isPaused = false;
+			notification.startedAt = Date.now();
+			const remaining = this.notificationTimeout - notification.elapsed;
 			if (remaining <= 0) {
-				this.removeNotification(notif);
+				this.removeNotification(notification);
 				return;
 			}
-			this.startTimeout(notif, remaining);
+			this.startTimeout(notification, remaining);
 			if (ring) {
 				ring.style.animationPlayState = 'running';
 			}
@@ -311,8 +325,8 @@ const notification: NotificationService = {
 	showInline({ message, element }: InlineNotificationOptions): Promise<void> {
 		return this.notification.showInline({ message, element });
 	},
-	show({ position, icon, message, status, button, link }: BottomNotificationOptions): void {
-		this.notification.show({ position, icon, message, status, button, link });
+	show({ position, icon, message, status, button, link, hasTimer }: NotificationOptions): void {
+		this.notification.show({ position, icon, message, status, button, link, hasTimer });
 	},
 	debug(): void {
 		this.notification.debug();

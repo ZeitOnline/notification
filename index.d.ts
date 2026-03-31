@@ -8,13 +8,14 @@ export type LinkOptions = {
 	href: string;
 };
 
-export type BottomNotificationOptions = {
+export type NotificationOptions = {
 	position?: 'top' | 'bottom';
 	icon?: string;
 	message: string;
 	status?: 'error' | 'success' | 'warning' | 'info';
 	button?: ButtonOptions;
 	link?: LinkOptions;
+	hasTimer?: boolean;
 };
 
 export type InlineNotificationOptions = {
@@ -27,6 +28,7 @@ export type InlineNotification = {
 };
 
 export interface NotificationElement extends HTMLElement {
+	hasTimer: boolean;
 	isPaused: boolean;
 	timeoutID: number;
 	elapsed: number;
@@ -36,7 +38,7 @@ export interface NotificationElement extends HTMLElement {
 export type NotificationService = {
 	notification: InstanceType<typeof import('./src/notification').Notification>;
 	showInline(options: InlineNotificationOptions): Promise<void>;
-	show(options: BottomNotificationOptions): void;
+	show(options: NotificationOptions): void;
 	debug(): void;
 };
 

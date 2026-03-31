@@ -92,7 +92,7 @@ notification.show({
 - Optional action button or link.
 - Inline notifications anchored to the element that triggered them.
 - Accessible live regions: bottom notifications use `role="alert"`, inline notifications use `role="status"`.
-- Auto-dismiss after 4 seconds, with pause and resume on pointer hover.
+- Auto-dismiss after 4 seconds, with pause and resume on pointer hover, when timer property is set to true.
 - Stacking of up to 3 bottom notifications at the same time.
 
 ## Updates
