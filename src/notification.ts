@@ -207,7 +207,7 @@ export class Notification {
 			<circle cx="12" cy="12" r="11.5"/>
 		</svg>`;
 		return (
-			`<button class="z-notification__close-btn ${modTimer}" aria-label="Schließen">` +
+			`<button class="z-notification__close-btn${modTimer}" aria-label="Schließen">` +
 			(hasTimer ? TIMER_HTML : '') +
 			`<svg class="z-notification__close-cross" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 				<path d="M15 15L3 3" stroke="currentColor" stroke-width="1.5"/>
