@@ -23,7 +23,6 @@ export class Notification {
 	maxNotifications!: number;
 	container!: HTMLDialogElement | HTMLDivElement | null;
 	notificationTimeout!: number;
-	hasTimer!: boolean;
 
 	constructor() {
 		if (Notification.instance) {
@@ -171,7 +170,7 @@ export class Notification {
 			(message ? `<span class="z-notification__message">${message}</span>` : '') +
 			(link ? `<a href="${link.href}" class="z-notification__action-btn">${link.text}</a>` : '') +
 			(!link && button ? `<button class="z-notification__action-btn">${button.text}</button>` : '') +
-			this.getCloseButtonHTML();
+			this.getCloseButtonHTML(!!hasTimer);
 
 		(this.container as HTMLElement).appendChild(notification);
 
@@ -202,14 +201,14 @@ export class Notification {
 		return notification;
 	}
 
-	getCloseButtonHTML(): string {
+	getCloseButtonHTML(hasTimer: boolean): string {
+		const modTimer = hasTimer ? ' z-notification__close-btn--timer' : '';
 		const TIMER_HTML = `<svg class="z-notification__close-ring" viewBox="0 0 24 24" aria-hidden="true">
 			<circle cx="12" cy="12" r="11.5"/>
 		</svg>`;
-		const modTimer = this.hasTimer ? ' z-notification__close-btn--timer' : '';
 		return (
 			`<button class="z-notification__close-btn ${modTimer}" aria-label="Schließen">` +
-			(this.hasTimer ? TIMER_HTML : '') +
+			(hasTimer ? TIMER_HTML : '') +
 			`<svg class="z-notification__close-cross" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 				<path d="M15 15L3 3" stroke="currentColor" stroke-width="1.5"/>
 				<path d="M15 3L3 15" stroke="currentColor" stroke-width="1.5"/>
