@@ -151,6 +151,20 @@ export class Notification {
 		return container;
 	}
 
+	/**
+	 * Creates a div element with NotificationElement properties initialized.
+	 * This allows us to attach custom properties (elapsed, isPaused, etc.) to the element.
+	 */
+	createNotificationElement(): NotificationElement {
+		const el = document.createElement('div') as HTMLDivElement & NotificationElement;
+		el.hasTimer = false;
+		el.isPaused = false;
+		el.timeoutID = 0;
+		el.elapsed = 0;
+		el.startedAt = 0;
+		return el;
+	}
+
 	createNotification({
 		icon,
 		message,
@@ -158,8 +172,8 @@ export class Notification {
 		button,
 		link,
 		hasTimer,
-	}: NotificationOptions): HTMLElement {
-		const notification = document.createElement('div') as unknown as NotificationElement;
+	}: NotificationOptions): NotificationElement {
+		const notification = this.createNotificationElement();
 		const modStatus = `z-notification__item--${status}`;
 		notification.className = `z-notification__item ${modStatus}`;
 		notification.setAttribute('role', 'alert');
@@ -193,10 +207,10 @@ export class Notification {
 			closeButton.onclick = () => this.removeNotification(notification);
 		}
 
-		notification.elapsed = 0;
-		notification.isPaused = false;
-		notification.hasTimer = !!hasTimer;
-		this.addPauseResumeEvents(notification);
+		if (!!hasTimer) {
+			notification.hasTimer = true;
+			this.addPauseResumeEvents(notification);
+		}
 
 		return notification;
 	}
