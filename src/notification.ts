@@ -19,7 +19,7 @@ import type {
 // This includes deciding which type of notification to show (e.g., inline or bottom).
 export class Notification {
 	static instance: Notification | undefined;
-	notifications!: HTMLElement[];
+	notifications!: NotificationElement[];
 	maxNotifications!: number;
 	container!: HTMLDialogElement | HTMLDivElement | null;
 	notificationTimeout!: number;
@@ -55,6 +55,16 @@ export class Notification {
 			link,
 			hasTimer,
 		});
+
+		if (this.notifications.length > 0 && type) {
+			this.notifications = this.notifications.filter(item => {
+				if (item.type === type) {
+					this.removeNotification(item);
+					return false;
+				}
+				return true;
+			});
+		}
 		this.notifications.push(notification);
 
 		if (this.notifications.length > this.maxNotifications) {

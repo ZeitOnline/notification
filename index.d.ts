@@ -9,6 +9,7 @@ export type LinkOptions = {
 };
 
 export type NotificationOptions = {
+	type?: string;
 	position?: 'top' | 'bottom';
 	icon?: string;
 	message: string;
@@ -28,6 +29,7 @@ export type InlineNotification = {
 };
 
 export interface NotificationElement extends HTMLElement {
+	type: string | null;
 	hasTimer: boolean;
 	isPaused: boolean;
 	timeoutID: number;
