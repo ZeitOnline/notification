@@ -35,6 +35,7 @@ export class Notification {
 		this.notificationTimeout = 4000;
 	}
 	show({
+		type,
 		position = 'bottom',
 		icon,
 		message,
@@ -46,6 +47,7 @@ export class Notification {
 		this.container = this.createContainer(position);
 
 		let notification = this.createNotification({
+			type,
 			icon,
 			message,
 			status,
@@ -159,6 +161,7 @@ export class Notification {
 	 */
 	createNotificationElement(): NotificationElement {
 		const el = document.createElement('div') as HTMLDivElement & NotificationElement;
+		el.type = null;
 		el.hasTimer = false;
 		el.isPaused = false;
 		el.timeoutID = 0;
@@ -168,6 +171,7 @@ export class Notification {
 	}
 
 	createNotification({
+		type,
 		icon,
 		message,
 		status = 'info',
@@ -207,6 +211,10 @@ export class Notification {
 				`${this.notificationTimeout}ms`,
 			);
 			closeButton.onclick = () => this.removeNotification(notification);
+		}
+
+		if (type) {
+			notification.type = type;
 		}
 
 		if (!!hasTimer) {
@@ -339,8 +347,17 @@ const notification: NotificationService = {
 	showInline({ message, element }: InlineNotificationOptions): Promise<void> {
 		return this.notification.showInline({ message, element });
 	},
-	show({ position, icon, message, status, button, link, hasTimer }: NotificationOptions): void {
-		this.notification.show({ position, icon, message, status, button, link, hasTimer });
+	show({
+		type,
+		position,
+		icon,
+		message,
+		status,
+		button,
+		link,
+		hasTimer,
+	}: NotificationOptions): void {
+		this.notification.show({ type, position, icon, message, status, button, link, hasTimer });
 	},
 	debug(): void {
 		this.notification.debug();
