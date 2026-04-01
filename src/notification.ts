@@ -61,7 +61,9 @@ export class Notification {
 
 		(this.container as HTMLDialogElement).show();
 
-		this.startTimeout(notification as NotificationElement);
+		if (notification.hasTimer) {
+			this.startTimeout(notification as NotificationElement);
+		}
 	}
 
 	/**
@@ -262,7 +264,6 @@ export class Notification {
 	}
 
 	startTimeout(notification: NotificationElement, duration = this.notificationTimeout): void {
-		if (!notification.hasTimer) return;
 		notification.startedAt = Date.now();
 		notification.timeoutID = setTimeout(() => {
 			if (!notification.isPaused) {
@@ -272,7 +273,6 @@ export class Notification {
 	}
 
 	addPauseResumeEvents(notification: NotificationElement): void {
-		if (!notification.hasTimer) return;
 		const ring = notification.querySelector(
 			'.z-notification__close-ring circle',
 		) as SVGCircleElement | null;
