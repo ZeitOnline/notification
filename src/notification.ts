@@ -19,7 +19,7 @@ import type {
 // This includes deciding which type of notification to show (e.g., inline or bottom).
 export class Notification {
 	static instance: Notification | undefined;
-	notifications!: HTMLElement[];
+	notifications!: NotificationElement[];
 	maxNotifications!: number;
 	container!: HTMLDialogElement | HTMLDivElement | null;
 	notificationTimeout!: number;
@@ -35,6 +35,7 @@ export class Notification {
 		this.notificationTimeout = 4000;
 	}
 	show({
+		type,
 		position = 'bottom',
 		icon,
 		message,
@@ -46,6 +47,7 @@ export class Notification {
 		this.container = this.createContainer(position);
 
 		let notification = this.createNotification({
+			type,
 			icon,
 			message,
 			status,
@@ -53,6 +55,16 @@ export class Notification {
 			link,
 			hasTimer,
 		});
+
+		if (this.notifications.length > 0 && type) {
+			this.notifications = this.notifications.filter(item => {
+				if (item.type === type) {
+					this.removeNotification(item);
+					return false;
+				}
+				return true;
+			});
+		}
 		this.notifications.push(notification);
 
 		if (this.notifications.length > this.maxNotifications) {
@@ -61,7 +73,9 @@ export class Notification {
 
 		(this.container as HTMLDialogElement).show();
 
-		this.startTimeout(notification as NotificationElement);
+		if (notification.hasTimer) {
+			this.startTimeout(notification as NotificationElement);
+		}
 	}
 
 	/**
@@ -151,15 +165,31 @@ export class Notification {
 		return container;
 	}
 
+	/**
+	 * Creates a div element with NotificationElement properties initialized.
+	 * This allows us to attach custom properties (elapsed, isPaused, etc.) to the element.
+	 */
+	createNotificationElement(): NotificationElement {
+		const el = document.createElement('div') as HTMLDivElement & NotificationElement;
+		el.type = null;
+		el.hasTimer = false;
+		el.isPaused = false;
+		el.timeoutID = 0;
+		el.elapsed = 0;
+		el.startedAt = 0;
+		return el;
+	}
+
 	createNotification({
+		type,
 		icon,
 		message,
 		status = 'info',
 		button,
 		link,
 		hasTimer,
-	}: NotificationOptions): HTMLElement {
-		const notification = document.createElement('div') as unknown as NotificationElement;
+	}: NotificationOptions): NotificationElement {
+		const notification = this.createNotificationElement();
 		const modStatus = `z-notification__item--${status}`;
 		notification.className = `z-notification__item ${modStatus}`;
 		notification.setAttribute('role', 'alert');
@@ -193,10 +223,14 @@ export class Notification {
 			closeButton.onclick = () => this.removeNotification(notification);
 		}
 
-		notification.elapsed = 0;
-		notification.isPaused = false;
-		notification.hasTimer = !!hasTimer;
-		this.addPauseResumeEvents(notification);
+		if (type) {
+			notification.type = type;
+		}
+
+		if (!!hasTimer) {
+			notification.hasTimer = true;
+			this.addPauseResumeEvents(notification);
+		}
 
 		return notification;
 	}
@@ -248,7 +282,6 @@ export class Notification {
 	}
 
 	startTimeout(notification: NotificationElement, duration = this.notificationTimeout): void {
-		if (!notification.hasTimer) return;
 		notification.startedAt = Date.now();
 		notification.timeoutID = setTimeout(() => {
 			if (!notification.isPaused) {
@@ -258,7 +291,6 @@ export class Notification {
 	}
 
 	addPauseResumeEvents(notification: NotificationElement): void {
-		if (!notification.hasTimer) return;
 		const ring = notification.querySelector(
 			'.z-notification__close-ring circle',
 		) as SVGCircleElement | null;
@@ -325,8 +357,17 @@ const notification: NotificationService = {
 	showInline({ message, element }: InlineNotificationOptions): Promise<void> {
 		return this.notification.showInline({ message, element });
 	},
-	show({ position, icon, message, status, button, link, hasTimer }: NotificationOptions): void {
-		this.notification.show({ position, icon, message, status, button, link, hasTimer });
+	show({
+		type,
+		position,
+		icon,
+		message,
+		status,
+		button,
+		link,
+		hasTimer,
+	}: NotificationOptions): void {
+		this.notification.show({ type, position, icon, message, status, button, link, hasTimer });
 	},
 	debug(): void {
 		this.notification.debug();

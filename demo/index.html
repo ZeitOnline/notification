@@ -134,13 +134,13 @@
 
 			<section class="demo" aria-label="Notification demos">
 				<article>
-					<h2>Bottom notifications</h2>
+					<h2>Notifications</h2>
 					<p>Trigger the different bottom variants and verify timing, stacking and actions.</p>
 					<p>Action / Links:</p>
 					<div class="button-group">
-						<button type="button" class="button" data-action="add-bookmark">Add Bookmark with Link</button>
-						<button type="button" class="button" data-action="remove-bookmark">Remove Bookmark with Callback</button>
-						<button type="button" class="button" data-action="link">Link</button>
+						<button type="button" class="button" data-action="type-of-foo-with-link">Type of foo with link</button>
+						<button type="button" class="button" data-action="type-of-foo-with-callback">Type of foo with Callback</button>
+						<button type="button" class="button" data-action="link">Simple Link</button>
 					</div>
 					<p>Status:</p>
 					<div class="button-group">
@@ -174,8 +174,9 @@
 
 						// ACTION/LINK VARIANTS
 
-						case 'add-bookmark':
+						case 'type-of-foo-with-link':
 							notification.show({
+								type: "foo",
 								position: "bottom",
 								status: "success",
 								icon: "bookmark",
@@ -187,8 +188,9 @@
 								hasTimer: true,
 							});
 							break;
-						case 'remove-bookmark':
+						case 'type-of-foo-with-callback':
 							notification.show({
+								type: "foo",
 								icon: "bookmark",
 								message: "Der Artikel wurde von der Merkliste entfernt.",
 								button: {
@@ -201,6 +203,7 @@
 						case 'link':
 							notification.show({
 								status: "info",
+								type: "info",
 								message: "A new version of Notification is available.",
 								link: {
 									text: "Open docs",
