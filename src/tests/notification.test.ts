@@ -312,4 +312,39 @@ describe('notification accessibility behavior', () => {
 		const closeButton = document.querySelector('.z-notification__close-btn');
 		expect(closeButton?.className).not.toContain('z-notification__close-btn--timer');
 	});
+
+	it('replaces a notification with the same type', async () => {
+		notification.show({
+			type: 'foo',
+			message: 'First foo notification',
+		});
+
+		expect(screen.queryAllByRole('alert')).toHaveLength(1);
+		expect(screen.getByText('First foo notification')).not.toBeNull();
+
+		notification.show({
+			type: 'foo',
+			message: 'Second foo notification',
+		});
+
+		expect(screen.queryAllByRole('alert')).toHaveLength(1);
+		expect(screen.queryByText('First foo notification')).toBeNull();
+		expect(screen.getByText('Second foo notification')).not.toBeNull();
+	});
+
+	it('does not replace notifications with different types', async () => {
+		notification.show({
+			type: 'foo',
+			message: 'Foo notification',
+		});
+
+		notification.show({
+			type: 'share',
+			message: 'Share notification',
+		});
+
+		expect(screen.queryAllByRole('alert')).toHaveLength(2);
+		expect(screen.getByText('Foo notification')).not.toBeNull();
+		expect(screen.getByText('Share notification')).not.toBeNull();
+	});
 });
