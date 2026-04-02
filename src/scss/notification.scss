@@ -122,6 +122,11 @@
 	font-size: var(--z-ds-fontsize-14);
 	height: auto;
 	text-decoration: underline;
+	&:visited,
+	&:active,
+	&:focus {
+		color: inherit;
+	}
 
 	@include mixins.on-interaction($use-focus-visible: true) {
 		color: var(--z-ds-color-general-white-100); // #ffffff
