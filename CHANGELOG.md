@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/ZeitOnline/notification/compare/notification-v1.2.0...notification-v1.3.0) (2026-04-02)
+
+
+### 🚀 Features
+
+* add notification types to limit displaying notifications ([#33](https://github.com/ZeitOnline/notification/issues/33)) ([f8afdc6](https://github.com/ZeitOnline/notification/commit/f8afdc6e18669e4ed3789568e8305bec16120752))
+
+
+### 🐛 Bug Fixes
+
+* inherit font color in action link ([d14f7fc](https://github.com/ZeitOnline/notification/commit/d14f7fccb04242565c0a687942b17c74141764b9))
+
 ## [1.2.0](https://github.com/ZeitOnline/notification/compare/notification-v1.1.3...notification-v1.2.0) (2026-03-31)
 
 
