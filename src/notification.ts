@@ -16,7 +16,14 @@ import type {
 } from '../index';
 
 const OFFSET_NOTIFICATION = 8;
-const MAX_NOTIFICATIONS_SCREEN = 7;
+const MAX_NOTIFICATIONS_SCREEN = 3;
+
+/**
+ * The data-toast-originator` attribute is used to link a notification to its originator element.
+ */
+const ORIGINATOR_ATTR = 'data-toast-originator';
+
+let originatorCounter = 0;
 
 // Notifications manage ui elements and keep you informed about results, warnings and errors.
 // This includes deciding which type of notification to show (e.g., inline or bottom).
@@ -55,6 +62,7 @@ export class Notification {
 
 		const notification = this.createNotification({
 			type,
+			element,
 			icon,
 			message,
 			status,
@@ -74,15 +82,6 @@ export class Notification {
 		if (notification.hasTimer) {
 			this.startTimeout(notification as NotificationElement);
 		}
-
-		// Log the current body stack for debugging purposes
-		// console.log('Current body stack:', this.bodyStack);
-		console.log('Total notifications:', this.notifications);
-
-		// Log the current anchor stacks for debugging purposes
-		// Array.from(this.anchorStacks.entries()).forEach(([anchor, stack]) => {
-		// 	console.log('Current stack for anchor', anchor, ':', stack);
-		// });
 	}
 
 	/**
@@ -179,6 +178,7 @@ export class Notification {
 
 	createNotification({
 		type,
+		element,
 		icon,
 		message,
 		status = 'info',
@@ -199,13 +199,17 @@ export class Notification {
 			(!link && button ? `<button class="z-notification__action-btn">${button.text}</button>` : '') +
 			this.getCloseButtonHTML(!!hasTimer);
 
+		if (element) {
+			notification.setAttribute(ORIGINATOR_ATTR, this.getOrCreateOriginatorId(element));
+		}
+
 		if (button && button.onClick) {
 			const actionElement = notification.querySelector(
 				'.z-notification__action-btn',
 			) as HTMLElement;
 			actionElement.onclick = () => {
 				button.onClick();
-				this.removeNotification(notification);
+				this.removeNotification(notification, true);
 			};
 		}
 
@@ -215,7 +219,7 @@ export class Notification {
 				'--z-notification-duration',
 				`${this.notificationTimeout}ms`,
 			);
-			closeButton.onclick = () => this.removeNotification(notification);
+			closeButton.onclick = () => this.removeNotification(notification, true);
 		}
 
 		if (type) {
@@ -233,23 +237,21 @@ export class Notification {
 	insertNotification(
 		notification: NotificationElement,
 		position: string,
-		element?: HTMLElement,
+		originator?: HTMLElement,
 	): void {
 		notification.classList.add(
 			position === 'top' ? 'z-notification--top' : 'z-notification--bottom',
 		);
-		notification.anchorElement = element ?? null;
+		notification.anchorElement = originator ?? null;
 
-		if (element?.parentElement) {
-			const insertionPoint = this.findNotificationInsertionPoint(element);
+		if (originator?.parentElement) {
+			const insertionPoint = this.findNotificationInsertionPoint(originator);
 			insertionPoint.insertAdjacentElement('afterend', notification);
-		} else {
-			document.body.insertAdjacentElement('beforeend', notification);
 		}
 	}
 
-	findNotificationInsertionPoint(element: HTMLElement): HTMLElement {
-		let insertionPoint = element;
+	findNotificationInsertionPoint(originator: HTMLElement): HTMLElement {
+		let insertionPoint = originator;
 		while (
 			insertionPoint.nextElementSibling &&
 			this.isNotificationElement(insertionPoint.nextElementSibling)
@@ -267,6 +269,10 @@ export class Notification {
 		}
 
 		return anchor instanceof HTMLElement ? anchor : null;
+	}
+
+	isNotificationElement(element: Element): element is NotificationElement {
+		return element.classList.contains('z-notification');
 	}
 
 	repositionNotifications(position: string, element?: HTMLElement): void {
@@ -293,10 +299,6 @@ export class Notification {
 			notification.style.bottom = `${offset}px`;
 			notification.style.top = 'auto';
 		}
-	}
-
-	isNotificationElement(element: Element): element is NotificationElement {
-		return element.classList.contains('z-notification');
 	}
 
 	getCloseButtonHTML(hasTimer: boolean): string {
@@ -386,7 +388,7 @@ export class Notification {
 		notification.addEventListener('pointerleave', resume);
 	}
 
-	removeNotification(notification: HTMLElement | null): void {
+	removeNotification(notification: HTMLElement | null, returnFocus = false): void {
 		if (!notification) return;
 
 		const notif = notification as NotificationElement;
@@ -398,6 +400,48 @@ export class Notification {
 
 		clearTimeout(notif.timeoutID);
 		this.repositionNotifications(position, anchor ?? undefined);
+		if (returnFocus) {
+			this.focusOriginator(notif);
+		}
+	}
+
+	linkOriginator(notification: NotificationElement, originator: HTMLElement): void {
+		const originatorId = this.getOrCreateOriginatorId(originator);
+		notification.setAttribute(ORIGINATOR_ATTR, originatorId);
+	}
+
+	findOriginator(notification: NotificationElement): HTMLElement | null {
+		const originatorId = notification.getAttribute(ORIGINATOR_ATTR);
+		if (!originatorId) {
+			return notification.anchorElement;
+		}
+
+		const selector = `[${ORIGINATOR_ATTR}="${originatorId}"]`;
+		const originator = document.querySelector(selector);
+
+		if (originator instanceof HTMLElement) {
+			return originator;
+		}
+
+		return notification.anchorElement;
+	}
+
+	focusOriginator(notification: NotificationElement): void {
+		const originator = this.findOriginator(notification);
+		if (!originator || !originator.isConnected) return;
+
+		originator.focus();
+	}
+
+	getOrCreateOriginatorId(originator: HTMLElement): string {
+		const existingId = originator.getAttribute(ORIGINATOR_ATTR);
+		if (existingId) {
+			return existingId;
+		}
+
+		const id = `${++originatorCounter}`;
+		originator.setAttribute(ORIGINATOR_ATTR, id);
+		return id;
 	}
 
 	removeInlineNotification(container: HTMLElement, inline: InlineNotification): void {

@@ -157,7 +157,8 @@
 	&:focus-visible {
 		border-radius: 9999px;
 		box-shadow: 0 0 0 2px var(--z-ds-color-general-white-100);
-		/* outline: none; */
+		outline-offset: 4px;
+		outline-color: var(--z-ds-color-focus-100);
 	}
 
 	.z-notification__close-cross {
