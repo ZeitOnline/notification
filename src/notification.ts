@@ -15,6 +15,9 @@ import type {
 	NotificationService,
 } from '../index';
 
+const OFFSET_NOTIFICATION = 8;
+const MAX_NOTIFICATIONS_SCREEN = 7;
+
 // Notifications manage ui elements and keep you informed about results, warnings and errors.
 // This includes deciding which type of notification to show (e.g., inline or bottom).
 export class Notification {
@@ -23,8 +26,6 @@ export class Notification {
 	maxNotifications!: number;
 	container!: HTMLDivElement | null;
 	notificationTimeout!: number;
-	bodyStack: NotificationElement[];
-	anchorStacks: WeakMap<HTMLElement, NotificationElement[]>;
 
 	constructor() {
 		if (Notification.instance) {
@@ -32,11 +33,9 @@ export class Notification {
 		}
 		Notification.instance = this;
 		this.notifications = [];
-		this.maxNotifications = 3;
+		this.maxNotifications = MAX_NOTIFICATIONS_SCREEN;
 		this.container = null;
 		this.notificationTimeout = 4000;
-		this.bodyStack = [];
-		this.anchorStacks = new WeakMap();
 	}
 	show({
 		type,
@@ -66,8 +65,7 @@ export class Notification {
 
 		this.insertNotification(notification, position, element);
 		this.notifications.push(notification);
-		this.addToStack(notification, element);
-		this.reflowNotifications(position, element);
+		this.repositionNotifications(position, element);
 
 		if (this.notifications.length > this.maxNotifications) {
 			this.removeNotification(this.notifications[0]);
@@ -76,6 +74,15 @@ export class Notification {
 		if (notification.hasTimer) {
 			this.startTimeout(notification as NotificationElement);
 		}
+
+		// Log the current body stack for debugging purposes
+		// console.log('Current body stack:', this.bodyStack);
+		console.log('Total notifications:', this.notifications);
+
+		// Log the current anchor stacks for debugging purposes
+		// Array.from(this.anchorStacks.entries()).forEach(([anchor, stack]) => {
+		// 	console.log('Current stack for anchor', anchor, ':', stack);
+		// });
 	}
 
 	/**
@@ -184,9 +191,6 @@ export class Notification {
 		notification.className = `z-notification z-notification__item ${modStatus}`;
 		notification.setAttribute('role', 'alert');
 		notification.setAttribute('aria-live', 'assertive');
-		notification.style.left = '50%';
-		notification.style.right = 'auto';
-		notification.style.transform = 'translateX(-50%)';
 
 		// prettier-ignore
 		notification.innerHTML = this.getSvgIcon(icon) +
@@ -265,26 +269,11 @@ export class Notification {
 		return anchor instanceof HTMLElement ? anchor : null;
 	}
 
-	getStack(element?: HTMLElement): NotificationElement[] {
-		if (element?.parentElement) {
-			const stack = this.anchorStacks.get(element);
-			if (stack) {
-				return stack;
-			}
-			const derivedStack = this.collectStackFromDom(element);
-			this.anchorStacks.set(element, derivedStack);
-			return derivedStack;
-		}
-
-		return this.bodyStack;
-	}
-
-	reflowNotifications(position: string, element?: HTMLElement): void {
-		const stack = this.getStack(element);
-		let offset = 8;
-		stack.forEach((notification, index) => {
+	repositionNotifications(position: string, element?: HTMLElement): void {
+		let offset = OFFSET_NOTIFICATION; // 8
+		this.notifications.forEach((notification, index) => {
 			this.positionNotification(notification, position, offset, index);
-			offset += notification.getBoundingClientRect().height + 8;
+			offset += notification.getBoundingClientRect().height + OFFSET_NOTIFICATION;
 		});
 	}
 
@@ -295,9 +284,6 @@ export class Notification {
 		index: number,
 	): void {
 		notification.style.position = 'fixed';
-		notification.style.left = '50%';
-		notification.style.right = 'auto';
-		notification.style.transform = 'translateX(-50%)';
 		notification.style.zIndex = `${1000 + index}`;
 
 		if (position === 'top') {
@@ -311,25 +297,6 @@ export class Notification {
 
 	isNotificationElement(element: Element): element is NotificationElement {
 		return element.classList.contains('z-notification');
-	}
-
-	collectStackFromDom(element: HTMLElement): NotificationElement[] {
-		const stack: NotificationElement[] = [];
-		let sibling = element.nextElementSibling;
-
-		while (sibling && this.isNotificationElement(sibling)) {
-			stack.push(sibling as NotificationElement);
-			sibling = sibling.nextElementSibling;
-		}
-
-		return stack;
-	}
-
-	addToStack(notification: NotificationElement, element?: HTMLElement): void {
-		const stack = this.getStack(element);
-		if (!stack.includes(notification)) {
-			stack.push(notification);
-		}
 	}
 
 	getCloseButtonHTML(hasTimer: boolean): string {
@@ -425,20 +392,12 @@ export class Notification {
 		const notif = notification as NotificationElement;
 		const position = notif.classList.contains('z-notification--top') ? 'top' : 'bottom';
 		const anchor = notif.anchorElement;
-		const stack = anchor ? this.getStack(anchor) : this.bodyStack;
-		const nextStack = stack.filter(item => item !== notif);
-
-		if (anchor) {
-			this.anchorStacks.set(anchor, nextStack);
-		} else {
-			this.bodyStack = nextStack;
-		}
 
 		notif.remove();
 		this.notifications = this.notifications.filter(t => t !== notification);
 
 		clearTimeout(notif.timeoutID);
-		this.reflowNotifications(position, anchor ?? undefined);
+		this.repositionNotifications(position, anchor ?? undefined);
 	}
 
 	removeInlineNotification(container: HTMLElement, inline: InlineNotification): void {
