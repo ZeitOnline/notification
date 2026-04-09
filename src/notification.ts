@@ -23,6 +23,8 @@ export class Notification {
 	maxNotifications!: number;
 	container!: HTMLDialogElement | HTMLDivElement | null;
 	notificationTimeout!: number;
+	private tabHandler: ((e: KeyboardEvent) => void) | null = null;
+	private tabHandlerTarget: HTMLElement | null = null;
 
 	constructor() {
 		if (Notification.instance) {
@@ -71,7 +73,34 @@ export class Notification {
 			this.removeNotification(this.notifications[0]);
 		}
 
+		// Store active element before showing dialog
+		const activeElement = document.activeElement as HTMLElement;
+
 		(this.container as HTMLDialogElement).show();
+
+		// Restore focus to the originating element
+		if (activeElement && activeElement !== document.body) {
+			activeElement.focus();
+			this.cleanUpTabHandler();
+
+			this.tabHandler = (e: KeyboardEvent) => {
+				if (e.key === 'Tab' && !e.shiftKey && this.container?.querySelector('.z-notification__item')) {
+					// takes the first Element with focus.
+					// If there are multiple notifications, the focus will always return to the first one.
+					// This is intentional to avoid confusion.
+					const firstFocusable = this.container.querySelector<HTMLElement>(
+						'a, button, [tabindex]:not([tabindex="-1"])',
+					);
+					if (firstFocusable) {
+						e.preventDefault();
+						firstFocusable.focus();
+					}
+					this.cleanUpTabHandler();
+				}
+			};
+			this.tabHandlerTarget = activeElement;
+			activeElement.addEventListener('keydown', this.tabHandler);
+		}
 
 		if (notification.hasTimer) {
 			this.startTimeout(notification as NotificationElement);
@@ -327,6 +356,7 @@ export class Notification {
 
 		const notif = notification as NotificationElement;
 		notif.remove();
+		this.cleanUpTabHandler();
 		this.notifications = this.notifications.filter(t => t !== notification);
 
 		clearTimeout(notif.timeoutID);
@@ -338,6 +368,13 @@ export class Notification {
 		) {
 			this.container.close();
 		}
+	}
+
+	private cleanUpTabHandler(): void {
+		if (!this.tabHandler || !this.tabHandlerTarget) return;
+		this.tabHandlerTarget.removeEventListener('keydown', this.tabHandler);
+		this.tabHandler = null;
+		this.tabHandlerTarget = null;
 	}
 
 	removeInlineNotification(container: HTMLElement, inline: InlineNotification): void {

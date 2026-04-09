@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Focus Test - Notification Dialog</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" href="../src/assets/css/design-system.css" />
+	<link rel="stylesheet" href="../src/scss/notification.scss" />
+	<style>
+		body {
+			background: var(--z-ds-color-background-0);
+			color: var(--z-ds-color-text-100);
+			padding: var(--z-ds-space-l);
+			font-family: system-ui, sans-serif;
+		}
+
+		.test-section {
+			max-width: 800px;
+			margin: 0 auto;
+			padding: var(--z-ds-space-l);
+		}
+
+		h1 {
+			margin-bottom: var(--z-ds-space-m);
+		}
+
+		.button-group {
+			display: flex;
+			gap: var(--z-ds-space-s);
+			margin: var(--z-ds-space-m) 0;
+		}
+
+		.button {
+			appearance: none;
+			border: 2px solid var(--z-ds-color-text-100);
+			border-radius: var(--z-ds-border-radius-4);
+			background: var(--z-ds-color-text-100);
+			color: var(--z-ds-color-background-0);
+			padding: 12px 24px;
+			cursor: pointer;
+			font: inherit;
+			font-size: 16px;
+			transition: all 0.2s;
+		}
+
+		.button:hover {
+			background-color: var(--z-ds-color-accent-100);
+			border-color: var(--z-ds-color-accent-100);
+		}
+
+		/* VISUAL FOCUS INDICATOR - This makes focus super obvious */
+		.button:focus,
+		.button:focus-visible {
+			outline: 4px solid #ff4444;
+			outline-offset: 4px;
+			box-shadow: 0 0 0 8px rgba(255, 68, 68, 0.2);
+			transform: scale(1.05);
+		}
+
+		.focus-info {
+			margin-top: var(--z-ds-space-m);
+			padding: var(--z-ds-space-m);
+			background: #f0f0f0;
+			border-left: 4px solid #ff4444;
+			border-radius: 4px;
+		}
+
+		.focus-info code {
+			background: #333;
+			color: #fff;
+			padding: 2px 6px;
+			border-radius: 3px;
+			font-family: monospace;
+		}
+
+		/* Make notification close button also clearly visible when focused */
+		.z-notification__close-btn:focus,
+		.z-notification__close-btn:focus-visible {
+			outline: 4px solid #ff4444 !important;
+			outline-offset: 2px !important;
+		}
+
+		#focus-log {
+			margin-top: var(--z-ds-space-m);
+			padding: var(--z-ds-space-m);
+			background: #000;
+			color: #0f0;
+			font-family: monospace;
+			font-size: 14px;
+			border-radius: 4px;
+			max-height: 300px;
+			overflow-y: auto;
+		}
+
+		.focus-timestamp {
+			color: #888;
+		}
+	</style>
+</head>
+<body>
+	<div class="test-section">
+		<h1>🔍 Focus Management Test</h1>
+
+		<div class="focus-info">
+			<p><strong>What to observe:</strong></p>
+			<ul>
+				<li>Click a button below to trigger a notification</li>
+				<li>Watch for the <strong style="color: #ff4444;">RED GLOW</strong> around the focused element</li>
+				<li>Current behavior: Focus moves to dialog</li>
+				<li>Expected behavior: Focus stays on button</li>
+				<li>Check the console log below for focus events</li>
+			</ul>
+			<p><strong>Keyboard test:</strong> Use <code>Tab</code> key to see where focus goes after clicking</p>
+		</div>
+
+		<div class="button-group">
+			<button type="button" class="button" id="btn-info">
+				Trigger Info Notification
+			</button>
+			<button type="button" class="button" id="btn-action">
+				Trigger Action Notification
+			</button>
+			<button type="button" class="button" id="btn-error">
+				Trigger Error Notification
+			</button>
+			<button type="button" class="button" id="btn-timer">
+				Notification with Timer
+			</button>
+		</div>
+
+		<div id="focus-log">
+			<div><strong>Focus Event Log:</strong></div>
+		</div>
+	</div>
+
+	<script>
+		window.Zeit = window.Zeit || {};
+	</script>
+
+	<script type="module">
+		import notification from "/index.js";
+
+		const logElement = document.getElementById('focus-log');
+
+		function logFocus(message) {
+			const time = new Date().toLocaleTimeString();
+			const entry = document.createElement('div');
+			entry.innerHTML = `<span class="focus-timestamp">[${time}]</span> ${message}`;
+			logElement.appendChild(entry);
+			logElement.scrollTop = logElement.scrollHeight;
+		}
+
+		// Track all focus changes
+		document.addEventListener('focusin', (e) => {
+			const target = e.target;
+			let description = target.tagName.toLowerCase();
+
+			if (target.id) description += `#${target.id}`;
+			if (target.className) description += `.${target.className.split(' ')[0]}`;
+			if (target.tagName === 'DIALOG') description += ' (NOTIFICATION DIALOG)';
+
+			logFocus(`Focus moved to: <strong>${description}</strong>`);
+		});
+
+		// Track blur events
+		document.addEventListener('focusout', (e) => {
+			const target = e.target;
+			let description = target.tagName.toLowerCase();
+			if (target.id) description += `#${target.id}`;
+
+			logFocus(`Focus left: ${description}`);
+		});
+
+		// Button handlers
+		document.getElementById('btn-action').addEventListener('click', function() {
+			logFocus('🔘 Button clicked: Trigger Action Notification');
+			notification.show({
+				status: 'info',
+				message: 'This is an action message',
+				button: {
+					text: 'Undo',
+					onClick: () => {
+						logFocus('🔘 Action button clicked: Undo action triggered');
+						alert('Undo action executed!');
+					}
+				},
+				hasTimer: true,
+			});
+		});
+
+		document.getElementById('btn-info').addEventListener('click', function() {
+			logFocus('🔘 Button clicked: Trigger Info Notification');
+			notification.show({
+				status: 'info',
+				message: 'This is an info message',
+				hasTimer: false,
+			});
+		});
+
+		document.getElementById('btn-error').addEventListener('click', function() {
+			logFocus('🔘 Button clicked: Trigger Error Notification');
+			notification.show({
+				status: 'error',
+				message: 'This is an error message',
+				hasTimer: false,
+			});
+		});
+
+		document.getElementById('btn-timer').addEventListener('click', function() {
+			logFocus('🔘 Button clicked: Trigger Timed Notification');
+			notification.show({
+				status: 'success',
+				message: 'This message will auto-dismiss',
+				hasTimer: true,
+			});
+		});
+
+		logFocus('Page loaded. Click a button to test focus behavior.');
+	</script>
+</body>
+</html>
