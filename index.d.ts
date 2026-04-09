@@ -11,6 +11,7 @@ export type LinkOptions = {
 export type NotificationOptions = {
 	type?: string;
 	position?: 'top' | 'bottom';
+	element?: HTMLElement;
 	icon?: string;
 	message: string;
 	status?: 'error' | 'success' | 'warning' | 'info';
@@ -35,6 +36,7 @@ export interface NotificationElement extends HTMLElement {
 	timeoutID: number;
 	elapsed: number;
 	startedAt: number;
+	anchorElement: HTMLElement | null;
 }
 
 export type NotificationService = {

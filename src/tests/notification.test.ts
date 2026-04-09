@@ -111,6 +111,71 @@ describe('notification accessibility behavior', () => {
 		expect(actionLink.getAttribute('href')).toBe('https://example.com/docs');
 	});
 
+	it('inserts anchored bottom notifications next to the triggering element', async () => {
+		const trigger = document.createElement('button');
+		trigger.textContent = 'Save';
+		document.body.append(trigger);
+
+		notification.show({
+			element: trigger,
+			message: 'Profile saved successfully.',
+			status: 'success',
+		});
+
+		const container = document.querySelector('.z-notification');
+
+		expect(trigger.nextElementSibling).toBe(container);
+		expect(document.body.querySelectorAll('.z-notification')).toHaveLength(1);
+		expect(document.querySelector('dialog')).toBeNull();
+		expect(container?.classList.contains('z-notification--bottom')).toBe(true);
+		expect(container?.nodeName).toBe('DIV');
+		expect(screen.getByRole('alert')).not.toBeNull();
+	});
+
+	it('stacks multiple anchored bottom notifications by index', () => {
+		const trigger = document.createElement('button');
+		trigger.textContent = 'Save';
+		document.body.append(trigger);
+
+		const rectSpy = vi
+			.spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+			.mockImplementation(function getBoundingClientRect(this: HTMLElement): DOMRect {
+				const height = this.classList.contains('z-notification') ? 40 : 20;
+				return {
+					x: 0,
+					y: 0,
+					top: 0,
+					left: 0,
+					right: 100,
+					bottom: height,
+					width: 100,
+					height,
+					toJSON: () => ({}),
+				} as DOMRect;
+			});
+
+		notification.show({
+			element: trigger,
+			message: 'First saved toast.',
+			status: 'success',
+		});
+		notification.show({
+			element: trigger,
+			message: 'Second saved toast.',
+			status: 'success',
+		});
+
+		const toasts = Array.from(document.querySelectorAll('.z-notification')) as HTMLElement[];
+
+		expect(toasts).toHaveLength(2);
+		expect(trigger.nextElementSibling).toBe(toasts[0]);
+		expect(toasts[0].nextElementSibling).toBe(toasts[1]);
+		expect(toasts[0].style.bottom).toBe('8px');
+		expect(toasts[1].style.bottom).toBe('56px');
+
+		rectSpy.mockRestore();
+	});
+
 	it('removes inline notifications after the configured timeout', async () => {
 		const trigger = document.createElement('button');
 		trigger.textContent = 'Copy link';

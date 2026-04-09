@@ -21,8 +21,10 @@ export class Notification {
 	static instance: Notification | undefined;
 	notifications!: NotificationElement[];
 	maxNotifications!: number;
-	container!: HTMLDialogElement | HTMLDivElement | null;
+	container!: HTMLDivElement | null;
 	notificationTimeout!: number;
+	bodyStack: NotificationElement[];
+	anchorStacks: WeakMap<HTMLElement, NotificationElement[]>;
 
 	constructor() {
 		if (Notification.instance) {
@@ -33,10 +35,13 @@ export class Notification {
 		this.maxNotifications = 3;
 		this.container = null;
 		this.notificationTimeout = 4000;
+		this.bodyStack = [];
+		this.anchorStacks = new WeakMap();
 	}
 	show({
 		type,
 		position = 'bottom',
+		element,
 		icon,
 		message,
 		status,
@@ -44,9 +49,12 @@ export class Notification {
 		link,
 		hasTimer,
 	}: NotificationOptions): void {
-		this.container = this.createContainer(position);
+		if (type) {
+			const notificationsToRemove = this.notifications.filter(item => item.type === type);
+			notificationsToRemove.forEach(item => this.removeNotification(item));
+		}
 
-		let notification = this.createNotification({
+		const notification = this.createNotification({
 			type,
 			icon,
 			message,
@@ -56,22 +64,14 @@ export class Notification {
 			hasTimer,
 		});
 
-		if (this.notifications.length > 0 && type) {
-			this.notifications = this.notifications.filter(item => {
-				if (item.type === type) {
-					this.removeNotification(item);
-					return false;
-				}
-				return true;
-			});
-		}
+		this.insertNotification(notification, position, element);
 		this.notifications.push(notification);
+		this.addToStack(notification, element);
+		this.reflowNotifications(position, element);
 
 		if (this.notifications.length > this.maxNotifications) {
 			this.removeNotification(this.notifications[0]);
 		}
-
-		(this.container as HTMLDialogElement).show();
 
 		if (notification.hasTimer) {
 			this.startTimeout(notification as NotificationElement);
@@ -84,7 +84,7 @@ export class Notification {
 	 */
 	async setAndAnnounceMessage(message: string): Promise<void> {
 		if (!this.container) {
-			console.warn('Notification container is not initialized.');
+			console.warn('Inline notification container is not initialized.');
 			return;
 		}
 		this.container.innerText = '';
@@ -154,17 +154,6 @@ export class Notification {
 		return container;
 	}
 
-	createContainer(position: string): HTMLDialogElement {
-		let container = document.querySelector('.z-notification') as HTMLDialogElement | null;
-		if (!container) {
-			container = document.createElement('dialog');
-			container.className =
-				'z-notification z-notification--' + (position === 'top' ? 'top' : 'bottom');
-			document.body.insertAdjacentElement('beforeend', container);
-		}
-		return container;
-	}
-
 	/**
 	 * Creates a div element with NotificationElement properties initialized.
 	 * This allows us to attach custom properties (elapsed, isPaused, etc.) to the element.
@@ -177,6 +166,7 @@ export class Notification {
 		el.timeoutID = 0;
 		el.elapsed = 0;
 		el.startedAt = 0;
+		el.anchorElement = null;
 		return el;
 	}
 
@@ -191,9 +181,12 @@ export class Notification {
 	}: NotificationOptions): NotificationElement {
 		const notification = this.createNotificationElement();
 		const modStatus = `z-notification__item--${status}`;
-		notification.className = `z-notification__item ${modStatus}`;
+		notification.className = `z-notification z-notification__item ${modStatus}`;
 		notification.setAttribute('role', 'alert');
 		notification.setAttribute('aria-live', 'assertive');
+		notification.style.left = '50%';
+		notification.style.right = 'auto';
+		notification.style.transform = 'translateX(-50%)';
 
 		// prettier-ignore
 		notification.innerHTML = this.getSvgIcon(icon) +
@@ -201,8 +194,6 @@ export class Notification {
 			(link ? `<a href="${link.href}" class="z-notification__action-btn">${link.text}</a>` : '') +
 			(!link && button ? `<button class="z-notification__action-btn">${button.text}</button>` : '') +
 			this.getCloseButtonHTML(!!hasTimer);
-
-		(this.container as HTMLElement).appendChild(notification);
 
 		if (button && button.onClick) {
 			const actionElement = notification.querySelector(
@@ -233,6 +224,112 @@ export class Notification {
 		}
 
 		return notification;
+	}
+
+	insertNotification(
+		notification: NotificationElement,
+		position: string,
+		element?: HTMLElement,
+	): void {
+		notification.classList.add(
+			position === 'top' ? 'z-notification--top' : 'z-notification--bottom',
+		);
+		notification.anchorElement = element ?? null;
+
+		if (element?.parentElement) {
+			const insertionPoint = this.findNotificationInsertionPoint(element);
+			insertionPoint.insertAdjacentElement('afterend', notification);
+		} else {
+			document.body.insertAdjacentElement('beforeend', notification);
+		}
+	}
+
+	findNotificationInsertionPoint(element: HTMLElement): HTMLElement {
+		let insertionPoint = element;
+		while (
+			insertionPoint.nextElementSibling &&
+			this.isNotificationElement(insertionPoint.nextElementSibling)
+		) {
+			insertionPoint = insertionPoint.nextElementSibling as HTMLElement;
+		}
+		return insertionPoint;
+	}
+
+	getNotificationAnchor(notification: HTMLElement): HTMLElement | null {
+		let anchor: Element | null = notification.previousElementSibling;
+
+		while (anchor && this.isNotificationElement(anchor)) {
+			anchor = anchor.previousElementSibling;
+		}
+
+		return anchor instanceof HTMLElement ? anchor : null;
+	}
+
+	getStack(element?: HTMLElement): NotificationElement[] {
+		if (element?.parentElement) {
+			const stack = this.anchorStacks.get(element);
+			if (stack) {
+				return stack;
+			}
+			const derivedStack = this.collectStackFromDom(element);
+			this.anchorStacks.set(element, derivedStack);
+			return derivedStack;
+		}
+
+		return this.bodyStack;
+	}
+
+	reflowNotifications(position: string, element?: HTMLElement): void {
+		const stack = this.getStack(element);
+		let offset = 8;
+		stack.forEach((notification, index) => {
+			this.positionNotification(notification, position, offset, index);
+			offset += notification.getBoundingClientRect().height + 8;
+		});
+	}
+
+	positionNotification(
+		notification: NotificationElement,
+		position: string,
+		offset: number,
+		index: number,
+	): void {
+		notification.style.position = 'fixed';
+		notification.style.left = '50%';
+		notification.style.right = 'auto';
+		notification.style.transform = 'translateX(-50%)';
+		notification.style.zIndex = `${1000 + index}`;
+
+		if (position === 'top') {
+			notification.style.top = `${offset}px`;
+			notification.style.bottom = 'auto';
+		} else {
+			notification.style.bottom = `${offset}px`;
+			notification.style.top = 'auto';
+		}
+	}
+
+	isNotificationElement(element: Element): element is NotificationElement {
+		return element.classList.contains('z-notification');
+	}
+
+	collectStackFromDom(element: HTMLElement): NotificationElement[] {
+		const stack: NotificationElement[] = [];
+		let sibling = element.nextElementSibling;
+
+		while (sibling && this.isNotificationElement(sibling)) {
+			stack.push(sibling as NotificationElement);
+			sibling = sibling.nextElementSibling;
+		}
+
+		return stack;
+	}
+
+	addToStack(notification: NotificationElement, element?: HTMLElement): void {
+		const stack = this.getStack(element);
+		if (!stack.includes(notification)) {
+			stack.push(notification);
+		}
 	}
 
 	getCloseButtonHTML(hasTimer: boolean): string {
@@ -326,18 +423,22 @@ export class Notification {
 		if (!notification) return;
 
 		const notif = notification as NotificationElement;
+		const position = notif.classList.contains('z-notification--top') ? 'top' : 'bottom';
+		const anchor = notif.anchorElement;
+		const stack = anchor ? this.getStack(anchor) : this.bodyStack;
+		const nextStack = stack.filter(item => item !== notif);
+
+		if (anchor) {
+			this.anchorStacks.set(anchor, nextStack);
+		} else {
+			this.bodyStack = nextStack;
+		}
+
 		notif.remove();
 		this.notifications = this.notifications.filter(t => t !== notification);
 
 		clearTimeout(notif.timeoutID);
-
-		if (
-			this.notifications.length === 0 &&
-			this.container instanceof HTMLDialogElement &&
-			this.container.open
-		) {
-			this.container.close();
-		}
+		this.reflowNotifications(position, anchor ?? undefined);
 	}
 
 	removeInlineNotification(container: HTMLElement, inline: InlineNotification): void {
@@ -360,6 +461,7 @@ const notification: NotificationService = {
 	show({
 		type,
 		position,
+		element,
 		icon,
 		message,
 		status,
@@ -367,7 +469,17 @@ const notification: NotificationService = {
 		link,
 		hasTimer,
 	}: NotificationOptions): void {
-		this.notification.show({ type, position, icon, message, status, button, link, hasTimer });
+		this.notification.show({
+			type,
+			position,
+			element,
+			icon,
+			message,
+			status,
+			button,
+			link,
+			hasTimer,
+		});
 	},
 	debug(): void {
 		this.notification.debug();

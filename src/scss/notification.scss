@@ -26,7 +26,10 @@
 	right: auto;
 	top: auto;
 	transform: translateX(-50%);
+	width: max-content;
+	max-width: calc(100vw - (var(--z-ds-space-s) * 2));
 	z-index: constants.$z-index-above-faux-link;
+
 	&--bottom {
 		top: auto;
 		bottom: var(--z-ds-space-s);
@@ -35,29 +38,6 @@
 		top: var(--z-ds-space-s);
 		bottom: auto;
 	}
-
-	@include utils.respond-max(constants.$break-phablet-min) {
-		width: 90vw;
-	}
-}
-
-.z-notification__item {
-	align-items: center;
-	animation: slide-in-from-bottom 0.3s ease-out;
-	background-color: var(--z-ds-color-text-100); // #252525 | #ffffff (lightmode | darkmode)
-	border-radius: var(--z-ds-border-radius-4);
-	color: var(--z-ds-color-background-0); // #ffffff | #232323
-	display: flex;
-	font-size: var(--z-ds-fontsize-14);
-	gap: var(--z-ds-space-6);
-	line-height: var(--z-ds-lineheight-12);
-	margin: auto auto var(--z-ds-space-xs);
-	opacity: 1;
-	padding-block: var(--z-ds-space-12);
-	padding-inline: var(--z-ds-space-16) var(--z-ds-space-56);
-	position: relative;
-	transform: translateY(0);
-	will-change: transform, opacity;
 
 	&--error {
 		// using color-mix to create a custom background color for error notifications (see figma file)
@@ -87,16 +67,35 @@
 		background-color: var(--z-ds-color-background-warning);
 	}
 
-	@keyframes slide-in-from-bottom {
-		0% {
-			opacity: 0;
-			transform: translateY(100%);
-		}
-		100% {
-			opacity: 1;
-			transform: translateY(0);
-		}
+	@include utils.respond-max(constants.$break-phablet-min) {
+		width: 90vw;
 	}
+}
+
+@keyframes z-notification-fade-in {
+	0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+
+.z-notification__item {
+	align-items: center;
+	animation: z-notification-fade-in 0.18s ease-out;
+	background-color: var(--z-ds-color-text-100); // #252525 | #ffffff (lightmode | darkmode)
+	border-radius: var(--z-ds-border-radius-4);
+	color: var(--z-ds-color-background-0); // #ffffff | #232323
+	display: flex;
+	font-size: var(--z-ds-fontsize-14);
+	gap: var(--z-ds-space-6);
+	line-height: var(--z-ds-lineheight-12);
+	margin: 0;
+	opacity: 1;
+	padding-block: var(--z-ds-space-12);
+	padding-inline: var(--z-ds-space-16) var(--z-ds-space-56);
+	will-change: opacity;
 }
 
 .z-notification__icon {
@@ -134,6 +133,12 @@
 			color: var(--z-ds-color-background-10); // #232323
 		}
 	}
+
+	&:focus-visible {
+		border-radius: var(--z-ds-border-radius-2);
+		box-shadow: 0 0 0 2px var(--z-ds-color-general-white-100);
+		outline: none;
+	}
 }
 
 .z-notification__close-btn {
@@ -151,6 +156,12 @@
 	position: absolute;
 	right: var(--z-ds-space-12);
 	width: 26px;
+
+	&:focus-visible {
+		border-radius: 9999px;
+		box-shadow: 0 0 0 2px var(--z-ds-color-general-white-100);
+		outline: none;
+	}
 
 	.z-notification__close-cross {
 		height: 12px;
