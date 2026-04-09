@@ -278,11 +278,16 @@ describe('notification accessibility behavior', () => {
 
 	it('invokes the action callback and removes the notification on click', async () => {
 		const onClick = vi.fn();
+		const trigger = document.createElement('button');
 		const user = userEvent.setup({
 			advanceTimers: vi.advanceTimersByTime,
 		});
+		trigger.textContent = 'Open notification';
+		document.body.append(trigger);
+		trigger.focus();
 
 		notification.show({
+			element: trigger,
 			message: 'Publishing failed. Check the form and try again.',
 			status: 'error',
 			button: {
@@ -295,14 +300,21 @@ describe('notification accessibility behavior', () => {
 
 		expect(onClick).toHaveBeenCalledTimes(1);
 		expect(screen.queryByRole('alert')).toBeNull();
+		expect(document.activeElement).toBe(trigger);
 	});
 
 	it('removes bottom notifications when the close button is clicked', async () => {
+		const trigger = document.createElement('button');
+		trigger.textContent = 'Open notification';
+		document.body.append(trigger);
+		trigger.focus();
+
 		const user = userEvent.setup({
 			advanceTimers: vi.advanceTimersByTime,
 		});
 
 		notification.show({
+			element: trigger,
 			message: 'A new version of notification is available.',
 			status: 'info',
 			link: {
@@ -314,6 +326,7 @@ describe('notification accessibility behavior', () => {
 		await user.click(screen.getByRole('button', { name: 'Schließen' }));
 
 		expect(screen.queryByRole('alert')).toBeNull();
+		expect(document.activeElement).toBe(trigger);
 	});
 
 	it('keeps only the most recent maxNotifications bottom notifications', async () => {
