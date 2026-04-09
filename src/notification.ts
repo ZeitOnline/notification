@@ -15,7 +15,9 @@ import type {
 	NotificationService,
 } from '../index';
 
-const OFFSET_NOTIFICATION = 8;
+const OFFSET_NOTIFICATION = 16;
+const GAP = 8;
+
 const MAX_NOTIFICATIONS_SCREEN = 3;
 
 /**
@@ -247,6 +249,8 @@ export class Notification {
 		if (originator?.parentElement) {
 			const insertionPoint = this.findNotificationInsertionPoint(originator);
 			insertionPoint.insertAdjacentElement('afterend', notification);
+		} else {
+			document.body.insertAdjacentElement('beforeend', notification);
 		}
 	}
 
@@ -276,10 +280,10 @@ export class Notification {
 	}
 
 	repositionNotifications(position: string, element?: HTMLElement): void {
-		let offset = OFFSET_NOTIFICATION; // 8
+		let offset = GAP;
 		this.notifications.forEach((notification, index) => {
-			this.positionNotification(notification, position, offset, index);
-			offset += notification.getBoundingClientRect().height + OFFSET_NOTIFICATION;
+			this.positionNotification(notification, position, offset + OFFSET_NOTIFICATION, index);
+			offset += notification.getBoundingClientRect().height + GAP;
 		});
 	}
 
@@ -293,10 +297,10 @@ export class Notification {
 		notification.style.zIndex = `${1000 + index}`;
 
 		if (position === 'top') {
-			notification.style.top = `${offset}px`;
+			notification.style.top = `calc(${offset}px + env(safe-area-inset-top, 0px))`;
 			notification.style.bottom = 'auto';
 		} else {
-			notification.style.bottom = `${offset}px`;
+			notification.style.bottom = `calc(${offset}px + env(safe-area-inset-bottom, 0px))`;
 			notification.style.top = 'auto';
 		}
 	}
