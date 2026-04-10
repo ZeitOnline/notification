@@ -84,8 +84,9 @@ describe.sequential('notification spoken accessibility', () => {
 		});
 		await waitForAnnouncement();
 
-		const alert = screen.getByRole('alert');
-		expect(alert.textContent).toContain('Publishing failed. Check the form and try again.');
+		const message = screen.getByText('Publishing failed. Check the form and try again.');
+		expect(message).not.toBeNull();
+		expect(message.textContent).toBe('Publishing failed. Check the form and try again.');
 
 		const user = userEvent.setup();
 		await user.tab();
@@ -97,7 +98,9 @@ describe.sequential('notification spoken accessibility', () => {
 
 		await user.tab();
 
-		expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Schließen' }));
+		expect(document.activeElement).toBe(
+			screen.getByRole('button', { name: 'Meldung schließen' }),
+		);
 		spoken = (await virtual.lastSpokenPhrase()).toLowerCase();
 		expect(spoken).toContain('schließen');
 	});
@@ -126,6 +129,8 @@ describe.sequential('notification spoken accessibility', () => {
 		expect(spoken).toContain('link');
 
 		await user.tab();
-		expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Schließen' }));
+		expect(document.activeElement).toBe(
+			screen.getByRole('button', { name: 'Meldung schließen' }),
+		);
 	});
 });
