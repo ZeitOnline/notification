@@ -61,8 +61,10 @@ describe('notification accessibility behavior', () => {
 	});
 
 	it('keeps bottom notification controls in rendered keyboard order and exposes an assertive live message', async () => {
+		const message = 'Publishing failed. Check the form and try again.';
+
 		notification.show({
-			message: 'Publishing failed. Check the form and try again.',
+			message,
 			status: 'error',
 			button: {
 				text: 'Retry',
@@ -73,12 +75,12 @@ describe('notification accessibility behavior', () => {
 		const user = userEvent.setup({
 			advanceTimers: vi.advanceTimersByTime,
 		});
-		const alert = screen.getByRole('alert');
-		const closeButton = screen.getByRole('button', { name: 'Schließen' });
+		const notificationMessage = screen.getByText(message);
+		const closeButton = screen.getByRole('button', { name: 'Meldung schließen' });
 		const actionButton = screen.getByRole('button', { name: 'Retry' });
 
-		expect(alert.getAttribute('aria-live')).toBe('assertive');
-		expect(alert.textContent).toContain('Publishing failed. Check the form and try again.');
+		expect(notificationMessage).not.toBeNull();
+		expect(notificationMessage.textContent).toBe(message);
 
 		await user.tab();
 		expect(document.activeElement).toBe(actionButton);
@@ -100,7 +102,7 @@ describe('notification accessibility behavior', () => {
 		const user = userEvent.setup({
 			advanceTimers: vi.advanceTimersByTime,
 		});
-		const closeButton = screen.getByRole('button', { name: 'Schließen' });
+		const closeButton = screen.getByRole('button', { name: 'Meldung schließen' });
 		const actionLink = screen.getByRole('link', { name: 'Open docs' });
 
 		await user.tab();
@@ -109,6 +111,74 @@ describe('notification accessibility behavior', () => {
 		await user.tab();
 		expect(document.activeElement).toBe(closeButton);
 		expect(actionLink.getAttribute('href')).toBe('https://example.com/docs');
+	});
+
+	it('inserts anchored bottom notifications next to the triggering element', async () => {
+		const trigger = document.createElement('button');
+		trigger.textContent = 'Save';
+		document.body.append(trigger);
+		const message = 'Profile saved successfully.';
+
+		notification.show({
+			element: trigger,
+			message,
+			status: 'success',
+		});
+
+		const container = document.querySelector('.z-notification');
+
+		expect(trigger.nextElementSibling).toBe(container);
+		expect(document.body.querySelectorAll('.z-notification')).toHaveLength(1);
+		expect(document.querySelector('dialog')).toBeNull();
+		expect(container?.classList.contains('z-notification--bottom')).toBe(true);
+		expect(container?.nodeName).toBe('DIV');
+		expect(screen.getByText(message)).not.toBeNull();
+	});
+
+	it('stacks multiple anchored bottom notifications by index', () => {
+		const trigger = document.createElement('button');
+		trigger.textContent = 'Save';
+		document.body.append(trigger);
+
+		const rectSpy = vi
+			.spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+			.mockImplementation(function getBoundingClientRect(this: HTMLElement): DOMRect {
+				const height = this.classList.contains('z-notification') ? 40 : 20;
+				return {
+					x: 0,
+					y: 0,
+					top: 0,
+					left: 0,
+					right: 100,
+					bottom: height,
+					width: 100,
+					height,
+					toJSON: () => ({}),
+				} as DOMRect;
+			});
+
+		notification.show({
+			element: trigger,
+			message: 'First saved toast.',
+			status: 'success',
+		});
+		notification.show({
+			element: trigger,
+			message: 'Second saved toast.',
+			status: 'success',
+		});
+
+		const toasts = Array.from(document.querySelectorAll('.z-notification')) as HTMLElement[];
+
+		expect(toasts).toHaveLength(2);
+		expect(trigger.nextElementSibling).toBe(toasts[0]);
+		expect(toasts[0].nextElementSibling).toBe(toasts[1]);
+		expect(toasts[0].style.bottom).toContain('calc(24px');
+		expect(toasts[1].style.bottom).toContain('calc(72px');
+		expect(toasts[0].style.zIndex).toBe('1000');
+		expect(toasts[1].style.zIndex).toBe('1001');
+
+		rectSpy.mockRestore();
 	});
 
 	it('removes inline notifications after the configured timeout', async () => {
@@ -175,50 +245,64 @@ describe('notification accessibility behavior', () => {
 	});
 
 	it('removes bottom notifications after the configured timeout', async () => {
+		const message = 'Publishing failed. Check the form and try again.';
+
 		notification.show({
-			message: 'Publishing failed. Check the form and try again.',
+			message,
 			status: 'error',
 			hasTimer: true,
 		});
 
-		expect(screen.getByRole('alert')).not.toBeNull();
+		expect(screen.getByText(message)).not.toBeNull();
 
 		await vi.advanceTimersByTimeAsync(notification.notificationTimeout);
 
-		expect(screen.queryByRole('alert')).toBeNull();
+		expect(screen.queryByText(message)).toBeNull();
 	});
 
 	it('pauses and resumes the bottom notification timeout on pointer hover', async () => {
+		const message = 'Publishing failed. Check the form and try again.';
+
 		notification.show({
-			message: 'Publishing failed. Check the form and try again.',
+			message,
 			status: 'error',
 			hasTimer: true,
 		});
 
-		const alert = screen.getByRole('alert');
+		const notificationMessage = screen.getByText(message);
+		const notificationElement = notificationMessage.closest(
+			'.z-notification',
+		) as HTMLElement | null;
+		expect(notificationElement).not.toBeNull();
 
 		await vi.advanceTimersByTimeAsync(2000);
-		alert.dispatchEvent(new Event('pointerenter'));
+		notificationElement?.dispatchEvent(new Event('pointerenter'));
 		await vi.advanceTimersByTimeAsync(4000);
 
-		expect(screen.getByRole('alert')).toBe(alert);
+		expect(screen.getByText(message)).toBe(notificationMessage);
 
-		alert.dispatchEvent(new Event('pointerleave'));
+		notificationElement?.dispatchEvent(new Event('pointerleave'));
 		await vi.advanceTimersByTimeAsync(1999);
-		expect(screen.getByRole('alert')).toBe(alert);
+		expect(screen.getByText(message)).toBe(notificationMessage);
 
 		await vi.advanceTimersByTimeAsync(1);
-		expect(screen.queryByRole('alert')).toBeNull();
+		expect(screen.queryByText(message)).toBeNull();
 	});
 
 	it('invokes the action callback and removes the notification on click', async () => {
 		const onClick = vi.fn();
+		const trigger = document.createElement('button');
 		const user = userEvent.setup({
 			advanceTimers: vi.advanceTimersByTime,
 		});
+		const message = 'Publishing failed. Check the form and try again.';
+		trigger.textContent = 'Open notification';
+		document.body.append(trigger);
+		trigger.focus();
 
 		notification.show({
-			message: 'Publishing failed. Check the form and try again.',
+			element: trigger,
+			message,
 			status: 'error',
 			button: {
 				text: 'Retry',
@@ -229,15 +313,22 @@ describe('notification accessibility behavior', () => {
 		await user.click(screen.getByRole('button', { name: 'Retry' }));
 
 		expect(onClick).toHaveBeenCalledTimes(1);
-		expect(screen.queryByRole('alert')).toBeNull();
+		expect(screen.queryByText(message)).toBeNull();
+		expect(document.activeElement).toBe(trigger);
 	});
 
 	it('removes bottom notifications when the close button is clicked', async () => {
+		const trigger = document.createElement('button');
+		trigger.textContent = 'Open notification';
+		document.body.append(trigger);
+		trigger.focus();
+
 		const user = userEvent.setup({
 			advanceTimers: vi.advanceTimersByTime,
 		});
 
 		notification.show({
+			element: trigger,
 			message: 'A new version of notification is available.',
 			status: 'info',
 			link: {
@@ -246,9 +337,10 @@ describe('notification accessibility behavior', () => {
 			},
 		});
 
-		await user.click(screen.getByRole('button', { name: 'Schließen' }));
+		await user.click(screen.getByRole('button', { name: 'Meldung schließen' }));
 
-		expect(screen.queryByRole('alert')).toBeNull();
+		expect(screen.queryByText('A new version of notification is available.')).toBeNull();
+		expect(document.activeElement).toBe(trigger);
 	});
 
 	it('keeps only the most recent maxNotifications bottom notifications', async () => {
@@ -257,7 +349,7 @@ describe('notification accessibility behavior', () => {
 		notification.show({ message: 'Third notification', status: 'info' });
 		notification.show({ message: 'Fourth notification', status: 'info' });
 
-		expect(screen.queryAllByRole('alert')).toHaveLength(3);
+		expect(screen.queryAllByText(/notification$/)).toHaveLength(3);
 		expect(screen.queryByText('First notification')).toBeNull();
 		expect(screen.getByText('Second notification')).not.toBeNull();
 		expect(screen.getByText('Third notification')).not.toBeNull();
@@ -289,8 +381,8 @@ describe('notification accessibility behavior', () => {
 			message: 'This is an error notification.',
 			status: 'error',
 		});
-		const container = document.querySelector('.z-notification__item');
-		expect(container?.className).toContain('z-notification__item--error');
+		const container = document.querySelector('.z-notification');
+		expect(container?.className).toContain('z-notification--error');
 	});
 
 	it('renders notification with timer', async () => {
@@ -299,8 +391,8 @@ describe('notification accessibility behavior', () => {
 			status: 'error',
 			hasTimer: true,
 		});
-		const closeButton = document.querySelector('.z-notification__close-btn');
-		expect(closeButton?.className).toContain('z-notification__close-btn--timer');
+		const closeButton = screen.getByRole('button', { name: 'Meldung schließen' });
+		expect(closeButton.className).toContain('z-notification__close-btn--timer');
 	});
 
 	it('renders notification without timer being visible permanently', async () => {
@@ -309,7 +401,7 @@ describe('notification accessibility behavior', () => {
 			status: 'error',
 			hasTimer: false,
 		});
-		const closeButton = document.querySelector('.z-notification__close-btn');
+		const closeButton = screen.getByRole('button', { name: 'Meldung schließen' });
 		expect(closeButton?.className).not.toContain('z-notification__close-btn--timer');
 	});
 
@@ -319,7 +411,6 @@ describe('notification accessibility behavior', () => {
 			message: 'First foo notification',
 		});
 
-		expect(screen.queryAllByRole('alert')).toHaveLength(1);
 		expect(screen.getByText('First foo notification')).not.toBeNull();
 
 		notification.show({
@@ -327,7 +418,6 @@ describe('notification accessibility behavior', () => {
 			message: 'Second foo notification',
 		});
 
-		expect(screen.queryAllByRole('alert')).toHaveLength(1);
 		expect(screen.queryByText('First foo notification')).toBeNull();
 		expect(screen.getByText('Second foo notification')).not.toBeNull();
 	});
@@ -343,7 +433,6 @@ describe('notification accessibility behavior', () => {
 			message: 'Share notification',
 		});
 
-		expect(screen.queryAllByRole('alert')).toHaveLength(2);
 		expect(screen.getByText('Foo notification')).not.toBeNull();
 		expect(screen.getByText('Share notification')).not.toBeNull();
 	});

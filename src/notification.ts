@@ -13,15 +13,21 @@ import type {
 	InlineNotification,
 	NotificationElement,
 	NotificationService,
+	NotificationPosition,
 } from '../index';
+
+const GAP_STACKING = 8;
+const MAX_NUMBER_OF_NOTIFICATIONS = 3;
+const OFFSET = 16;
+const ZINDEX_BASE = 1000;
 
 // Notifications manage ui elements and keep you informed about results, warnings and errors.
 // This includes deciding which type of notification to show (e.g., inline or bottom).
 export class Notification {
 	static instance: Notification | undefined;
+	originatorCounter = 0;
 	notifications!: NotificationElement[];
-	maxNotifications!: number;
-	container!: HTMLDialogElement | HTMLDivElement | null;
+	container!: HTMLDivElement | null;
 	notificationTimeout!: number;
 
 	constructor() {
@@ -30,13 +36,13 @@ export class Notification {
 		}
 		Notification.instance = this;
 		this.notifications = [];
-		this.maxNotifications = 3;
 		this.container = null;
 		this.notificationTimeout = 4000;
 	}
 	show({
 		type,
 		position = 'bottom',
+		element,
 		icon,
 		message,
 		status,
@@ -44,9 +50,13 @@ export class Notification {
 		link,
 		hasTimer,
 	}: NotificationOptions): void {
-		this.container = this.createContainer(position);
+		if (type) {
+			const notificationsToRemove = this.notifications.filter(item => item.type === type);
+			notificationsToRemove.forEach(item => this.removeNotification(item));
+		}
 
-		let notification = this.createNotification({
+		const notification = this.createNotification({
+			element,
 			type,
 			icon,
 			message,
@@ -56,25 +66,16 @@ export class Notification {
 			hasTimer,
 		});
 
-		if (this.notifications.length > 0 && type) {
-			this.notifications = this.notifications.filter(item => {
-				if (item.type === type) {
-					this.removeNotification(item);
-					return false;
-				}
-				return true;
-			});
-		}
+		this.insertNotification(notification, position, element);
 		this.notifications.push(notification);
+		this.positionNotifications(position);
 
-		if (this.notifications.length > this.maxNotifications) {
+		if (this.notifications.length > MAX_NUMBER_OF_NOTIFICATIONS) {
 			this.removeNotification(this.notifications[0]);
 		}
 
-		(this.container as HTMLDialogElement).show();
-
 		if (notification.hasTimer) {
-			this.startTimeout(notification as NotificationElement);
+			this.startTimeout(notification);
 		}
 	}
 
@@ -154,33 +155,24 @@ export class Notification {
 		return container;
 	}
 
-	createContainer(position: string): HTMLDialogElement {
-		let container = document.querySelector('.z-notification') as HTMLDialogElement | null;
-		if (!container) {
-			container = document.createElement('dialog');
-			container.className =
-				'z-notification z-notification--' + (position === 'top' ? 'top' : 'bottom');
-			document.body.insertAdjacentElement('beforeend', container);
-		}
-		return container;
-	}
-
 	/**
 	 * Creates a div element with NotificationElement properties initialized.
 	 * This allows us to attach custom properties (elapsed, isPaused, etc.) to the element.
 	 */
-	createNotificationElement(): NotificationElement {
-		const el = document.createElement('div') as HTMLDivElement & NotificationElement;
+	createNotificationElement(element: HTMLElement): NotificationElement {
+		const el = document.createElement('div') as NotificationElement;
 		el.type = null;
 		el.hasTimer = false;
 		el.isPaused = false;
 		el.timeoutID = 0;
 		el.elapsed = 0;
 		el.startedAt = 0;
+		el.anchorElement = element;
 		return el;
 	}
 
 	createNotification({
+		element = document.body,
 		type,
 		icon,
 		message,
@@ -188,33 +180,32 @@ export class Notification {
 		button,
 		link,
 		hasTimer,
-	}: NotificationOptions): NotificationElement {
-		const notification = this.createNotificationElement();
-		const modStatus = `z-notification__item--${status}`;
-		notification.className = `z-notification__item ${modStatus}`;
-		notification.setAttribute('role', 'alert');
-		notification.setAttribute('aria-live', 'assertive');
+	}: Omit<NotificationOptions, 'position'>): NotificationElement {
+		const notification = this.createNotificationElement(element);
+		notification.className = `z-notification z-notification--${status}`;
+
+		const buttonClass = 'z-notification__action-btn';
 
 		// prettier-ignore
 		notification.innerHTML = this.getSvgIcon(icon) +
-			(message ? `<span class="z-notification__message">${message}</span>` : '') +
-			(link ? `<a href="${link.href}" class="z-notification__action-btn">${link.text}</a>` : '') +
-			(!link && button ? `<button class="z-notification__action-btn">${button.text}</button>` : '') +
+			(message ? `<span aria-live="polite" class="z-notification__message">${message}</span>` : '') +
+			(link ? `<a href="${link.href}" class="${buttonClass}">${link.text}</a>` : '') +
+			(!link && button ? `<button class="${buttonClass}">${button.text}</button>` : '') +
 			this.getCloseButtonHTML(!!hasTimer);
-
-		(this.container as HTMLElement).appendChild(notification);
 
 		if (button && button.onClick) {
 			const actionElement = notification.querySelector(
-				'.z-notification__action-btn',
-			) as HTMLElement;
+				`.${buttonClass}`,
+			) as HTMLButtonElement;
 			actionElement.onclick = () => {
 				button.onClick();
 				this.removeNotification(notification);
 			};
 		}
 
-		const closeButton = notification.querySelector('.z-notification__close-btn') as HTMLElement;
+		const closeButton = notification.querySelector(
+			'.z-notification__close-btn',
+		) as HTMLButtonElement;
 		if (closeButton) {
 			closeButton.style.setProperty(
 				'--z-notification-duration',
@@ -235,13 +226,72 @@ export class Notification {
 		return notification;
 	}
 
+	insertNotification(
+		notification: NotificationElement,
+		position: NotificationPosition,
+		originator: HTMLElement,
+	): void {
+		notification.classList.add(
+			position === 'top' ? 'z-notification--top' : 'z-notification--bottom',
+		);
+		notification.anchorElement = originator;
+
+		const parent = originator?.parentElement;
+		if (parent && parent !== document.body) {
+			const insertionPoint = this.findNotificationInsertionPoint(originator);
+			insertionPoint.insertAdjacentElement('afterend', notification);
+		} else {
+			document.body.insertAdjacentElement('beforeend', notification);
+		}
+	}
+
+	findNotificationInsertionPoint(originator: HTMLElement): HTMLElement {
+		let insertionPoint = originator;
+		while (
+			insertionPoint.nextElementSibling &&
+			this.isNotificationElement(insertionPoint.nextElementSibling)
+		) {
+			insertionPoint = insertionPoint.nextElementSibling as HTMLElement;
+		}
+		return insertionPoint;
+	}
+
+	getNotificationAnchor(notification: HTMLElement): HTMLElement | null {
+		let anchor: Element | null = notification.previousElementSibling;
+
+		while (anchor && this.isNotificationElement(anchor)) {
+			anchor = anchor.previousElementSibling;
+		}
+
+		return anchor instanceof HTMLElement ? anchor : null;
+	}
+
+	isNotificationElement(element: Element): element is NotificationElement {
+		return element.classList.contains('z-notification');
+	}
+
+	positionNotifications(position: NotificationPosition): void {
+		let offset = GAP_STACKING + OFFSET;
+		this.notifications.forEach((notification, index) => {
+			if (position === 'bottom') {
+				notification.style.bottom = `calc(${offset}px + env(safe-area-inset-bottom, 0px))`;
+				notification.style.top = 'auto';
+			} else {
+				notification.style.bottom = 'auto';
+				notification.style.top = `calc(${offset}px + env(safe-area-inset-top, 0px))`;
+			}
+			notification.style.zIndex = `${ZINDEX_BASE + index}`;
+			offset += notification.getBoundingClientRect().height + GAP_STACKING;
+		});
+	}
+
 	getCloseButtonHTML(hasTimer: boolean): string {
 		const modTimer = hasTimer ? ' z-notification__close-btn--timer' : '';
 		const TIMER_HTML = `<svg class="z-notification__close-ring" viewBox="0 0 24 24" aria-hidden="true">
 			<circle cx="12" cy="12" r="11.5"/>
 		</svg>`;
 		return (
-			`<button class="z-notification__close-btn${modTimer}" aria-label="Schließen">` +
+			`<button class="z-notification__close-btn${modTimer}" aria-label="Meldung schließen">` +
 			(hasTimer ? TIMER_HTML : '') +
 			`<svg class="z-notification__close-cross" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 				<path d="M15 15L3 3" stroke="currentColor" stroke-width="1.5"/>
@@ -322,22 +372,18 @@ export class Notification {
 		notification.addEventListener('pointerleave', resume);
 	}
 
-	removeNotification(notification: HTMLElement | null): void {
+	removeNotification(notification: NotificationElement | null): void {
 		if (!notification) return;
 
-		const notif = notification as NotificationElement;
-		notif.remove();
+		const position = notification.classList.contains('z-notification--top') ? 'top' : 'bottom';
+		const anchor = notification.anchorElement;
+
+		clearTimeout(notification.timeoutID);
+		notification.remove();
+
 		this.notifications = this.notifications.filter(t => t !== notification);
-
-		clearTimeout(notif.timeoutID);
-
-		if (
-			this.notifications.length === 0 &&
-			this.container instanceof HTMLDialogElement &&
-			this.container.open
-		) {
-			this.container.close();
-		}
+		this.positionNotifications(position);
+		anchor?.focus();
 	}
 
 	removeInlineNotification(container: HTMLElement, inline: InlineNotification): void {
@@ -360,6 +406,7 @@ const notification: NotificationService = {
 	show({
 		type,
 		position,
+		element,
 		icon,
 		message,
 		status,
@@ -367,7 +414,17 @@ const notification: NotificationService = {
 		link,
 		hasTimer,
 	}: NotificationOptions): void {
-		this.notification.show({ type, position, icon, message, status, button, link, hasTimer });
+		this.notification.show({
+			type,
+			position,
+			element,
+			icon,
+			message,
+			status,
+			button,
+			link,
+			hasTimer,
+		});
 	},
 	debug(): void {
 		this.notification.debug();
