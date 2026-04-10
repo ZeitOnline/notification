@@ -8,9 +8,12 @@ export type LinkOptions = {
 	href: string;
 };
 
+export type NotificationPosition = 'top' | 'bottom';
+
 export type NotificationOptions = {
 	type?: string;
-	position?: 'top' | 'bottom';
+	position?: NotificationPosition;
+	element?: HTMLElement;
 	icon?: string;
 	message: string;
 	status?: 'error' | 'success' | 'warning' | 'info';
@@ -28,13 +31,14 @@ export type InlineNotification = {
 	timeoutID: number | null;
 };
 
-export interface NotificationElement extends HTMLElement {
+export interface NotificationElement extends HTMLDivElement {
 	type: string | null;
 	hasTimer: boolean;
 	isPaused: boolean;
 	timeoutID: number;
 	elapsed: number;
 	startedAt: number;
+	anchorElement: HTMLElement;
 }
 
 export type NotificationService = {
