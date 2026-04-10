@@ -191,12 +191,10 @@ export class Notification {
 		const notification = this.createNotificationElement();
 		const modStatus = `z-notification__item--${status}`;
 		notification.className = `z-notification z-notification__item ${modStatus}`;
-		notification.setAttribute('role', 'alert');
-		notification.setAttribute('aria-live', 'assertive');
 
 		// prettier-ignore
 		notification.innerHTML = this.getSvgIcon(icon) +
-			(message ? `<span class="z-notification__message">${message}</span>` : '') +
+			(message ? `<span aria-live="polite" class="z-notification__message">${message}</span>` : '') +
 			(link ? `<a href="${link.href}" class="z-notification__action-btn">${link.text}</a>` : '') +
 			(!link && button ? `<button class="z-notification__action-btn">${button.text}</button>` : '') +
 			this.getCloseButtonHTML(!!hasTimer);
@@ -306,12 +304,12 @@ export class Notification {
 	}
 
 	getCloseButtonHTML(hasTimer: boolean): string {
-		const modTimer = hasTimer ? ' z-notification__close-btn--timer' : '';
+		const modTimer = hasTimer ? 'z-notification__close-btn--timer' : '';
 		const TIMER_HTML = `<svg class="z-notification__close-ring" viewBox="0 0 24 24" aria-hidden="true">
 			<circle cx="12" cy="12" r="11.5"/>
 		</svg>`;
 		return (
-			`<button class="z-notification__close-btn${modTimer}" aria-label="Schließen">` +
+			`<button class="z-notification__close-btn${modTimer}" aria-label="Meldung schließen">` +
 			(hasTimer ? TIMER_HTML : '') +
 			`<svg class="z-notification__close-cross" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 				<path d="M15 15L3 3" stroke="currentColor" stroke-width="1.5"/>
