@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Focus Test - Notification Dialog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="favicon.svg" />
+    <link rel="stylesheet" href="../src/assets/css/design-system.css" />
+    <link rel="stylesheet" href="../src/scss/notification.scss" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .test-section {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--z-ds-space-l);
+        }
+
+        h1 {
+            margin-bottom: var(--z-ds-space-m);
+        }
+
+        .focus-info {
+            margin-block: var(--z-ds-space-xl);
+            padding: 2px var(--z-ds-space-m);
+            border-left: 4px solid var(--z-ds-color-focus-100);
+            border-radius: 4px;
+        }
+
+        .focus-info code {
+            background: #333;
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        #focus-log {
+            margin-top: var(--z-ds-space-m);
+            padding: var(--z-ds-space-m);
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            font-size: 14px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .focus-timestamp {
+            color: #888;
+        }
+    </style>
+</head>
+
+<body>
+    <nav aria-label="Main Navigation">
+        <div>
+            <a href="index.html">home</a>
+            <a href="focus-test.html">focus test</a>
+        </div>
+
+        <fieldset class="theme-switcher" aria-label="Select a display theme">
+            <legend class="sr-only">Select a display theme:</legend>
+            <span class="theme-option">
+                <input id="theme-switch-system" name="theme-option" type="radio" value="system" aria-label="system"
+                    checked />
+                <label for="theme-switch-system">
+                    <span class="sr-only">system</span>
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true">
+                        <g id="18x18 / System">
+                            <path id="Fill" fill-rule="evenodd" clip-rule="evenodd"
+                                d="M4.5 1C3.67157 1 3 1.67157 3 2.5V15.75C3 16.5784 3.67157 17.25 4.5 17.25H13.5C14.3284 17.25 15 16.5784 15 15.75V2.5C15 1.67157 14.3284 1 13.5 1H4.5ZM4.5 2.5L13.5 2.5V15.75H4.5V2.5ZM9 14.5C9.55228 14.5 10 14.0523 10 13.5C10 12.9477 9.55228 12.5 9 12.5C8.44772 12.5 8 12.9477 8 13.5C8 14.0523 8.44772 14.5 9 14.5Z"
+                                fill="currentColor"></path>
+                        </g>
+                    </svg>
+                </label>
+            </span>
+            <span class="theme-option">
+                <input id="theme-switch-light" name="theme-option" type="radio" value="light" aria-label="light" />
+                <label for="theme-switch-light">
+                    <span class="sr-only">light</span>
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true">
+                        <g id="18x18 / Sun">
+                            <path id="Fill" fill-rule="evenodd" clip-rule="evenodd"
+                                d="M9.75 3.5V1H8.25V3.5H9.75ZM2.81282 3.87348L4.58058 5.64124L5.64124 4.58058L3.87348 2.81282L2.81282 3.87348ZM14.1265 2.8133L12.3588 4.58107L13.4194 5.64173L15.1872 3.87396L14.1265 2.8133ZM3.5 8.25H1V9.75H3.5V8.25ZM17 8.25H14.5V9.75H17V8.25ZM12.3588 13.4194L14.1265 15.1872L15.1872 14.1265L13.4194 12.3588L12.3588 13.4194ZM4.58058 12.3592L2.81282 14.127L3.87348 15.1877L5.64124 13.4199L4.58058 12.3592ZM9.75 17V14.5H8.25V17H9.75ZM6.5 9C6.5 7.61929 7.61929 6.5 9 6.5C10.3807 6.5 11.5 7.61929 11.5 9C11.5 10.3807 10.3807 11.5 9 11.5C7.61929 11.5 6.5 10.3807 6.5 9ZM9 5C6.79086 5 5 6.79086 5 9C5 11.2091 6.79086 13 9 13C11.2091 13 13 11.2091 13 9C13 6.79086 11.2091 5 9 5Z"
+                                fill="currentColor"></path>
+                        </g>
+                    </svg>
+                </label>
+            </span>
+            <span class="theme-option">
+                <input id="theme-switch-dark" name="theme-option" type="radio" value="dark" aria-label="dark" />
+                <label for="theme-switch-dark">
+                    <span class="sr-only">dark</span>
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true">
+                        <g id="18x18 / Moon">
+                            <path id="Fill"
+                                d="M1.75 9.00039C1.75 5.84041 3.77221 3.15169 6.59304 2.15929C5.81481 5.09424 6.64182 8.24237 9.06765 10.0394C11.1189 11.559 13.7493 11.6889 16.0476 10.709C15.2796 13.8884 12.4155 16.2504 9 16.2504C4.99594 16.2504 1.75 13.0045 1.75 9.00039Z"
+                                stroke="currentColor" stroke-width="1.5"></path>
+                        </g>
+                    </svg>
+                </label>
+            </span>
+        </fieldset>
+    </nav>
+    <div class="test-section">
+        <h1>🔍 Focus Management Test</h1>
+
+        <div class="focus-info">
+            <p><strong>What to observe:</strong></p>
+            <ul>
+                <li>Click a button below to trigger a notification</li>
+                <li>Watch for the <strong style="color: var(--z-ds-color-focus-100)">BLUE GLOW</strong> around the
+                    focused element</li>
+                <li>Current behavior: Focus moves to dialog</li>
+                <li>Expected behavior: Focus stays on button</li>
+                <li>Check the console log below for focus events</li>
+            </ul>
+            <p><strong>Keyboard test:</strong> Use <code>Tab</code> key to see where focus goes after clicking</p>
+        </div>
+
+        <div class="button-group">
+            <button type="button" class="button" id="btn-info">
+                Trigger Info Notification
+            </button>
+            <button type="button" class="button" id="btn-action">
+                Trigger Action Notification
+            </button>
+            <button type="button" class="button" id="btn-error">
+                Trigger Error Notification
+            </button>
+            <button type="button" class="button" id="btn-timer">
+                Notification with Timer
+            </button>
+        </div>
+
+        <div class="button-group">
+            <button type="button" class="button" id="btn-reset-log">
+                Reset Log
+            </button>
+        </div>
+
+        <div id="focus-log">
+            <div><strong>Focus Event Log:</strong></div>
+        </div>
+    </div>
+
+    <script>
+        window.Zeit = window.Zeit || {};
+    </script>
+
+    <script type="module">
+        import { initThemeSwitcher } from './theme-switcher.js';
+        import notification from "/index.js";
+        initThemeSwitcher();
+
+        const logElement = document.getElementById('focus-log');
+
+        function logFocus(message) {
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.innerHTML = `<span class="focus-timestamp">[${time}]</span> ${message}`;
+            logElement.appendChild(entry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        // Track all focus changes
+        document.addEventListener('focusin', (e) => {
+            const target = e.target;
+            let description = target.tagName.toLowerCase();
+
+            if (target.id) description += `#${target.id}`;
+            if (target.className) description += `.${target.className.split(' ')[0]}`;
+            if (target.tagName === 'DIALOG') description += ' (NOTIFICATION DIALOG)';
+
+            logFocus(`Focus moved to: <strong>${description}</strong>`);
+        });
+
+        // Track blur events
+        document.addEventListener('focusout', (e) => {
+            const target = e.target;
+            let description = target.tagName.toLowerCase();
+            if (target.id) description += `#${target.id}`;
+
+            logFocus(`Focus left: ${description}`);
+        });
+
+        // Button handlers
+        document.getElementById('btn-action').addEventListener('click', function () {
+            logFocus('🔘 Button clicked: Trigger Action Notification');
+            notification.show({
+                element: this,
+                status: 'info',
+                message: 'This is an action message',
+                button: {
+                    text: 'Undo',
+                    onClick: () => {
+                        logFocus('🔘 Action button clicked: Undo action triggered');
+                        alert('Undo action executed!');
+                    }
+                },
+                hasTimer: true,
+            });
+        });
+
+        document.getElementById('btn-info').addEventListener('click', function () {
+            logFocus('🔘 Button clicked: Trigger Info Notification');
+            notification.show({
+                element: this,
+                status: 'info',
+                message: 'This is an info message',
+                hasTimer: false,
+            });
+        });
+
+        document.getElementById('btn-error').addEventListener('click', function () {
+            logFocus('🔘 Button clicked: Trigger Error Notification');
+            notification.show({
+                element: this,
+                status: 'error',
+                message: 'This is an error message',
+                hasTimer: false,
+            });
+        });
+
+        document.getElementById('btn-timer').addEventListener('click', function () {
+            logFocus('🔘 Button clicked: Trigger Timed Notification');
+            notification.show({
+                element: this,
+                status: 'success',
+                message: 'This message will auto-dismiss',
+                hasTimer: true,
+            });
+        });
+
+        document.getElementById('btn-reset-log').addEventListener('click', function () {
+            logElement.innerHTML = '<div><strong>Focus Event Log:</strong></div>';
+        });
+
+        logFocus('Page loaded. Click a button to test focus behavior.');
+    </script>
+</body>
+
+</html>
