@@ -1,5 +1,9 @@
 @import './theme-switcher.css';
 
+:root {
+	--z-index-notification: 800;
+}
+
 html,
 body {
 	margin: 0;
