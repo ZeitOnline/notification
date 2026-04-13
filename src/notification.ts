@@ -19,7 +19,12 @@ import type {
 const GAP_STACKING = 8;
 const MAX_NUMBER_OF_NOTIFICATIONS = 3;
 const OFFSET = 16;
-const ZINDEX_BASE = 1000;
+const ZINDEX_BASE =
+	parseInt(
+		getComputedStyle(document.documentElement)
+			.getPropertyValue('--z-index-notification')
+			.trim(),
+	) || 800;
 
 // Notifications manage ui elements and keep you informed about results, warnings and errors.
 // This includes deciding which type of notification to show (e.g., inline or bottom).

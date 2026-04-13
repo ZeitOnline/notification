@@ -40,7 +40,7 @@
 	top: auto;
 	width: max-content;
 	will-change: opacity;
-	z-index: constants.$z-index-above-faux-link;
+	z-index: constants.$z-index-notification;
 
 	&--bottom {
 		top: auto;
