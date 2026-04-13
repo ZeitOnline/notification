@@ -33,6 +33,7 @@ export type InlineNotification = {
 
 export interface NotificationElement extends HTMLDivElement {
 	type: string | null;
+	position: NotificationPosition;
 	hasTimer: boolean;
 	isPaused: boolean;
 	timeoutID: number;

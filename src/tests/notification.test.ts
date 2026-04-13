@@ -175,12 +175,62 @@ describe('notification accessibility behavior', () => {
 		expect(toasts[0].nextElementSibling).toBe(toasts[1]);
 		expect(toasts[0].style.bottom).toContain('calc(24px');
 		expect(toasts[1].style.bottom).toContain('calc(72px');
-		expect(toasts[0].style.zIndex).toBe('1000');
-		expect(toasts[1].style.zIndex).toBe('1001');
+		expect(toasts[0].style.zIndex).toBe('800');
+		expect(toasts[1].style.zIndex).toBe('801');
 		expect(toasts[0].style.getPropertyValue('--z-notification-motion-index')).toBe('1');
 		expect(toasts[1].style.getPropertyValue('--z-notification-motion-index')).toBe('2');
 		expect(toasts[0].style.getPropertyValue('--z-notification-motion-direction')).toBe('1');
 		expect(toasts[1].style.getPropertyValue('--z-notification-motion-direction')).toBe('1');
+
+		rectSpy.mockRestore();
+	});
+
+	it('keeps top and bottom notification stacks independent', () => {
+		const trigger = document.createElement('button');
+		trigger.textContent = 'Save';
+		document.body.append(trigger);
+
+		const rectSpy = vi
+			.spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+			.mockImplementation(function getBoundingClientRect(this: HTMLElement): DOMRect {
+				const height = this.classList.contains('z-notification') ? 40 : 20;
+				return {
+					x: 0,
+					y: 0,
+					top: 0,
+					left: 0,
+					right: 100,
+					bottom: height,
+					width: 100,
+					height,
+					toJSON: () => ({}),
+				} as DOMRect;
+			});
+
+		notification.show({
+			element: trigger,
+			message: 'Bottom toast.',
+			status: 'success',
+			position: 'bottom',
+		});
+		notification.show({
+			element: trigger,
+			message: 'Top toast.',
+			status: 'info',
+			position: 'top',
+		});
+
+		const bottomToast = screen
+			.getByText('Bottom toast.')
+			.closest('.z-notification') as HTMLElement;
+		const topToast = screen.getByText('Top toast.').closest('.z-notification') as HTMLElement;
+
+		expect(bottomToast.classList.contains('z-notification--bottom')).toBe(true);
+		expect(topToast.classList.contains('z-notification--top')).toBe(true);
+		expect(bottomToast.style.bottom).toContain('calc(24px');
+		expect(bottomToast.style.top).toBe('auto');
+		expect(topToast.style.top).toContain('calc(24px');
+		expect(topToast.style.bottom).toBe('auto');
 
 		rectSpy.mockRestore();
 	});
