@@ -29,31 +29,30 @@
 }
 
 .z-notification {
-	background-color: transparent;
-	border: 0;
-	left: auto;
-	right: auto;
-	padding: 0;
-	position: fixed;
-	top: auto;
-	width: max-content;
-	max-width: calc(100vw - (var(--z-ds-space-s) * 2));
-	z-index: constants.$z-index-above-faux-link;
 	align-items: center;
 	animation: z-notification-fade-in 0.18s ease-out;
+	background-color: transparent;
 	background-color: var(--z-ds-color-text-100);
 	border-radius: var(--z-ds-border-radius-4);
+	border: 0;
 	color: var(--z-ds-color-background-0);
 	display: flex;
 	font-size: var(--z-ds-fontsize-14);
 	gap: var(--z-ds-space-6);
+	left: 0;
 	line-height: var(--z-ds-lineheight-12);
-	margin: 0;
+	margin-inline: auto;
+	max-width: calc(100vw - (var(--z-ds-space-s) * 2));
 	opacity: 1;
 	padding-block: var(--z-ds-space-12);
 	padding-inline: var(--z-ds-space-16) var(--z-ds-space-56);
 	transform: translateY(0);
 	will-change: opacity, transform;
+	position: fixed;
+	right: 0;
+	top: auto;
+	width: max-content;
+	z-index: constants.$z-index-notification;
 
 	&--bottom {
 		top: auto;
@@ -151,9 +150,9 @@
 }
 
 .z-notification__icon {
-	stroke: none;
 	fill: currentColor;
 	height: var(--z-ds-fontsize-18);
+	stroke: none;
 	width: auto;
 }
 
@@ -188,8 +187,7 @@
 
 	&:focus-visible {
 		border-radius: var(--z-ds-border-radius-2);
-		box-shadow: 0 0 0 2px var(--z-ds-color-general-white-100);
-		outline: none;
+		outline: 2px solid var(--z-ds-color-focus-100);
 	}
 }
 
