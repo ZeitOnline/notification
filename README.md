@@ -59,8 +59,16 @@ trigger?.addEventListener('click', () => {
 		element: trigger,
 		message: 'Link copied to clipboard.',
 	});
+
+	notification.show({
+		element: trigger,
+		message: 'Der Artikel wurde gespeichert.',
+		status: 'success',
+	});
 });
 ```
+
+When `element` is provided for a bottom toast, the notification is inserted as the trigger's next sibling and the stack is reflowed from there.
 
 If you use the `icon` option, the notification expects an SVG symbol in the page with the id pattern `svg-<name>`.
 
@@ -88,6 +96,7 @@ notification.show({
 ## What the package provides
 
 - Bottom notifications with `top` or `bottom` placement.
+- Bottom notifications can be anchored next to the triggering element for better reading order.
 - Status variants for `success`, `warning`, `info` and `error`.
 - Optional action button or link.
 - Inline notifications anchored to the element that triggered them.

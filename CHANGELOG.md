@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0](https://github.com/ZeitOnline/notification/compare/notification-v1.3.0...notification-v1.4.0) (2026-04-10)
+
+
+### 🚀 Features
+
+* improve focus management   ([#37](https://github.com/ZeitOnline/notification/issues/37)) ([95a2e62](https://github.com/ZeitOnline/notification/commit/95a2e625a35ed024009c149dd0caeaebf534ba53))
+
+
+### 📝 Other Changes
+
+* simplify and optimize logic for notification focusing ([95a2e62](https://github.com/ZeitOnline/notification/commit/95a2e625a35ed024009c149dd0caeaebf534ba53))
+
 ## [1.3.0](https://github.com/ZeitOnline/notification/compare/notification-v1.2.0...notification-v1.3.0) (2026-04-02)
 
 

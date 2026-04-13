@@ -9,7 +9,7 @@
 	border-radius: var(--z-ds-border-radius-4);
 	color: var(--z-ds-color-background-0);
 	font-size: var(--z-ds-fontsize-14);
-	height: unset; // fix normalize rule to set to "fit-content", breaking in Safari 14
+	height: unset;
 	line-height: var(--z-ds-lineheight-12);
 	margin: 0;
 	padding: var(--z-ds-space-s) var(--z-ds-space-m);
@@ -19,14 +19,29 @@
 .z-notification {
 	background-color: transparent;
 	border: 0;
-	bottom: var(--z-ds-space-s);
-	left: 50%;
+	left: auto;
+	right: auto;
 	padding: 0;
 	position: fixed;
-	right: auto;
 	top: auto;
-	transform: translateX(-50%);
+	width: max-content;
+	max-width: calc(100vw - (var(--z-ds-space-s) * 2));
 	z-index: constants.$z-index-above-faux-link;
+	align-items: center;
+	animation: z-notification-fade-in 0.18s ease-out;
+	background-color: var(--z-ds-color-text-100);
+	border-radius: var(--z-ds-border-radius-4);
+	color: var(--z-ds-color-background-0);
+	display: flex;
+	font-size: var(--z-ds-fontsize-14);
+	gap: var(--z-ds-space-6);
+	line-height: var(--z-ds-lineheight-12);
+	margin: 0;
+	opacity: 1;
+	padding-block: var(--z-ds-space-12);
+	padding-inline: var(--z-ds-space-16) var(--z-ds-space-56);
+	will-change: opacity;
+
 	&--bottom {
 		top: auto;
 		bottom: var(--z-ds-space-s);
@@ -35,29 +50,6 @@
 		top: var(--z-ds-space-s);
 		bottom: auto;
 	}
-
-	@include utils.respond-max(constants.$break-phablet-min) {
-		width: 90vw;
-	}
-}
-
-.z-notification__item {
-	align-items: center;
-	animation: slide-in-from-bottom 0.3s ease-out;
-	background-color: var(--z-ds-color-text-100); // #252525 | #ffffff (lightmode | darkmode)
-	border-radius: var(--z-ds-border-radius-4);
-	color: var(--z-ds-color-background-0); // #ffffff | #232323
-	display: flex;
-	font-size: var(--z-ds-fontsize-14);
-	gap: var(--z-ds-space-6);
-	line-height: var(--z-ds-lineheight-12);
-	margin: auto auto var(--z-ds-space-xs);
-	opacity: 1;
-	padding-block: var(--z-ds-space-12);
-	padding-inline: var(--z-ds-space-16) var(--z-ds-space-56);
-	position: relative;
-	transform: translateY(0);
-	will-change: transform, opacity;
 
 	&--error {
 		// using color-mix to create a custom background color for error notifications (see figma file)
@@ -87,15 +79,17 @@
 		background-color: var(--z-ds-color-background-warning);
 	}
 
-	@keyframes slide-in-from-bottom {
-		0% {
-			opacity: 0;
-			transform: translateY(100%);
-		}
-		100% {
-			opacity: 1;
-			transform: translateY(0);
-		}
+	@include utils.respond-max(constants.$break-phablet-min) {
+		width: 90vw;
+	}
+}
+
+@keyframes z-notification-fade-in {
+	0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
 	}
 }
 
@@ -116,7 +110,7 @@
 	align-self: center;
 	background: none;
 	border: none;
-	color: var(--z-ds-color-border-100); // #cccccf | #363636 (figma: #bababa | #444444)
+	color: var(--z-ds-color-border-100);
 	cursor: pointer;
 	display: flex;
 	font-size: var(--z-ds-fontsize-14);
@@ -133,6 +127,12 @@
 		@include mixins.dark-mode {
 			color: var(--z-ds-color-background-10); // #232323
 		}
+	}
+
+	&:focus-visible {
+		border-radius: var(--z-ds-border-radius-2);
+		box-shadow: 0 0 0 2px var(--z-ds-color-general-white-100);
+		outline: none;
 	}
 }
 
@@ -151,6 +151,13 @@
 	position: absolute;
 	right: var(--z-ds-space-12);
 	width: 26px;
+
+	&:focus-visible {
+		border-radius: 9999px;
+		box-shadow: 0 0 0 2px var(--z-ds-color-general-white-100);
+		outline-offset: 4px;
+		outline-color: var(--z-ds-color-focus-100);
+	}
 
 	.z-notification__close-cross {
 		height: 12px;
@@ -178,10 +185,8 @@
 }
 
 .z-notification__close-ring {
-	--z-stroke-dasharray: 76; // exact value = 72.256 = 2*π*r * 11.5 (radius circle svg)
+	--z-stroke-dasharray: 76;
 	--z-stroke-dasharray-neg: -76;
-	// using 76 makes the animation end a little bit earlier,
-	// this looks better and the ring is fully hidden at the end of the animation
 	pointer-events: none;
 	position: absolute;
 	transform: rotate(-90deg);

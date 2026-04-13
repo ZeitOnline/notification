@@ -85,7 +85,6 @@
 					</div>
 					<p>Status:</p>
 					<div class="button-group">
-						<button type="button" class="button" data-action="info">Info</button>
 						<button type="button" class="button" data-action="info-without-timer">Info without Timer</button>
 						<button type="button" class="button" data-action="error">Error</button>
 						<button type="button" class="button" data-action="error-with-callback">Error with CallBack</button>
@@ -119,6 +118,7 @@
 
 						case 'type-of-foo-with-link':
 							notification.show({
+								element: target,
 								type: "foo",
 								position: "bottom",
 								status: "success",
@@ -133,6 +133,7 @@
 							break;
 						case 'type-of-foo-with-callback':
 							notification.show({
+								element: target,
 								type: "foo",
 								icon: "bookmark",
 								message: "Der Artikel wurde von der Merkliste entfernt.",
@@ -145,6 +146,7 @@
 							break;
 						case 'link':
 							notification.show({
+								element: target,
 								status: "info",
 								type: "info",
 								message: "A new version of Notification is available.",
@@ -160,18 +162,21 @@
 
 						case 'info':
 							notification.show({
+								element: target,
 								message: 'Profile saved successfully.',
 								hasTimer: true,
 							});
 							break;
 						case 'info-without-timer':
 							notification.show({
+								element: target,
 								icon: "bookmark",
 								message: 'Bookmark saved successfully.'
 							});
 							break;
 						case 'error':
 							notification.show({
+								element: target,
 								status: "error",
 								message: "Connection is unstable. Changes may sync later.",
 								hasTimer: true,
@@ -179,6 +184,7 @@
 							break;
 						case 'error-with-callback':
 							notification.show({
+								element: target,
 								status: "error",
 								icon: "bookmark",
 								message: "Publishing failed. Check the form and try again.",
