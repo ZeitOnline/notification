@@ -1,6 +1,6 @@
 {
 	"name": "@zeitonline/notification",
-	"version": "1.4.0",
+	"version": "1.5.0",
 	"description": "Notifications keep you informed about results, warnings and errors.",
 	"author": {
 		"name": "DIE ZEIT",
