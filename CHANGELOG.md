@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/ZeitOnline/notification/compare/notification-v1.5.0...notification-v1.5.1) (2026-04-13)
+
+
+### 🐛 Bug Fixes
+
+* remove wrong padding in notification stylesheet ([#43](https://github.com/ZeitOnline/notification/issues/43)) ([405a891](https://github.com/ZeitOnline/notification/commit/405a89179bf46646da3df82c647f77ce875a1b80))
+
 ## [1.5.0](https://github.com/ZeitOnline/notification/compare/notification-v1.4.0...notification-v1.5.0) (2026-04-13)
 
 
