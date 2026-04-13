@@ -67,11 +67,11 @@
 				</fieldset>
 			</nav>
 			
-			<section class="hero">
-				<img src="logo-meerkat.png" height="600" width="420" alt="notifications mascot" class="mascot" />
-				<h1>Notifications</h1>
-				<p>Notifications keep you informed about<br/>results, warnings and errors.</p>
-			</section>
+		<section class="hero">
+			<img src="logo-meerkat.png" height="600" width="420" alt="notifications mascot" class="mascot" />
+			<h1>Notifications</h1>
+			<p>Notifications keep you informed about<br/>results, warnings and errors.</p>
+		</section>
 
 			<section class="demo" aria-label="Notification demos">
 				<article>
@@ -85,7 +85,8 @@
 					</div>
 					<p>Status:</p>
 					<div class="button-group">
-						<button type="button" class="button" data-action="info-without-timer">Info without Timer</button>
+						<button type="button" class="button" data-action="info-without-timer">Info without Timer (Bottom)</button>
+						<button type="button" class="button" data-action="info-without-timer-top">Info without Timer (Top)</button>
 						<button type="button" class="button" data-action="error">Error</button>
 						<button type="button" class="button" data-action="error-with-callback">Error with CallBack</button>
 					</div>
@@ -99,6 +100,7 @@
 				</article>
 			</section>
 		</main>
+		<div class="motion-indicator" id="motion-indicator" aria-hidden="true"></div>
 		<script>
 			// Initialize window.Zeit before any modules load
 			window.Zeit = window.Zeit || {};
@@ -107,6 +109,20 @@
 			import { initThemeSwitcher } from './theme-switcher.js';
 			import notification from "/index.js";
 			initThemeSwitcher();
+
+			const motionIndicator = document.getElementById('motion-indicator');
+			const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+			function updateMotionIndicator() {
+				const reducedMotion = reducedMotionQuery.matches;
+				motionIndicator.dataset.motion = reducedMotion ? 'reduced' : 'full';
+				motionIndicator.textContent = reducedMotion ? 'Motion: Reduced' : 'Motion: Full';
+			}
+
+			updateMotionIndicator();
+			if (typeof reducedMotionQuery.addEventListener === 'function') {
+				reducedMotionQuery.addEventListener('change', updateMotionIndicator);
+			}
 
 			function handleEvent(event) {
 				const target = event.target;
@@ -170,6 +186,14 @@
 						case 'info-without-timer':
 							notification.show({
 								element: target,
+								icon: "bookmark",
+								message: 'Bookmark saved successfully.'
+							});
+							break;
+						case 'info-without-timer-top':
+							notification.show({
+								element: target,
+								position: "top",
 								icon: "bookmark",
 								message: 'Bookmark saved successfully.'
 							});

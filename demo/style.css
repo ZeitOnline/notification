@@ -120,6 +120,24 @@ nav {
 	outline-offset: 2px;
 }
 
+.motion-indicator {
+	position: fixed;
+	right: var(--z-ds-space-m);
+	bottom: var(--z-ds-space-m);
+	z-index: 1000;
+	padding: 0.4rem 0.7rem;
+	border-radius: 999px;
+	background: var(--z-ds-color-text-100);
+	color: var(--z-ds-color-background-0);
+	font-size: 12px;
+	line-height: 1;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	pointer-events: none;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+
 @media (max-width: 768px) {
 	.hero h1 {
 		font-size: 2rem;
