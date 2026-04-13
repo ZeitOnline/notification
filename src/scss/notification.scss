@@ -19,8 +19,8 @@
 .z-notification {
 	background-color: transparent;
 	border: 0;
-	left: auto;
-	right: auto;
+	left: 0;
+	right: 0;
 	padding: 0;
 	position: fixed;
 	top: auto;
@@ -36,7 +36,7 @@
 	font-size: var(--z-ds-fontsize-14);
 	gap: var(--z-ds-space-6);
 	line-height: var(--z-ds-lineheight-12);
-	margin: 0;
+	margin-inline: auto;
 	opacity: 1;
 	padding-block: var(--z-ds-space-12);
 	padding-inline: var(--z-ds-space-16) var(--z-ds-space-56);
