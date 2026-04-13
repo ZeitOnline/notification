@@ -177,6 +177,10 @@ describe('notification accessibility behavior', () => {
 		expect(toasts[1].style.bottom).toContain('calc(72px');
 		expect(toasts[0].style.zIndex).toBe('1000');
 		expect(toasts[1].style.zIndex).toBe('1001');
+		expect(toasts[0].style.getPropertyValue('--z-notification-motion-index')).toBe('1');
+		expect(toasts[1].style.getPropertyValue('--z-notification-motion-index')).toBe('2');
+		expect(toasts[0].style.getPropertyValue('--z-notification-motion-direction')).toBe('1');
+		expect(toasts[1].style.getPropertyValue('--z-notification-motion-direction')).toBe('1');
 
 		rectSpy.mockRestore();
 	});
