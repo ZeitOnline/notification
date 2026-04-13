@@ -112,11 +112,11 @@ nav {
 }
 
 .button:hover {
-	background-color: var(--z-ds-color-accent-100);
+	background-color: var(--z-ds-color-focus-100);
 }
 
 .button:focus-visible {
-	outline: 2px solid var(--z-ds-color-accent);
+	outline: 2px solid var(--z-ds-color-focus-100);
 	outline-offset: 2px;
 }
 
