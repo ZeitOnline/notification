@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.5.0](https://github.com/ZeitOnline/notification/compare/notification-v1.4.0...notification-v1.5.0) (2026-04-13)
+
+
+### 🚀 Features
+
+* add a theme toggle and the favicon ([#36](https://github.com/ZeitOnline/notification/issues/36)) ([47c60f5](https://github.com/ZeitOnline/notification/commit/47c60f58dc8b5cb25388278ec3d26b3f0ca1dd5e))
+* add new focus test page  ([#40](https://github.com/ZeitOnline/notification/issues/40)) ([a405364](https://github.com/ZeitOnline/notification/commit/a405364afe70fc6a0263708511b680827b9d8846))
+
+
+### 🐛 Bug Fixes
+
+* use custom properties from zeit.web for z-index ([#41](https://github.com/ZeitOnline/notification/issues/41)) ([e52a910](https://github.com/ZeitOnline/notification/commit/e52a9109c42760c14a3849d61ef952512d00c220))
+
 ## [1.4.0](https://github.com/ZeitOnline/notification/compare/notification-v1.3.0...notification-v1.4.0) (2026-04-10)
 
 
