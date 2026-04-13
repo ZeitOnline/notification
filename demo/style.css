@@ -1,3 +1,5 @@
+@import './theme-switcher.css';
+
 html,
 body {
 	margin: 0;
@@ -12,6 +14,116 @@ body {
 	color: var(--color-text);
 	font-size: var(--font-size-base);
 	line-height: 1.6;
+}
+
+body {
+	background: var(--z-ds-color-background-0);
+	color: var(--z-ds-color-text-100);
+	min-height: 100vh;
+	padding: var(--z-ds-space-m);
+}
+
+/* svg icons from zeit.web */
+.symbols {
+	display: none;
+}
+
+.hero {
+	text-align: center;
+	padding: var(--z-ds-space-m);
+}
+
+.hero .mascot {
+	height: 220px;
+	width: auto;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.hero h1 {
+	font-size: 3rem;
+	color: var(--z-ds-color-text-100);
+	font-weight: 600;
+	letter-spacing: -0.01em;
+	display: inline-block;
+}
+
+.hero p {
+	font-size: var(--z-ds-fontsize-20);
+	/* max-width: 600px; */
+	margin: 0 auto;
+	line-height: 1.2;
+}
+
+nav {
+	padding: 0;
+	gap: var(--z-ds-space-s);
+}
+
+.sr-only {
+	border: 0;
+	clip: rect(0, 0, 0, 0);
+	clip-path: inset(50%);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
+.demo {
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	gap: var(--z-ds-space-l);
+	margin-top: var(--z-ds-space-m)
+}
+
+.demo h2 {
+	font-size: var(--z-ds-fontsize-24);
+	font-weight: 600;
+	margin-bottom: var(--z-ds-space-xs);
+}
+
+.demo p {
+	color: var(--z-ds-color-text-muted);
+	margin-bottom: var(--z-ds-space-s);
+}
+
+.button-group {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: var(--z-ds-space-s);
+	margin-bottom: var(--z-ds-space-s)
+}
+
+.button {
+	appearance: none;
+	border: 1px solid transparent;
+	border-radius: var(--z-ds-border-radius-4);
+	background: var(--z-ds-color-text-100);
+	color: var(--z-ds-color-background-0);
+	cursor: pointer;
+	font: inherit;
+}
+
+.button:hover {
+	background-color: var(--z-ds-color-focus-100);
+}
+
+.button:focus-visible {
+	outline: 2px solid var(--z-ds-color-focus-100);
+	outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+	.hero h1 {
+		font-size: 2rem;
+	}
 }
 
 a.demopage-link {
@@ -37,7 +149,7 @@ nav {
 	position: relative;
 }
 
-nav > a {
+nav>a {
 	display: flex;
 	align-items: center;
 	gap: var(--spacing-xs);
@@ -51,7 +163,7 @@ nav > a {
 	gap: var(--spacing-xs);
 }
 
-.nav__examples > * {
+.nav__examples>* {
 	margin-right: var(--spacing-xs);
 }
 

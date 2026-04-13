@@ -1,0 +1,55 @@
+.theme-switcher {
+	align-items: center;
+	border: 1px solid var(--z-ds-color-border-100);
+	border-radius: 999px;
+	display: inline-flex;
+	gap: 0;
+	margin: 0;
+	padding: 4px;
+}
+
+.theme-switcher .theme-option {
+	display: inline-flex;
+	position: relative;
+}
+
+.theme-switcher input {
+	opacity: 0;
+	position: absolute;
+	inset: 0;
+	margin: 0;
+	z-index: -1;
+}
+
+.theme-switcher label {
+	align-items: center;
+	border-radius: 999px;
+	color: var(--z-ds-color-text-muted);
+	cursor: pointer;
+	display: inline-flex;
+	justify-content: center;
+	padding: 0.4rem 0.65rem;
+	transition:
+		background-color 0.15s ease,
+		color 0.15s ease,
+		transform 0.15s ease;
+}
+
+.theme-switcher svg {
+	display: block;
+	pointer-events: none;
+}
+
+.theme-switcher input:checked+label {
+	background: var(--z-ds-color-text-100);
+	color: var(--z-ds-color-background-0);
+}
+
+.theme-switcher input:focus-visible+label {
+	outline: 2px solid var(--z-ds-color-focus-100);
+	outline-offset: 2px;
+}
+
+.theme-switcher label:hover {
+	transform: translateY(-1px);
+}
