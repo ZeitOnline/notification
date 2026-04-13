@@ -3,6 +3,18 @@
 @use "constants";
 @use "mixins";
 
+:root {
+	--notification-reduced-motion: 1;
+	--notification-motion-duration: 180ms;
+	--notification-motion-distance: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--notification-reduced-motion: 0;
+	}
+}
+
 .z-notification-inline {
 	background-color: var(--z-ds-color-text-100);
 	border: 0;
@@ -40,7 +52,8 @@
 	opacity: 1;
 	padding-block: var(--z-ds-space-12);
 	padding-inline: var(--z-ds-space-16) var(--z-ds-space-56);
-	will-change: opacity;
+	transform: translateY(0);
+	will-change: opacity, transform;
 
 	&--bottom {
 		top: auto;
@@ -84,12 +97,56 @@
 	}
 }
 
-@keyframes z-notification-fade-in {
+@media screen and (prefers-reduced-motion: no-preference) {
+	.z-notification {
+		animation: z-notification-enter
+			calc(var(--notification-motion-duration) * var(--notification-reduced-motion))
+			ease-in-out both;
+		transition:
+			bottom calc(var(--notification-motion-duration) * var(--notification-reduced-motion))
+				ease-in-out,
+			top calc(var(--notification-motion-duration) * var(--notification-reduced-motion))
+				ease-in-out,
+			opacity calc(var(--notification-motion-duration) * var(--notification-reduced-motion))
+				ease-in-out,
+			transform calc(var(--notification-motion-duration) * var(--notification-reduced-motion))
+				ease-in-out;
+	}
+
+	.z-notification--leaving {
+		animation-name: z-notification-exit;
+	}
+}
+
+@keyframes z-notification-enter {
 	0% {
 		opacity: 0;
+		transform: translateY(
+			calc(
+				var(--z-notification-motion-direction, 1) * var(--notification-motion-distance) *
+					var(--z-notification-motion-index, 1)
+			)
+		);
 	}
 	100% {
 		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes z-notification-exit {
+	0% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+	100% {
+		opacity: 0;
+		transform: translateY(
+			calc(
+				var(--z-notification-motion-direction, 1) * var(--notification-motion-distance) *
+					var(--z-notification-motion-index, 1)
+			)
+		);
 	}
 }
 
@@ -162,7 +219,7 @@
 	.z-notification__close-cross {
 		height: 12px;
 		opacity: 0.6;
-		transition: opacity 0.15s ease;
+		transition: opacity calc(0.15s * var(--notification-reduced-motion)) ease;
 		width: 12px;
 	}
 

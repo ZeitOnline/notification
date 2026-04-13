@@ -20,6 +20,7 @@ const GAP_STACKING = 8;
 const MAX_NUMBER_OF_NOTIFICATIONS = 3;
 const OFFSET = 16;
 const ZINDEX_BASE = 1000;
+const NOTIFICATION_MOTION_DURATION = 180;
 
 // Notifications manage ui elements and keep you informed about results, warnings and errors.
 // This includes deciding which type of notification to show (e.g., inline or bottom).
@@ -273,6 +274,11 @@ export class Notification {
 	positionNotifications(position: NotificationPosition): void {
 		let offset = GAP_STACKING + OFFSET;
 		this.notifications.forEach((notification, index) => {
+			notification.style.setProperty('--z-notification-motion-index', `${index + 1}`);
+			notification.style.setProperty(
+				'--z-notification-motion-direction',
+				position === 'top' ? '-1' : '1',
+			);
 			if (position === 'bottom') {
 				notification.style.bottom = `calc(${offset}px + env(safe-area-inset-bottom, 0px))`;
 				notification.style.top = 'auto';
@@ -283,6 +289,13 @@ export class Notification {
 			notification.style.zIndex = `${ZINDEX_BASE + index}`;
 			offset += notification.getBoundingClientRect().height + GAP_STACKING;
 		});
+	}
+
+	prefersReducedMotion(): boolean {
+		if (typeof window.matchMedia !== 'function') {
+			return true;
+		}
+		return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 	}
 
 	getCloseButtonHTML(hasTimer: boolean): string {
@@ -374,13 +387,35 @@ export class Notification {
 
 	removeNotification(notification: NotificationElement | null): void {
 		if (!notification) return;
+		if (notification.classList.contains('z-notification--leaving')) return;
 
 		const position = notification.classList.contains('z-notification--top') ? 'top' : 'bottom';
 		const anchor = notification.anchorElement;
 
 		clearTimeout(notification.timeoutID);
-		notification.remove();
 
+		if (!this.prefersReducedMotion()) {
+			notification.classList.add('z-notification--leaving');
+			const finalizeRemoval = () => {
+				notification.removeEventListener('animationend', finalizeRemoval);
+				this.finalizeNotificationRemoval(notification, position, anchor);
+			};
+			notification.addEventListener('animationend', finalizeRemoval, { once: true });
+			window.setTimeout(() => {
+				finalizeRemoval();
+			}, NOTIFICATION_MOTION_DURATION);
+			return;
+		}
+
+		this.finalizeNotificationRemoval(notification, position, anchor);
+	}
+
+	finalizeNotificationRemoval(
+		notification: NotificationElement,
+		position: NotificationPosition,
+		anchor: HTMLElement | null,
+	): void {
+		notification.remove();
 		this.notifications = this.notifications.filter(t => t !== notification);
 		this.positionNotifications(position);
 		anchor?.focus();
