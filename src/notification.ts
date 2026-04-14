@@ -61,11 +61,7 @@ export class Notification {
 		const targetPosition = position ?? 'bottom';
 		const originator = element ?? document.body;
 		const notifications = this.getNotifications(targetPosition);
-
-		if (type) {
-			const notificationsToRemove = notifications.filter(item => item.type === type);
-			notificationsToRemove.forEach(item => this.removeNotification(item));
-		}
+		const notificationsToReplace = type ? notifications.filter(item => item.type === type) : [];
 
 		const notification = this.createNotification({
 			element,
@@ -81,6 +77,8 @@ export class Notification {
 		this.insertNotification(notification, targetPosition, originator);
 		notifications.push(notification);
 		this.positionNotifications(targetPosition);
+
+		notificationsToReplace.forEach(item => this.removeNotification(item, 'replaced'));
 
 		if (notifications.length > MAX_NUMBER_OF_NOTIFICATIONS) {
 			this.removeNotification(notifications[0]);
@@ -299,7 +297,11 @@ export class Notification {
 
 	positionNotifications(position: NotificationPosition): void {
 		let offset = GAP_STACKING + OFFSET;
-		this.getNotifications(position).forEach((notification, index) => {
+		const notifications = this.getNotifications(position);
+		const notificationsInVisualOrder =
+			position === 'bottom' ? [...notifications].reverse() : notifications;
+
+		notificationsInVisualOrder.forEach((notification, index) => {
 			notification.style.setProperty('--z-notification-motion-index', `${index + 1}`);
 			notification.style.setProperty(
 				'--z-notification-motion-direction',
@@ -312,7 +314,10 @@ export class Notification {
 				notification.style.bottom = 'auto';
 				notification.style.top = `calc(${offset}px + env(safe-area-inset-top, 0px))`;
 			}
-			notification.style.zIndex = `${ZINDEX_BASE + index}`;
+			notification.style.zIndex =
+				position === 'bottom'
+					? `${ZINDEX_BASE + notifications.length - index}`
+					: `${ZINDEX_BASE + index}`;
 			offset += notification.getBoundingClientRect().height + GAP_STACKING;
 		});
 	}
@@ -411,7 +416,10 @@ export class Notification {
 		notification.addEventListener('pointerleave', resume);
 	}
 
-	removeNotification(notification: NotificationElement | null): void {
+	removeNotification(
+		notification: NotificationElement | null,
+		reason: 'dismissed' | 'replaced' = 'dismissed',
+	): void {
 		if (!notification) return;
 		if (notification.classList.contains('z-notification--leaving')) return;
 
@@ -422,6 +430,9 @@ export class Notification {
 
 		if (!this.prefersReducedMotion()) {
 			notification.classList.add('z-notification--leaving');
+			if (reason === 'replaced') {
+				notification.classList.add('z-notification--replaced');
+			}
 			let finalized = false;
 			const finalizeRemoval = () => {
 				if (finalized) return;

@@ -68,7 +68,7 @@ trigger?.addEventListener('click', () => {
 });
 ```
 
-When `element` is provided for a bottom toast, the notification is inserted as the trigger's next sibling and the stack is reflowed from there.
+When `element` is provided for a bottom toast, the notification is inserted as the trigger's next sibling and the stack is reflowed from there. Newer bottom notifications sit below older ones, so replacement updates read as a visible handover instead of a hard swap.
 
 If you use the `icon` option, the notification expects an SVG symbol in the page with the id pattern `svg-<name>`.
 

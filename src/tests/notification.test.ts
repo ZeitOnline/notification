@@ -135,7 +135,7 @@ describe('notification accessibility behavior', () => {
 		expect(screen.getByText(message)).not.toBeNull();
 	});
 
-	it('stacks multiple anchored bottom notifications by index', () => {
+	it('stacks multiple anchored bottom notifications with newer notifications below older ones', () => {
 		const trigger = document.createElement('button');
 		trigger.textContent = 'Save';
 		document.body.append(trigger);
@@ -173,12 +173,12 @@ describe('notification accessibility behavior', () => {
 		expect(toasts).toHaveLength(2);
 		expect(trigger.nextElementSibling).toBe(toasts[0]);
 		expect(toasts[0].nextElementSibling).toBe(toasts[1]);
-		expect(toasts[0].style.bottom).toContain('calc(24px');
-		expect(toasts[1].style.bottom).toContain('calc(72px');
-		expect(toasts[0].style.zIndex).toBe('800');
-		expect(toasts[1].style.zIndex).toBe('801');
-		expect(toasts[0].style.getPropertyValue('--z-notification-motion-index')).toBe('1');
-		expect(toasts[1].style.getPropertyValue('--z-notification-motion-index')).toBe('2');
+		expect(toasts[0].style.bottom).toContain('calc(72px');
+		expect(toasts[1].style.bottom).toContain('calc(24px');
+		expect(toasts[0].style.zIndex).toBe('801');
+		expect(toasts[1].style.zIndex).toBe('802');
+		expect(toasts[0].style.getPropertyValue('--z-notification-motion-index')).toBe('2');
+		expect(toasts[1].style.getPropertyValue('--z-notification-motion-index')).toBe('1');
 		expect(toasts[0].style.getPropertyValue('--z-notification-motion-direction')).toBe('1');
 		expect(toasts[1].style.getPropertyValue('--z-notification-motion-direction')).toBe('1');
 
@@ -459,21 +459,51 @@ describe('notification accessibility behavior', () => {
 		expect(closeButton?.className).not.toContain('z-notification__close-btn--timer');
 	});
 
-	it('replaces a notification with the same type', async () => {
-		notification.show({
-			type: 'foo',
-			message: 'First foo notification',
+	it('replaces a notification with the same type and animates the old one as replaced', async () => {
+		const originalMatchMedia = window.matchMedia;
+		Object.defineProperty(window, 'matchMedia', {
+			configurable: true,
+			value: vi.fn().mockReturnValue({
+				matches: false,
+			}),
 		});
 
-		expect(screen.getByText('First foo notification')).not.toBeNull();
+		try {
+			notification.show({
+				type: 'foo',
+				message: 'First foo notification',
+			});
 
-		notification.show({
-			type: 'foo',
-			message: 'Second foo notification',
-		});
+			const firstNotification = screen
+				.getByText('First foo notification')
+				.closest('.z-notification') as HTMLElement;
+			expect(firstNotification).not.toBeNull();
 
-		expect(screen.queryByText('First foo notification')).toBeNull();
-		expect(screen.getByText('Second foo notification')).not.toBeNull();
+			notification.show({
+				type: 'foo',
+				message: 'Second foo notification',
+			});
+
+			const secondNotification = screen
+				.getByText('Second foo notification')
+				.closest('.z-notification') as HTMLElement;
+
+			expect(firstNotification.classList.contains('z-notification--replaced')).toBe(true);
+			expect(firstNotification.classList.contains('z-notification--leaving')).toBe(true);
+			expect(secondNotification).not.toBeNull();
+			expect(firstNotification.style.bottom).toContain('32px');
+			expect(secondNotification.style.bottom).toContain('calc(24px');
+
+			await vi.advanceTimersByTimeAsync(180);
+
+			expect(screen.queryByText('First foo notification')).toBeNull();
+			expect(screen.getByText('Second foo notification')).not.toBeNull();
+		} finally {
+			Object.defineProperty(window, 'matchMedia', {
+				configurable: true,
+				value: originalMatchMedia,
+			});
+		}
 	});
 
 	it('does not replace notifications with different types', async () => {

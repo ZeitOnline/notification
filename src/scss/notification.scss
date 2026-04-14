@@ -115,6 +115,10 @@
 	.z-notification--leaving {
 		animation-name: z-notification-exit;
 	}
+
+	.z-notification--leaving.z-notification--replaced {
+		animation-name: z-notification-replaced-exit;
+	}
 }
 
 @keyframes z-notification-enter {
@@ -144,6 +148,22 @@
 			calc(
 				var(--z-notification-motion-direction, 1) * var(--notification-motion-distance) *
 					var(--z-notification-motion-index, 1)
+			)
+		);
+	}
+}
+
+@keyframes z-notification-replaced-exit {
+	0% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+	100% {
+		opacity: 0;
+		transform: translateY(
+			calc(
+				var(--z-notification-motion-direction, 1) * -1 *
+					var(--notification-motion-distance) * var(--z-notification-motion-index, 1)
 			)
 		);
 	}
