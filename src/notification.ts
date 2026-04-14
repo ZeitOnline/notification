@@ -379,7 +379,7 @@ export class Notification {
 			clearTimeout(notification.timeoutID);
 		}
 
-		this.dispatchEvent('notification-removed', notification);
+		this.dispatchEvent('notification-removed', anchor);
 		notification.remove();
 
 		this.notifications = this.notifications.filter(t => t !== notification);
@@ -387,10 +387,10 @@ export class Notification {
 		anchor?.focus();
 	}
 
-	dispatchEvent(eventName: string, notification: NotificationElement): void {
+	dispatchEvent(eventName: string, anchor: HTMLElement | null): void {
 		document.dispatchEvent(
 			new CustomEvent(eventName, {
-				detail: { notification },
+				detail: { originator: anchor },
 			}),
 		);
 	}
