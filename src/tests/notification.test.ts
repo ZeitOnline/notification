@@ -60,7 +60,7 @@ describe('notification accessibility behavior', () => {
 		expect((inlineMessage as HTMLElement | null)?.innerText).toBe('Link copied to clipboard.');
 	});
 
-	it('keeps top notification controls in rendered keyboard order and exposes an assertive live message', async () => {
+	it('keeps top-right notification controls in rendered keyboard order and exposes an assertive live message', async () => {
 		const message = 'Publishing failed. Check the form and try again.';
 
 		notification.show({
@@ -89,7 +89,7 @@ describe('notification accessibility behavior', () => {
 		expect(document.activeElement).toBe(closeButton);
 	});
 
-	it('allows keyboard navigation to link actions in top notifications', async () => {
+	it('allows keyboard navigation to link actions in top-right notifications', async () => {
 		notification.show({
 			message: 'A new version of notification is available.',
 			status: 'info',
@@ -113,7 +113,7 @@ describe('notification accessibility behavior', () => {
 		expect(actionLink.getAttribute('href')).toBe('https://example.com/docs');
 	});
 
-	it('inserts anchored top notifications next to the triggering element', async () => {
+	it('inserts anchored top-right notifications next to the triggering element', async () => {
 		const trigger = document.createElement('button');
 		trigger.textContent = 'Save';
 		document.body.append(trigger);
@@ -130,12 +130,12 @@ describe('notification accessibility behavior', () => {
 		expect(trigger.nextElementSibling).toBe(container);
 		expect(document.body.querySelectorAll('.z-notification')).toHaveLength(1);
 		expect(document.querySelector('dialog')).toBeNull();
-		expect(container?.classList.contains('z-notification--top')).toBe(true);
+		expect(container?.classList.contains('z-notification--top-right')).toBe(true);
 		expect(container?.nodeName).toBe('DIV');
 		expect(screen.getByText(message)).not.toBeNull();
 	});
 
-	it('stacks multiple anchored top notifications by index', () => {
+	it('stacks multiple anchored top-right notifications by index', () => {
 		const trigger = document.createElement('button');
 		trigger.textContent = 'Save';
 		document.body.append(trigger);
@@ -173,8 +173,10 @@ describe('notification accessibility behavior', () => {
 		expect(toasts).toHaveLength(2);
 		expect(trigger.nextElementSibling).toBe(toasts[0]);
 		expect(toasts[0].nextElementSibling).toBe(toasts[1]);
-		expect(toasts[0].style.top).toContain('calc(32px');
-		expect(toasts[1].style.top).toContain('calc(80px');
+		expect(toasts[0].style.top).toContain('calc(24px');
+		expect(toasts[0].style.right).toContain('calc(24px');
+		expect(toasts[1].style.top).toContain('calc(72px');
+		expect(toasts[1].style.right).toContain('calc(24px');
 		expect(toasts[0].style.zIndex).toBe('1000');
 		expect(toasts[1].style.zIndex).toBe('1001');
 
@@ -244,7 +246,7 @@ describe('notification accessibility behavior', () => {
 		expect(screen.queryByRole('status')).toBeNull();
 	});
 
-	it('removes top notifications after the configured timeout', async () => {
+	it('removes top-right notifications after the configured timeout', async () => {
 		const message = 'Publishing failed. Check the form and try again.';
 
 		notification.show({
@@ -260,7 +262,7 @@ describe('notification accessibility behavior', () => {
 		expect(screen.queryByText(message)).toBeNull();
 	});
 
-	it('pauses and resumes the top notification timeout on pointer hover', async () => {
+	it('pauses and resumes the top-right notification timeout on pointer hover', async () => {
 		const message = 'Publishing failed. Check the form and try again.';
 
 		notification.show({
@@ -317,7 +319,7 @@ describe('notification accessibility behavior', () => {
 		expect(document.activeElement).toBe(trigger);
 	});
 
-	it('removes top notifications when the close button is clicked', async () => {
+	it('removes top-right notifications when the close button is clicked', async () => {
 		const trigger = document.createElement('button');
 		trigger.textContent = 'Open notification';
 		document.body.append(trigger);
@@ -343,7 +345,7 @@ describe('notification accessibility behavior', () => {
 		expect(document.activeElement).toBe(trigger);
 	});
 
-	it('keeps only the most recent maxNotifications top notifications', async () => {
+	it('keeps only the most recent maxNotifications top-right notifications', async () => {
 		notification.show({ message: 'First notification', status: 'info' });
 		notification.show({ message: 'Second notification', status: 'info' });
 		notification.show({ message: 'Third notification', status: 'info' });
@@ -373,6 +375,55 @@ describe('notification accessibility behavior', () => {
 		const icon = document.querySelector('.z-notification__icon');
 
 		expect(container?.className).toContain('z-notification--top');
+		expect(icon).not.toBeNull();
+	});
+
+	it('renders top-positioned notifications with the top placement class', () => {
+		notification.show({
+			position: 'top',
+			message: 'Top notification.',
+			status: 'info',
+		});
+
+		const container = document.querySelector('.z-notification') as HTMLElement | null;
+
+		expect(container?.className).toContain('z-notification--top');
+		expect(container?.style.top).toContain('calc(24px');
+		expect(container?.style.bottom).toBe('auto');
+	});
+
+	it('renders bottom-positioned notifications with the bottom placement class', () => {
+		notification.show({
+			position: 'bottom',
+			message: 'Bottom notification.',
+			status: 'info',
+		});
+
+		const container = document.querySelector('.z-notification') as HTMLElement | null;
+
+		expect(container?.className).toContain('z-notification--bottom');
+		expect(container?.style.bottom).toContain('calc(24px');
+		expect(container?.style.top).toBe('auto');
+	});
+
+	it('renders top-right notifications with a right offset and icon when a matching symbol exists', async () => {
+		document.body.innerHTML = `
+			<svg aria-hidden="true">
+				<symbol id="svg-info" viewBox="0 0 18 18"></symbol>
+			</svg>`;
+
+		notification.show({
+			icon: 'info',
+			message: 'Foo.',
+			status: 'info',
+		});
+
+		const container = document.querySelector('.z-notification') as HTMLElement | null;
+		const icon = document.querySelector('.z-notification__icon');
+
+		expect(container?.className).toContain('z-notification--top-right');
+		expect(container?.style.right).toContain('calc(24px');
+		expect(container?.style.left).toBe('auto');
 		expect(icon).not.toBeNull();
 	});
 
