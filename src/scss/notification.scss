@@ -43,11 +43,16 @@
 
 	&--bottom {
 		top: auto;
-		bottom: var(--z-ds-space-s);
 	}
 	&--top {
-		top: var(--z-ds-space-s);
 		bottom: auto;
+	}
+
+	&--top-right {
+		bottom: auto;
+		left: auto;
+		margin-inline: 0;
+		right: calc(24px + env(safe-area-inset-right, 0px));
 	}
 
 	&--error {

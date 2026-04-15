@@ -8,7 +8,7 @@ export type LinkOptions = {
 	href: string;
 };
 
-export type NotificationPosition = 'top' | 'bottom';
+export type NotificationPosition = 'top' | 'bottom' | 'top-right';
 
 export type NotificationOptions = {
 	type?: string;
