@@ -66,6 +66,7 @@ describe('notification accessibility behavior', () => {
 		notification.show({
 			message,
 			status: 'error',
+			position: 'bottom',
 			button: {
 				text: 'Retry',
 				onClick: vi.fn(),
@@ -93,6 +94,7 @@ describe('notification accessibility behavior', () => {
 		notification.show({
 			message: 'A new version of notification is available.',
 			status: 'info',
+			position: 'bottom',
 			link: {
 				text: 'Open docs',
 				href: 'https://example.com/docs',
@@ -113,6 +115,19 @@ describe('notification accessibility behavior', () => {
 		expect(actionLink.getAttribute('href')).toBe('https://example.com/docs');
 	});
 
+	it('defaults to top notifications when no position is provided', async () => {
+		notification.show({
+			message: 'Default top notification.',
+			status: 'info',
+		});
+
+		const container = document.querySelector('.z-notification');
+
+		expect(container?.classList.contains('z-notification--top')).toBe(true);
+		expect(container?.style.top).toContain('calc(24px');
+		expect(container?.style.bottom).toBe('auto');
+	});
+
 	it('inserts anchored bottom notifications next to the triggering element', async () => {
 		const trigger = document.createElement('button');
 		trigger.textContent = 'Save';
@@ -123,6 +138,7 @@ describe('notification accessibility behavior', () => {
 			element: trigger,
 			message,
 			status: 'success',
+			position: 'bottom',
 		});
 
 		const container = document.querySelector('.z-notification');
@@ -161,11 +177,13 @@ describe('notification accessibility behavior', () => {
 			element: trigger,
 			message: 'First saved toast.',
 			status: 'success',
+			position: 'bottom',
 		});
 		notification.show({
 			element: trigger,
 			message: 'Second saved toast.',
 			status: 'success',
+			position: 'bottom',
 		});
 
 		const toasts = Array.from(document.querySelectorAll('.z-notification')) as HTMLElement[];
@@ -277,6 +295,7 @@ describe('notification accessibility behavior', () => {
 			element: trigger,
 			message: 'Offset toast.',
 			status: 'info',
+			position: 'bottom',
 			offsetFromContainer: '#page-header',
 		});
 
@@ -357,6 +376,103 @@ describe('notification accessibility behavior', () => {
 		rectSpy.mockRestore();
 	});
 
+	it('updates the notification offset from the visible portion of the container', () => {
+		const trigger = document.createElement('button');
+		const offsetContainer = document.createElement('div');
+		trigger.textContent = 'Save';
+		offsetContainer.id = 'page-header';
+		document.body.append(offsetContainer, trigger);
+
+		let observerInstance: MockIntersectionObserver | null = null;
+		const originalIntersectionObserver = window.IntersectionObserver;
+		class MockIntersectionObserver {
+			callback: IntersectionObserverCallback;
+			constructor(callback: IntersectionObserverCallback) {
+				this.callback = callback;
+				observerInstance = this;
+			}
+			observe(): void {}
+			disconnect(): void {}
+			emit(target: Element, height: number): void {
+				this.callback(
+					[
+						{
+							isIntersecting: height > 0,
+							intersectionRatio: height > 0 ? 1 : 0,
+							intersectionRect: {
+								height,
+							} as DOMRectReadOnly,
+							target,
+						} as IntersectionObserverEntry,
+					],
+					this as unknown as IntersectionObserver,
+				);
+			}
+		}
+
+		Object.defineProperty(window, 'IntersectionObserver', {
+			configurable: true,
+			value: MockIntersectionObserver,
+		});
+
+		const rectSpy = vi
+			.spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+			.mockImplementation(function getBoundingClientRect(this: HTMLElement): DOMRect {
+				if (this.id === 'page-header') {
+					return {
+						x: 0,
+						y: 0,
+						top: 0,
+						left: 0,
+						right: 100,
+						bottom: 50,
+						width: 100,
+						height: 50,
+						toJSON: () => ({}),
+					} as DOMRect;
+				}
+
+				const height = this.classList.contains('z-notification') ? 40 : 20;
+				return {
+					x: 0,
+					y: 0,
+					top: 0,
+					left: 0,
+					right: 100,
+					bottom: height,
+					width: 100,
+					height,
+					toJSON: () => ({}),
+				} as DOMRect;
+			});
+
+		try {
+			notification.show({
+				element: trigger,
+				position: 'top',
+				message: 'Observer toast.',
+				status: 'info',
+				offsetFromContainer: '#page-header',
+			});
+
+			const toast = screen
+				.getByText('Observer toast.')
+				.closest('.z-notification') as HTMLElement;
+
+			expect(toast.style.top).toContain('calc(74px');
+
+			observerInstance?.emit(offsetContainer, 30);
+
+			expect(toast.style.top).toContain('calc(54px');
+		} finally {
+			rectSpy.mockRestore();
+			Object.defineProperty(window, 'IntersectionObserver', {
+				configurable: true,
+				value: originalIntersectionObserver,
+			});
+		}
+	});
+
 	it('removes inline notifications after the configured timeout', async () => {
 		const trigger = document.createElement('button');
 		trigger.textContent = 'Copy link';
@@ -426,6 +542,7 @@ describe('notification accessibility behavior', () => {
 		notification.show({
 			message,
 			status: 'error',
+			position: 'bottom',
 			hasTimer: true,
 		});
 
@@ -442,6 +559,7 @@ describe('notification accessibility behavior', () => {
 		notification.show({
 			message,
 			status: 'error',
+			position: 'bottom',
 			hasTimer: true,
 		});
 
@@ -480,6 +598,7 @@ describe('notification accessibility behavior', () => {
 			element: trigger,
 			message,
 			status: 'error',
+			position: 'bottom',
 			button: {
 				text: 'Retry',
 				onClick,
@@ -507,6 +626,7 @@ describe('notification accessibility behavior', () => {
 			element: trigger,
 			message: 'A new version of notification is available.',
 			status: 'info',
+			position: 'bottom',
 			link: {
 				text: 'Open docs',
 				href: 'https://example.com/docs',
@@ -520,10 +640,10 @@ describe('notification accessibility behavior', () => {
 	});
 
 	it('keeps only the most recent maxNotifications bottom notifications', async () => {
-		notification.show({ message: 'First notification', status: 'info' });
-		notification.show({ message: 'Second notification', status: 'info' });
-		notification.show({ message: 'Third notification', status: 'info' });
-		notification.show({ message: 'Fourth notification', status: 'info' });
+		notification.show({ message: 'First notification', status: 'info', position: 'bottom' });
+		notification.show({ message: 'Second notification', status: 'info', position: 'bottom' });
+		notification.show({ message: 'Third notification', status: 'info', position: 'bottom' });
+		notification.show({ message: 'Fourth notification', status: 'info', position: 'bottom' });
 
 		expect(screen.queryAllByText(/notification$/)).toHaveLength(3);
 		expect(screen.queryByText('First notification')).toBeNull();
@@ -556,6 +676,7 @@ describe('notification accessibility behavior', () => {
 		notification.show({
 			message: 'This is an error notification.',
 			status: 'error',
+			position: 'bottom',
 		});
 		const container = document.querySelector('.z-notification');
 		expect(container?.className).toContain('z-notification--error');
@@ -565,6 +686,7 @@ describe('notification accessibility behavior', () => {
 		notification.show({
 			message: 'This is an error notification with timer.',
 			status: 'error',
+			position: 'bottom',
 			hasTimer: true,
 		});
 		const closeButton = screen.getByRole('button', { name: 'Meldung schließen' });
@@ -575,6 +697,7 @@ describe('notification accessibility behavior', () => {
 		notification.show({
 			message: 'This is an error notification without timer.',
 			status: 'error',
+			position: 'bottom',
 			hasTimer: false,
 		});
 		const closeButton = screen.getByRole('button', { name: 'Meldung schließen' });
@@ -593,6 +716,7 @@ describe('notification accessibility behavior', () => {
 		try {
 			notification.show({
 				type: 'foo',
+				position: 'bottom',
 				message: 'First foo notification',
 			});
 
@@ -603,6 +727,7 @@ describe('notification accessibility behavior', () => {
 
 			notification.show({
 				type: 'foo',
+				position: 'bottom',
 				message: 'Second foo notification',
 			});
 
@@ -631,11 +756,13 @@ describe('notification accessibility behavior', () => {
 	it('does not replace notifications with different types', async () => {
 		notification.show({
 			type: 'foo',
+			position: 'bottom',
 			message: 'Foo notification',
 		});
 
 		notification.show({
 			type: 'share',
+			position: 'bottom',
 			message: 'Share notification',
 		});
 

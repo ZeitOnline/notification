@@ -34,6 +34,9 @@ export class Notification {
 	originatorCounter = 0;
 	notificationsTop!: NotificationElement[];
 	notificationsBottom!: NotificationElement[];
+	offsetContainerHeights!: Map<string, number>;
+	offsetContainerObservers!: Map<string, IntersectionObserver>;
+	offsetContainerRefCounts!: Map<string, number>;
 	container!: HTMLDivElement | null;
 	notificationTimeout!: number;
 
@@ -44,6 +47,9 @@ export class Notification {
 		Notification.instance = this;
 		this.notificationsTop = [];
 		this.notificationsBottom = [];
+		this.offsetContainerHeights = new Map();
+		this.offsetContainerObservers = new Map();
+		this.offsetContainerRefCounts = new Map();
 		this.container = null;
 		this.notificationTimeout = 4000;
 	}
@@ -77,6 +83,9 @@ export class Notification {
 		this.insertNotification(notification, position);
 		notifications.push(notification);
 		notification.offsetFromContainer = offsetFromContainer ?? null;
+		if (notification.offsetFromContainer) {
+			this.observeOffsetContainer(notification.offsetFromContainer);
+		}
 		this.positionNotifications(position);
 
 		notificationsToReplace.forEach(item => this.removeNotification(item, 'replaced'));
@@ -319,18 +328,114 @@ export class Notification {
 			return 0;
 		}
 
-		let container: Element | null = null;
-		try {
-			container = document.querySelector(offsetFromContainer);
-		} catch {
-			return 0;
+		if (this.offsetContainerObservers.has(offsetFromContainer)) {
+			const cachedHeight = this.offsetContainerHeights.get(offsetFromContainer);
+			if (cachedHeight !== undefined) {
+				return cachedHeight;
+			}
 		}
 
+		const container = this.getOffsetContainerElement(offsetFromContainer);
 		if (!container) {
 			return 0;
 		}
 
-		return Math.round(container.getBoundingClientRect().height);
+		return this.getVisibleContainerHeight(container);
+	}
+
+	observeOffsetContainer(offsetFromContainer: string): void {
+		const refCount = this.offsetContainerRefCounts.get(offsetFromContainer) ?? 0;
+		this.offsetContainerRefCounts.set(offsetFromContainer, refCount + 1);
+
+		if (this.offsetContainerObservers.has(offsetFromContainer)) {
+			const element = this.getOffsetContainerElement(offsetFromContainer);
+			if (element) {
+				this.offsetContainerHeights.set(
+					offsetFromContainer,
+					this.getVisibleContainerHeight(element),
+				);
+			}
+			return;
+		}
+
+		const element = this.getOffsetContainerElement(offsetFromContainer);
+		if (!element) {
+			return;
+		}
+
+		this.offsetContainerHeights.set(
+			offsetFromContainer,
+			this.getVisibleContainerHeight(element),
+		);
+
+		if (typeof window.IntersectionObserver !== 'function') {
+			return;
+		}
+
+		const observer = new window.IntersectionObserver(
+			entries => {
+				const entry = entries[0];
+				if (!entry) return;
+				this.offsetContainerHeights.set(
+					offsetFromContainer,
+					Math.round(entry.intersectionRect.height),
+				);
+				this.repositionNotifications();
+			},
+			{
+				threshold: this.getIntersectionThresholds(),
+			},
+		);
+
+		observer.observe(element);
+		this.offsetContainerObservers.set(offsetFromContainer, observer);
+	}
+
+	releaseOffsetContainer(offsetFromContainer: string | null): void {
+		if (!offsetFromContainer) {
+			return;
+		}
+
+		const refCount = this.offsetContainerRefCounts.get(offsetFromContainer);
+		if (!refCount) {
+			return;
+		}
+
+		if (refCount > 1) {
+			this.offsetContainerRefCounts.set(offsetFromContainer, refCount - 1);
+			return;
+		}
+
+		this.offsetContainerRefCounts.delete(offsetFromContainer);
+		this.offsetContainerHeights.delete(offsetFromContainer);
+		this.offsetContainerObservers.get(offsetFromContainer)?.disconnect();
+		this.offsetContainerObservers.delete(offsetFromContainer);
+	}
+
+	repositionNotifications(): void {
+		this.positionNotifications('top');
+		this.positionNotifications('bottom');
+	}
+
+	getOffsetContainerElement(offsetFromContainer: string): HTMLElement | null {
+		try {
+			const container = document.querySelector(offsetFromContainer);
+			return container instanceof HTMLElement ? container : null;
+		} catch {
+			return null;
+		}
+	}
+
+	getVisibleContainerHeight(container: HTMLElement): number {
+		const rect = container.getBoundingClientRect();
+		const viewportHeight = document.documentElement.clientHeight || window.innerHeight;
+		const visibleTop = Math.max(rect.top, 0);
+		const visibleBottom = Math.min(rect.bottom, viewportHeight);
+		return Math.max(0, Math.round(visibleBottom - visibleTop));
+	}
+
+	getIntersectionThresholds(): number[] {
+		return Array.from({ length: 101 }, (_, index) => index / 100);
 	}
 
 	prefersReducedMotion(): boolean {
@@ -479,6 +584,7 @@ export class Notification {
 			position,
 			notifications.filter(t => t !== notification),
 		);
+		this.releaseOffsetContainer(notification.offsetFromContainer);
 		this.positionNotifications(position);
 		anchor?.focus();
 	}
