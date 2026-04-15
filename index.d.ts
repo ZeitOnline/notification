@@ -28,14 +28,14 @@ export type InlineNotificationOptions = {
 };
 
 export type InlineNotification = {
-	timeoutID: number | null;
+	timeoutID: ReturnType<typeof setTimeout> | null;
 };
 
 export interface NotificationElement extends HTMLDivElement {
 	type: string | null;
 	hasTimer: boolean;
 	isPaused: boolean;
-	timeoutID: number;
+	timeoutID: ReturnType<typeof setTimeout> | null;
 	elapsed: number;
 	startedAt: number;
 	anchorElement: HTMLElement;
