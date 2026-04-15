@@ -1,249 +1,285 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<title>Notifications</title>
-		<meta
-			name="description"
-			content="Notifications - to keep you informed about results, warnings and errors."
-		/>
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="icon" href="favicon.svg" />
-		<link rel="stylesheet" href="../src/assets/css/design-system.css" />
-		<link rel="stylesheet" href="../src/scss/notification.scss" />
-		<link rel="stylesheet" href="style.css" />
-	</head>
-	<body>
-		<div class="symbols">
-			<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-				<symbol viewBox="0 0 18 18" id="svg-bookmark" xmlns="http://www.w3.org/2000/svg">
-					<title>Merkliste</title><path d="M8.665 13.33 3.75 15.786V2A.25.25 0 0 1 4 1.75h10a.25.25 0 0 1 .25.25v13.787l-4.915-2.458L9 13.161l-.335.168Z"/>
-				</symbol>
-				<symbol viewBox="0 0 18 18" id="svg-headphones" xmlns="http://www.w3.org/2000/svg">
-					<title>Abspielen</title><path d="M9 1.25c2.612 0 4.579.882 5.885 2.35C16.178 5.052 16.75 6.996 16.75 9v4.5a3.25 3.25 0 0 1-3.25 3.25h-1.043c-.666 0-1.207-.54-1.207-1.207v-5.086c0-.666.54-1.207 1.207-1.207H13.5c.645 0 1.245.188 1.75.512V9c0-1.734-.495-3.29-1.485-4.403C12.787 3.498 11.255 2.75 9 2.75c-2.254 0-3.787.748-4.765 1.847C3.245 5.71 2.75 7.266 2.75 9v.762A3.234 3.234 0 0 1 4.5 9.25h1.043c.666 0 1.207.54 1.207 1.207v5.086c0 .666-.54 1.207-1.207 1.207H4.5a3.25 3.25 0 0 1-3.25-3.25V9c0-2.004.572-3.948 1.865-5.4C4.421 2.132 6.388 1.25 9 1.25Zm-4.5 9.5a1.75 1.75 0 0 0-1.75 1.75v1c0 .966.784 1.75 1.75 1.75h.75v-4.5H4.5Zm8.25 4.5h.75a1.75 1.75 0 0 0 1.75-1.75v-1a1.75 1.75 0 0 0-1.75-1.75h-.75v4.5Z"/>
-				</symbol>
-			</svg>
-		</div>
-		<main>
-			<nav aria-label="Main Navigation">
-				<div>
-					<a href="index.html">home</a>
-					<a href="focus-test.html">focus test</a>
-				</div>
-			
 
-				<fieldset class="theme-switcher" aria-label="Select a display theme">
-					<legend class="sr-only">Select a display theme:</legend>
-					<span class="theme-option">
-						<input id="theme-switch-system" name="theme-option" type="radio" value="system" aria-label="system" checked />
-						<label for="theme-switch-system">
-							<span class="sr-only">system</span>
-							<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-								<g id="18x18 / System">
-									<path id="Fill" fill-rule="evenodd" clip-rule="evenodd" d="M4.5 1C3.67157 1 3 1.67157 3 2.5V15.75C3 16.5784 3.67157 17.25 4.5 17.25H13.5C14.3284 17.25 15 16.5784 15 15.75V2.5C15 1.67157 14.3284 1 13.5 1H4.5ZM4.5 2.5L13.5 2.5V15.75H4.5V2.5ZM9 14.5C9.55228 14.5 10 14.0523 10 13.5C10 12.9477 9.55228 12.5 9 12.5C8.44772 12.5 8 12.9477 8 13.5C8 14.0523 8.44772 14.5 9 14.5Z" fill="currentColor"></path>
-								</g>
-							</svg>
-						</label>
-					</span>
-					<span class="theme-option">
-						<input id="theme-switch-light" name="theme-option" type="radio" value="light" aria-label="light" />
-						<label for="theme-switch-light">
-							<span class="sr-only">light</span>
-							<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-								<g id="18x18 / Sun">
-									<path id="Fill" fill-rule="evenodd" clip-rule="evenodd" d="M9.75 3.5V1H8.25V3.5H9.75ZM2.81282 3.87348L4.58058 5.64124L5.64124 4.58058L3.87348 2.81282L2.81282 3.87348ZM14.1265 2.8133L12.3588 4.58107L13.4194 5.64173L15.1872 3.87396L14.1265 2.8133ZM3.5 8.25H1V9.75H3.5V8.25ZM17 8.25H14.5V9.75H17V8.25ZM12.3588 13.4194L14.1265 15.1872L15.1872 14.1265L13.4194 12.3588L12.3588 13.4194ZM4.58058 12.3592L2.81282 14.127L3.87348 15.1877L5.64124 13.4199L4.58058 12.3592ZM9.75 17V14.5H8.25V17H9.75ZM6.5 9C6.5 7.61929 7.61929 6.5 9 6.5C10.3807 6.5 11.5 7.61929 11.5 9C11.5 10.3807 10.3807 11.5 9 11.5C7.61929 11.5 6.5 10.3807 6.5 9ZM9 5C6.79086 5 5 6.79086 5 9C5 11.2091 6.79086 13 9 13C11.2091 13 13 11.2091 13 9C13 6.79086 11.2091 5 9 5Z" fill="currentColor"></path>
-								</g>
-							</svg>
-						</label>
-					</span>
-					<span class="theme-option">
-						<input id="theme-switch-dark" name="theme-option" type="radio" value="dark" aria-label="dark" />
-						<label for="theme-switch-dark">
-							<span class="sr-only">dark</span>
-							<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-								<g id="18x18 / Moon">
-									<path id="Fill" d="M1.75 9.00039C1.75 5.84041 3.77221 3.15169 6.59304 2.15929C5.81481 5.09424 6.64182 8.24237 9.06765 10.0394C11.1189 11.559 13.7493 11.6889 16.0476 10.709C15.2796 13.8884 12.4155 16.2504 9 16.2504C4.99594 16.2504 1.75 13.0045 1.75 9.00039Z" stroke="currentColor" stroke-width="1.5"></path>
-								</g>
-							</svg>
-						</label>
-					</span>
-				</fieldset>
-			</nav>
-			
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<title>Notifications</title>
+	<meta name="description" content="Notifications - to keep you informed about results, warnings and errors." />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="icon" href="favicon.svg" />
+	<link rel="stylesheet" href="../src/assets/css/design-system.css" />
+	<link rel="stylesheet" href="../src/scss/notification.scss" />
+	<link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+	<header id="demo-header">
+		<nav aria-label="Main Navigation">
+			<div>
+				<a href="index.html">home</a>
+				<a href="focus-test.html">focus test</a>
+			</div>
+
+
+			<fieldset class="theme-switcher" aria-label="Select a display theme">
+				<legend class="sr-only">Select a display theme:</legend>
+				<span class="theme-option">
+					<input id="theme-switch-system" name="theme-option" type="radio" value="system" aria-label="system"
+						checked />
+					<label for="theme-switch-system">
+						<span class="sr-only">system</span>
+						<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"
+							aria-hidden="true">
+							<g id="18x18 / System">
+								<path id="Fill" fill-rule="evenodd" clip-rule="evenodd"
+									d="M4.5 1C3.67157 1 3 1.67157 3 2.5V15.75C3 16.5784 3.67157 17.25 4.5 17.25H13.5C14.3284 17.25 15 16.5784 15 15.75V2.5C15 1.67157 14.3284 1 13.5 1H4.5ZM4.5 2.5L13.5 2.5V15.75H4.5V2.5ZM9 14.5C9.55228 14.5 10 14.0523 10 13.5C10 12.9477 9.55228 12.5 9 12.5C8.44772 12.5 8 12.9477 8 13.5C8 14.0523 8.44772 14.5 9 14.5Z"
+									fill="currentColor"></path>
+							</g>
+						</svg>
+					</label>
+				</span>
+				<span class="theme-option">
+					<input id="theme-switch-light" name="theme-option" type="radio" value="light" aria-label="light" />
+					<label for="theme-switch-light">
+						<span class="sr-only">light</span>
+						<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"
+							aria-hidden="true">
+							<g id="18x18 / Sun">
+								<path id="Fill" fill-rule="evenodd" clip-rule="evenodd"
+									d="M9.75 3.5V1H8.25V3.5H9.75ZM2.81282 3.87348L4.58058 5.64124L5.64124 4.58058L3.87348 2.81282L2.81282 3.87348ZM14.1265 2.8133L12.3588 4.58107L13.4194 5.64173L15.1872 3.87396L14.1265 2.8133ZM3.5 8.25H1V9.75H3.5V8.25ZM17 8.25H14.5V9.75H17V8.25ZM12.3588 13.4194L14.1265 15.1872L15.1872 14.1265L13.4194 12.3588L12.3588 13.4194ZM4.58058 12.3592L2.81282 14.127L3.87348 15.1877L5.64124 13.4199L4.58058 12.3592ZM9.75 17V14.5H8.25V17H9.75ZM6.5 9C6.5 7.61929 7.61929 6.5 9 6.5C10.3807 6.5 11.5 7.61929 11.5 9C11.5 10.3807 10.3807 11.5 9 11.5C7.61929 11.5 6.5 10.3807 6.5 9ZM9 5C6.79086 5 5 6.79086 5 9C5 11.2091 6.79086 13 9 13C11.2091 13 13 11.2091 13 9C13 6.79086 11.2091 5 9 5Z"
+									fill="currentColor"></path>
+							</g>
+						</svg>
+					</label>
+				</span>
+				<span class="theme-option">
+					<input id="theme-switch-dark" name="theme-option" type="radio" value="dark" aria-label="dark" />
+					<label for="theme-switch-dark">
+						<span class="sr-only">dark</span>
+						<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"
+							aria-hidden="true">
+							<g id="18x18 / Moon">
+								<path id="Fill"
+									d="M1.75 9.00039C1.75 5.84041 3.77221 3.15169 6.59304 2.15929C5.81481 5.09424 6.64182 8.24237 9.06765 10.0394C11.1189 11.559 13.7493 11.6889 16.0476 10.709C15.2796 13.8884 12.4155 16.2504 9 16.2504C4.99594 16.2504 1.75 13.0045 1.75 9.00039Z"
+									stroke="currentColor" stroke-width="1.5"></path>
+							</g>
+						</svg>
+					</label>
+				</span>
+			</fieldset>
+		</nav>
+
+	</header>
+	<div class="symbols">
+		<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+			<symbol viewBox="0 0 18 18" id="svg-bookmark" xmlns="http://www.w3.org/2000/svg">
+				<title>Merkliste</title>
+				<path
+					d="M8.665 13.33 3.75 15.786V2A.25.25 0 0 1 4 1.75h10a.25.25 0 0 1 .25.25v13.787l-4.915-2.458L9 13.161l-.335.168Z" />
+			</symbol>
+			<symbol viewBox="0 0 18 18" id="svg-headphones" xmlns="http://www.w3.org/2000/svg">
+				<title>Abspielen</title>
+				<path
+					d="M9 1.25c2.612 0 4.579.882 5.885 2.35C16.178 5.052 16.75 6.996 16.75 9v4.5a3.25 3.25 0 0 1-3.25 3.25h-1.043c-.666 0-1.207-.54-1.207-1.207v-5.086c0-.666.54-1.207 1.207-1.207H13.5c.645 0 1.245.188 1.75.512V9c0-1.734-.495-3.29-1.485-4.403C12.787 3.498 11.255 2.75 9 2.75c-2.254 0-3.787.748-4.765 1.847C3.245 5.71 2.75 7.266 2.75 9v.762A3.234 3.234 0 0 1 4.5 9.25h1.043c.666 0 1.207.54 1.207 1.207v5.086c0 .666-.54 1.207-1.207 1.207H4.5a3.25 3.25 0 0 1-3.25-3.25V9c0-2.004.572-3.948 1.865-5.4C4.421 2.132 6.388 1.25 9 1.25Zm-4.5 9.5a1.75 1.75 0 0 0-1.75 1.75v1c0 .966.784 1.75 1.75 1.75h.75v-4.5H4.5Zm8.25 4.5h.75a1.75 1.75 0 0 0 1.75-1.75v-1a1.75 1.75 0 0 0-1.75-1.75h-.75v4.5Z" />
+			</symbol>
+		</svg>
+	</div>
+	<main>
 		<section class="hero">
 			<img src="logo-meerkat.png" height="600" width="420" alt="notifications mascot" class="mascot" />
 			<h1>Notifications</h1>
-			<p>Notifications keep you informed about<br/>results, warnings and errors.</p>
+			<p>Notifications keep you informed about<br />results, warnings and errors.</p>
 		</section>
 
-			<section class="demo" aria-label="Notification demos">
-				<article>
-					<h2>Notifications</h2>
-					<p>Trigger the different bottom variants and verify timing, stacking and actions.</p>
-					<p>Action / Links:</p>
-					<div class="button-group">
-						<button type="button" class="button" data-action="type-of-foo-with-link">Type of foo with link</button>
-						<button type="button" class="button" data-action="type-of-foo-with-callback">Type of foo with Callback</button>
-						<button type="button" class="button" data-action="link">Simple Link</button>
-					</div>
-					<p>Status:</p>
-					<div class="button-group">
-						<button type="button" class="button" data-action="info-without-timer">Info without Timer (Bottom)</button>
-						<button type="button" class="button" data-action="info-without-timer-top">Info without Timer (Top)</button>
-						<button type="button" class="button" data-action="error">Error</button>
-						<button type="button" class="button" data-action="error-with-callback">Error with CallBack</button>
-					</div>
-				</article>
-				<article>
-					<h2>Inline notifications</h2>
-					<p>Use the anchor button to verify placement, dismissal on scroll and timeout handling.</p>
-					<div class="button-group">
-						<button type="button" class="button" data-action="info-inline">inline message</button>
-					</div>
-				</article>
-			</section>
-		</main>
-		<div class="motion-indicator" id="motion-indicator" aria-hidden="true"></div>
-		<script>
-			// Initialize window.Zeit before any modules load
-			window.Zeit = window.Zeit || {};
-		</script>
-		<script async type="module">
-			import { initThemeSwitcher } from './theme-switcher.js';
-			import notification from "/index.js";
-			initThemeSwitcher();
+		<section class="demo" aria-label="Notification demos">
+			<article>
+				<h2>Notifications</h2>
+				<p>Trigger the different bottom variants and verify timing, stacking and actions.</p>
+				<p>Action / Links:</p>
+				<div class="button-group">
+					<button type="button" class="button" data-action="type-of-foo-with-link">Type of foo with
+						link</button>
+					<button type="button" class="button" data-action="type-of-foo-with-callback">Type of foo with
+						Callback</button>
+					<button type="button" class="button" data-action="link">Simple Link</button>
+				</div>
+				<p>Status:</p>
+				<div class="button-group">
+					<button type="button" class="button" data-action="info-without-timer">Info without Timer
+						(Bottom)</button>
+					<button type="button" class="button" data-action="info-without-timer-top">Info without Timer
+						(Top)</button>
+					<button type="button" class="button" data-action="top-with-button-offset">Top with Button and
+						Offset</button>
+					<button type="button" class="button" data-action="error">Error</button>
+					<button type="button" class="button" data-action="error-with-callback">Error with CallBack</button>
+				</div>
+			</article>
+			<article>
+				<h2>Inline notifications</h2>
+				<p>Use the anchor button to verify placement, dismissal on scroll and timeout handling.</p>
+				<div class="button-group">
+					<button type="button" class="button" data-action="info-inline">inline message</button>
+				</div>
+			</article>
+		</section>
+	</main>
+	<div class="motion-indicator" id="motion-indicator" aria-hidden="true"></div>
+	<script>
+		// Initialize window.Zeit before any modules load
+		window.Zeit = window.Zeit || {};
+	</script>
+	<script async type="module">
+		import { initThemeSwitcher } from './theme-switcher.js';
+		import notification from "/index.js";
+		initThemeSwitcher();
 
-			const motionIndicator = document.getElementById('motion-indicator');
-			const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+		const motionIndicator = document.getElementById('motion-indicator');
+		const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-			function updateMotionIndicator() {
-				const reducedMotion = reducedMotionQuery.matches;
-				motionIndicator.dataset.motion = reducedMotion ? 'reduced' : 'full';
-				motionIndicator.textContent = reducedMotion ? 'Motion: Reduced' : 'Motion: Full';
-			}
+		function updateMotionIndicator() {
+			const reducedMotion = reducedMotionQuery.matches;
+			motionIndicator.dataset.motion = reducedMotion ? 'reduced' : 'full';
+			motionIndicator.textContent = reducedMotion ? 'Motion: Reduced' : 'Motion: Full';
+		}
 
-			updateMotionIndicator();
-			if (typeof reducedMotionQuery.addEventListener === 'function') {
-				reducedMotionQuery.addEventListener('change', updateMotionIndicator);
-			}
+		updateMotionIndicator();
+		if (typeof reducedMotionQuery.addEventListener === 'function') {
+			reducedMotionQuery.addEventListener('change', updateMotionIndicator);
+		}
 
-			function handleEvent(event) {
-				const target = event.target;
-				if (target.hasAttribute('data-action')) {
-					const action = target.getAttribute('data-action');
-					switch (action) {
+		function handleEvent(event) {
+			const target = event.target;
+			if (target.hasAttribute('data-action')) {
+				const action = target.getAttribute('data-action');
+				switch (action) {
 
-						// ACTION/LINK VARIANTS
+					// ACTION/LINK VARIANTS
 
-						case 'type-of-foo-with-link':
-							notification.show({
-								element: target,
-								type: "foo",
-								position: "bottom",
-								status: "success",
-								icon: "bookmark",
-								message: "Der Artikel wurde gespeichert.",
-								link: {
-									text: "Merkliste öffnen",
-									href: "https://www.zeit.de/konto/listen/merkliste",
-								},
-								hasTimer: true,
-							});
-							break;
-						case 'type-of-foo-with-callback':
-							notification.show({
-								element: target,
-								type: "foo",
-								icon: "bookmark",
-								message: "Der Artikel wurde von der Merkliste entfernt.",
-								button: {
-									text: "Rückgängig",
-									onClick: () => callBack('Retry triggered from the notification action.'),
-								},
-								hasTimer: true,
-							});
-							break;
-						case 'link':
-							notification.show({
-								element: target,
-								status: "info",
-								type: "info",
-								message: "A new version of Notification is available.",
-								link: {
-									text: "Open docs",
-									href: "https://github.com/ZeitOnline/notification",
-								},
-								hasTimer: true,
-							});
-							break;
+					case 'type-of-foo-with-link':
+						notification.show({
+							element: target,
+							type: "foo",
+							position: "bottom",
+							status: "success",
+							icon: "bookmark",
+							message: "Der Artikel wurde gespeichert.",
+							link: {
+								text: "Merkliste öffnen",
+								href: "https://www.zeit.de/konto/listen/merkliste",
+							},
+							hasTimer: true,
+						});
+						break;
+					case 'type-of-foo-with-callback':
+						notification.show({
+							element: target,
+							type: "foo",
+							icon: "bookmark",
+							message: "Der Artikel wurde von der Merkliste entfernt.",
+							button: {
+								text: "Rückgängig",
+								onClick: () => callBack('Retry triggered from the notification action.'),
+							},
+							hasTimer: true,
+						});
+						break;
+					case 'link':
+						notification.show({
+							element: target,
+							status: "info",
+							type: "info",
+							message: "A new version of Notification is available.",
+							link: {
+								text: "Open docs",
+								href: "https://github.com/ZeitOnline/notification",
+							},
+							hasTimer: true,
+						});
+						break;
 
-						// STATUS VARIANTS
+					// STATUS VARIANTS
 
-						case 'info':
-							notification.show({
-								element: target,
-								message: 'Profile saved successfully.',
-								hasTimer: true,
-							});
-							break;
-						case 'info-without-timer':
-							notification.show({
-								element: target,
-								icon: "bookmark",
-								message: 'Bookmark saved successfully.'
-							});
-							break;
-						case 'info-without-timer-top':
-							notification.show({
-								element: target,
-								position: "top",
-								icon: "bookmark",
-								message: 'Bookmark saved successfully.'
-							});
-							break;
-						case 'error':
-							notification.show({
-								element: target,
-								status: "error",
-								message: "Connection is unstable. Changes may sync later.",
-								hasTimer: true,
-							});
-							break;
-						case 'error-with-callback':
-							notification.show({
-								element: target,
-								status: "error",
-								icon: "bookmark",
-								message: "Publishing failed. Check the form and try again.",
-								button: {
-									text: "Retry",
-									onClick: () => callBack('Retry triggered from the notification action.'),
-								},
-								hasTimer: true,
-							});
-							break;
+					case 'info':
+						notification.show({
+							element: target,
+							message: 'Profile saved successfully.',
+							hasTimer: true,
+						});
+						break;
+					case 'info-without-timer':
+						notification.show({
+							element: target,
+							icon: "bookmark",
+							message: 'Bookmark saved successfully.'
+						});
+						break;
+					case 'info-without-timer-top':
+						notification.show({
+							element: target,
+							position: "top",
+							icon: "bookmark",
+							message: 'Bookmark saved successfully.'
+						});
+						break;
+					case 'top-with-button-offset':
+						notification.show({
+							element: target,
+							position: "top",
+							offsetFromContainer: "#demo-header",
+							status: "info",
+							message: "Top notification below the header offset.",
+							button: {
+								text: "Action",
+								onClick: () => callBack('Top notification action triggered.'),
+							},
+							hasTimer: true,
+						});
+						break;
+					case 'error':
+						notification.show({
+							element: target,
+							status: "error",
+							message: "Connection is unstable. Changes may sync later.",
+							hasTimer: true,
+						});
+						break;
+					case 'error-with-callback':
+						notification.show({
+							element: target,
+							status: "error",
+							icon: "bookmark",
+							message: "Publishing failed. Check the form and try again.",
+							button: {
+								text: "Retry",
+								onClick: () => callBack('Retry triggered from the notification action.'),
+							},
+							hasTimer: true,
+						});
+						break;
 
-						// INLINE VARIANT
+					// INLINE VARIANT
 
-						case 'info-inline':
-							notification.showInline({
-								element: target,
-								message: "This message is attached to the button you clicked.",
-							});
-							break;
-						default:
-							break;
-					}
+					case 'info-inline':
+						notification.showInline({
+							element: target,
+							message: "This message is attached to the button you clicked.",
+						});
+						break;
+					default:
+						break;
 				}
 			}
+		}
 
-			document.addEventListener('click', handleEvent, true);
+		document.addEventListener('click', handleEvent, true);
 
-			function callBack(message){
-				alert(message);
-			}
+		function callBack(message) {
+			alert(message);
+		}
 
-		</script>
-	</body>
+	</script>
+</body>
+
 </html>

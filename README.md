@@ -70,6 +70,8 @@ trigger?.addEventListener('click', () => {
 
 When `element` is provided for a bottom toast, the notification is inserted as the trigger's next sibling and the stack is reflowed from there. Newer bottom notifications sit below older ones, so replacement updates read as a visible handover instead of a hard swap.
 
+If you also pass `offsetFromContainer`, the notification stack starts below the matched element's height. Use a selector for a fixed header, toolbar, or similar container that should reserve vertical space. Only works for position top.
+
 If you use the `icon` option, the notification expects an SVG symbol in the page with the id pattern `svg-<name>`.
 
 ```html

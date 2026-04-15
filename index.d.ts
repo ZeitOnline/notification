@@ -14,6 +14,7 @@ export type NotificationOptions = {
 	type?: string;
 	position?: NotificationPosition;
 	element?: HTMLElement;
+	offsetFromContainer?: string;
 	icon?: string;
 	message: string;
 	status?: 'error' | 'success' | 'warning' | 'info';
@@ -34,6 +35,7 @@ export type InlineNotification = {
 export interface NotificationElement extends HTMLDivElement {
 	type: string | null;
 	position: NotificationPosition;
+	offsetFromContainer: string | null;
 	hasTimer: boolean;
 	isPaused: boolean;
 	timeoutID: ReturnType<typeof setTimeout> | null;

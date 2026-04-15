@@ -49,8 +49,9 @@ export class Notification {
 	}
 	show({
 		type,
-		position = 'bottom',
+		position = 'top',
 		element,
+		offsetFromContainer,
 		icon,
 		message,
 		status,
@@ -58,7 +59,7 @@ export class Notification {
 		link,
 		hasTimer,
 	}: NotificationOptions): void {
-		const targetPosition = position ?? 'bottom';
+		const targetPosition = position ?? 'top';
 		const notifications = this.getNotifications(targetPosition);
 		const notificationsToReplace = type ? notifications.filter(item => item.type === type) : [];
 
@@ -75,6 +76,7 @@ export class Notification {
 
 		this.insertNotification(notification, position);
 		notifications.push(notification);
+		notification.offsetFromContainer = offsetFromContainer ?? null;
 		this.positionNotifications(position);
 
 		notificationsToReplace.forEach(item => this.removeNotification(item, 'replaced'));
@@ -171,7 +173,8 @@ export class Notification {
 	createNotificationElement(element: HTMLElement): NotificationElement {
 		const el = document.createElement('div') as NotificationElement;
 		el.type = null;
-		el.position = 'bottom';
+		el.position = 'top';
+		el.offsetFromContainer = null;
 		el.hasTimer = false;
 		el.isPaused = false;
 		el.timeoutID = null;
@@ -282,8 +285,11 @@ export class Notification {
 	}
 
 	positionNotifications(position: NotificationPosition): void {
-		let offset = GAP_STACKING + OFFSET;
 		const notifications = this.getNotifications(position);
+		const offsetFromContainer =
+			notifications.find(notification => notification.offsetFromContainer)
+				?.offsetFromContainer ?? null;
+		let offset = GAP_STACKING + OFFSET + this.getContainerOffset(offsetFromContainer);
 		const notificationsInVisualOrder =
 			position === 'bottom' ? [...notifications].reverse() : notifications;
 
@@ -306,6 +312,25 @@ export class Notification {
 					: `${ZINDEX_BASE + index}`;
 			offset += notification.getBoundingClientRect().height + GAP_STACKING;
 		});
+	}
+
+	getContainerOffset(offsetFromContainer?: string): number {
+		if (!offsetFromContainer) {
+			return 0;
+		}
+
+		let container: Element | null = null;
+		try {
+			container = document.querySelector(offsetFromContainer);
+		} catch {
+			return 0;
+		}
+
+		if (!container) {
+			return 0;
+		}
+
+		return Math.round(container.getBoundingClientRect().height);
 	}
 
 	prefersReducedMotion(): boolean {
@@ -500,6 +525,7 @@ const notification: NotificationService = {
 		type,
 		position,
 		element,
+		offsetFromContainer,
 		icon,
 		message,
 		status,
@@ -511,6 +537,7 @@ const notification: NotificationService = {
 			type,
 			position,
 			element,
+			offsetFromContainer,
 			icon,
 			message,
 			status,

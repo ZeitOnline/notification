@@ -4,6 +4,12 @@
 	--z-index-notification: 800;
 }
 
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
 html,
 body {
 	margin: 0;
@@ -18,13 +24,19 @@ body {
 	color: var(--color-text);
 	font-size: var(--font-size-base);
 	line-height: 1.6;
-}
-
-body {
 	background: var(--z-ds-color-background-0);
 	color: var(--z-ds-color-text-100);
 	min-height: 100vh;
+}
+
+
+header {
 	padding: var(--z-ds-space-m);
+	border-bottom: 1px solid var(--z-ds-color-border-100);
+}
+
+main {
+	padding: 0 var(--z-ds-space-m);
 }
 
 /* svg icons from zeit.web */

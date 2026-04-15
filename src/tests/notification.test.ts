@@ -235,6 +235,128 @@ describe('notification accessibility behavior', () => {
 		rectSpy.mockRestore();
 	});
 
+	it('adds the height of a matching offset container to the notification offset', () => {
+		const trigger = document.createElement('button');
+		const offsetContainer = document.createElement('div');
+		trigger.textContent = 'Save';
+		offsetContainer.id = 'page-header';
+		document.body.append(offsetContainer, trigger);
+
+		const rectSpy = vi
+			.spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+			.mockImplementation(function getBoundingClientRect(this: HTMLElement): DOMRect {
+				if (this.id === 'page-header') {
+					return {
+						x: 0,
+						y: 0,
+						top: 0,
+						left: 0,
+						right: 100,
+						bottom: 60,
+						width: 100,
+						height: 60,
+						toJSON: () => ({}),
+					} as DOMRect;
+				}
+
+				const height = this.classList.contains('z-notification') ? 40 : 20;
+				return {
+					x: 0,
+					y: 0,
+					top: 0,
+					left: 0,
+					right: 100,
+					bottom: height,
+					width: 100,
+					height,
+					toJSON: () => ({}),
+				} as DOMRect;
+			});
+
+		notification.show({
+			element: trigger,
+			message: 'Offset toast.',
+			status: 'info',
+			offsetFromContainer: '#page-header',
+		});
+
+		const toast = screen.getByText('Offset toast.').closest('.z-notification') as HTMLElement;
+
+		expect(toast.style.bottom).toContain('calc(84px');
+
+		rectSpy.mockRestore();
+	});
+
+	it('keeps the offset container height when top notifications are repositioned', () => {
+		const trigger = document.createElement('button');
+		const offsetContainer = document.createElement('div');
+		trigger.textContent = 'Save';
+		offsetContainer.id = 'page-header';
+		document.body.append(offsetContainer, trigger);
+
+		const rectSpy = vi
+			.spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+			.mockImplementation(function getBoundingClientRect(this: HTMLElement): DOMRect {
+				if (this.id === 'page-header') {
+					return {
+						x: 0,
+						y: 0,
+						top: 0,
+						left: 0,
+						right: 100,
+						bottom: 60,
+						width: 100,
+						height: 60,
+						toJSON: () => ({}),
+					} as DOMRect;
+				}
+
+				const height = this.classList.contains('z-notification') ? 40 : 20;
+				return {
+					x: 0,
+					y: 0,
+					top: 0,
+					left: 0,
+					right: 100,
+					bottom: height,
+					width: 100,
+					height,
+					toJSON: () => ({}),
+				} as DOMRect;
+			});
+
+		notification.show({
+			element: trigger,
+			position: 'top',
+			message: 'First top toast.',
+			status: 'info',
+			offsetFromContainer: '#page-header',
+		});
+		notification.show({
+			element: trigger,
+			position: 'top',
+			message: 'Second top toast.',
+			status: 'info',
+			offsetFromContainer: '#page-header',
+		});
+
+		const firstToast = screen
+			.getByText('First top toast.')
+			.closest('.z-notification') as HTMLElement;
+		const secondToast = screen
+			.getByText('Second top toast.')
+			.closest('.z-notification') as HTMLElement;
+
+		expect(firstToast.style.top).toContain('calc(84px');
+		expect(secondToast.style.top).toContain('calc(132px');
+
+		notification.removeNotification(firstToast);
+
+		expect(secondToast.style.top).toContain('calc(84px');
+
+		rectSpy.mockRestore();
+	});
+
 	it('removes inline notifications after the configured timeout', async () => {
 		const trigger = document.createElement('button');
 		trigger.textContent = 'Copy link';
