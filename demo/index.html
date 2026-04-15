@@ -89,7 +89,9 @@
 					</div>
 					<p>Status:</p>
 					<div class="button-group">
-						<button type="button" class="button" data-action="info-without-timer">Info without Timer</button>
+						<button type="button" class="button" data-action="info-without-timer">Info without Timer Top Right</button>
+						<button type="button" class="button" data-action="info-without-timer-top">Info without Timer Top Center</button>
+						<button type="button" class="button" data-action="info-without-timer-bottom">Info without Timer Bottom</button>
 						<button type="button" class="button" data-action="error">Error</button>
 						<button type="button" class="button" data-action="error-with-callback">Error with CallBack</button>
 					</div>
@@ -174,6 +176,30 @@
 						case 'info-without-timer':
 							notification.show({
 								element: target,
+								icon: "bookmark",
+								message: 'Bookmark saved successfully.'
+							});
+							break;
+						case 'info-without-timer':
+							notification.show({
+								element: target,
+								position: "top-right",
+								icon: "bookmark",
+								message: 'Bookmark saved successfully.'
+							});
+							break;
+						case 'info-without-timer-top':
+							notification.show({
+								element: target,
+								position: "top",
+								icon: "bookmark",
+								message: 'Bookmark saved successfully.'
+							});
+							break;
+						case 'info-without-timer-bottom':
+							notification.show({
+								element: target,
+								position: "bottom",
 								icon: "bookmark",
 								message: 'Bookmark saved successfully.'
 							});

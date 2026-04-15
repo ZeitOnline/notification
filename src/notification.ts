@@ -46,7 +46,7 @@ export class Notification {
 	}
 	show({
 		type,
-		position = 'top',
+		position = 'top-right',
 		element,
 		icon,
 		message,
@@ -232,9 +232,7 @@ export class Notification {
 	}
 
 	insertNotification(notification: NotificationElement, position: NotificationPosition): void {
-		notification.classList.add(
-			position === 'top' ? 'z-notification--top' : 'z-notification--bottom',
-		);
+		notification.classList.add(`z-notification--${position}`);
 
 		const parent = notification.anchorElement?.parentElement;
 		if (notification.anchorElement === document.body) {
@@ -268,14 +266,26 @@ export class Notification {
 	}
 
 	positionNotifications(position: NotificationPosition): void {
-		let offset = GAP_STACKING + OFFSET;
+		let offset = OFFSET;
 		this.notifications.forEach((notification, index) => {
 			if (position === 'bottom') {
 				notification.style.bottom = `calc(${offset}px + env(safe-area-inset-bottom, 0px))`;
 				notification.style.top = 'auto';
+				notification.style.left = '0';
+				notification.style.right = '0';
+				notification.style.marginInline = 'auto';
+			} else if (position === 'top-right') {
+				notification.style.bottom = 'auto';
+				notification.style.top = `calc(${offset}px + env(safe-area-inset-top, 0px))`;
+				notification.style.left = 'auto';
+				notification.style.right = `calc(${OFFSET}px + env(safe-area-inset-right, 0px))`;
+				notification.style.marginInline = '0';
 			} else {
 				notification.style.bottom = 'auto';
 				notification.style.top = `calc(${offset}px + env(safe-area-inset-top, 0px))`;
+				notification.style.left = '0';
+				notification.style.right = '0';
+				notification.style.marginInline = 'auto';
 			}
 			notification.style.zIndex = `${ZINDEX_BASE + index}`;
 			offset += notification.getBoundingClientRect().height + GAP_STACKING;
@@ -374,7 +384,16 @@ export class Notification {
 	removeNotification(notification: NotificationElement | null): void {
 		if (!notification) return;
 
-		const position = notification.classList.contains('z-notification--top') ? 'top' : 'bottom';
+		let position: NotificationPosition;
+
+		if (notification.classList.contains('z-notification--top-right')) {
+			position = 'top-right';
+		} else if (notification.classList.contains('z-notification--top')) {
+			position = 'top';
+		} else {
+			position = 'bottom';
+		}
+
 		const anchor = notification.anchorElement;
 
 		if (notification.timeoutID) {
