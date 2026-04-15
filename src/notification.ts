@@ -59,7 +59,6 @@ export class Notification {
 		hasTimer,
 	}: NotificationOptions): void {
 		const targetPosition = position ?? 'bottom';
-		const originator = element ?? document.body;
 		const notifications = this.getNotifications(targetPosition);
 		const notificationsToReplace = type ? notifications.filter(item => item.type === type) : [];
 
@@ -74,9 +73,9 @@ export class Notification {
 			hasTimer,
 		});
 
-		this.insertNotification(notification, targetPosition, originator);
+		this.insertNotification(notification, position);
 		notifications.push(notification);
-		this.positionNotifications(targetPosition);
+		this.positionNotifications(position);
 
 		notificationsToReplace.forEach(item => this.removeNotification(item, 'replaced'));
 
@@ -175,7 +174,7 @@ export class Notification {
 		el.position = 'bottom';
 		el.hasTimer = false;
 		el.isPaused = false;
-		el.timeoutID = 0;
+		el.timeoutID = null;
 		el.elapsed = 0;
 		el.startedAt = 0;
 		el.anchorElement = element;
@@ -237,38 +236,25 @@ export class Notification {
 		return notification;
 	}
 
-	insertNotification(
-		notification: NotificationElement,
-		position: NotificationPosition,
-		originator: HTMLElement,
-	): void {
+	insertNotification(notification: NotificationElement, position: NotificationPosition): void {
 		notification.position = position;
 		notification.classList.add(
 			position === 'top' ? 'z-notification--top' : 'z-notification--bottom',
 		);
-		notification.anchorElement = originator;
 
-		const parent = originator?.parentElement;
-		if (originator !== document.body && parent && parent !== document.body) {
-			const insertionPoint = this.findNotificationInsertionPoint(originator, position);
+		const parent = notification.anchorElement?.parentElement;
+		if (notification.anchorElement !== document.body && parent && parent !== document.body) {
+			let insertionPoint = notification.anchorElement;
+			while (
+				insertionPoint.nextElementSibling &&
+				this.isNotificationElementForPosition(insertionPoint.nextElementSibling, position)
+			) {
+				insertionPoint = insertionPoint.nextElementSibling as HTMLElement;
+			}
 			insertionPoint.insertAdjacentElement('afterend', notification);
 		} else {
 			document.body.insertAdjacentElement('beforeend', notification);
 		}
-	}
-
-	findNotificationInsertionPoint(
-		originator: HTMLElement,
-		position: NotificationPosition,
-	): HTMLElement {
-		let insertionPoint = originator;
-		while (
-			insertionPoint.nextElementSibling &&
-			this.isNotificationElementForPosition(insertionPoint.nextElementSibling, position)
-		) {
-			insertionPoint = insertionPoint.nextElementSibling as HTMLElement;
-		}
-		return insertionPoint;
 	}
 
 	getNotificationAnchor(notification: HTMLElement): HTMLElement | null {
@@ -392,7 +378,9 @@ export class Notification {
 		const pause = () => {
 			notification.isPaused = true;
 			notification.elapsed += Date.now() - notification.startedAt;
-			clearTimeout(notification.timeoutID);
+			if (notification.timeoutID) {
+				clearTimeout(notification.timeoutID);
+			}
 			if (ring) {
 				ring.style.animationPlayState = 'paused';
 			}
@@ -426,7 +414,12 @@ export class Notification {
 		const position = notification.position;
 		const anchor = notification.anchorElement;
 
-		clearTimeout(notification.timeoutID);
+		if (notification.timeoutID) {
+			clearTimeout(notification.timeoutID);
+		}
+
+		this.dispatchEvent('notification-removed', anchor);
+		notification.remove();
 
 		if (!this.prefersReducedMotion()) {
 			notification.classList.add('z-notification--leaving');
@@ -476,6 +469,14 @@ export class Notification {
 		}
 
 		this.notificationsBottom = notifications;
+	}
+
+	dispatchEvent(eventName: string, anchor: HTMLElement | null): void {
+		document.dispatchEvent(
+			new CustomEvent(eventName, {
+				detail: { originator: anchor },
+			}),
+		);
 	}
 
 	removeInlineNotification(container: HTMLElement, inline: InlineNotification): void {
