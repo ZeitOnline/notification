@@ -18,13 +18,13 @@ import type {
 
 const GAP_STACKING = 8;
 const MAX_NUMBER_OF_NOTIFICATIONS = 3;
-const OFFSET = 16;
+const OFFSET = 24;
 const ZINDEX_BASE =
 	parseInt(
 		getComputedStyle(document.documentElement)
 			.getPropertyValue('--z-index-notification')
 			.trim(),
-	) || 800;
+	) || 1000;
 
 // Notifications manage ui elements and keep you informed about results, warnings and errors.
 // This includes deciding which type of notification to show (e.g., inline or bottom).
@@ -46,7 +46,7 @@ export class Notification {
 	}
 	show({
 		type,
-		position = 'bottom',
+		position = 'top',
 		element,
 		icon,
 		message,
@@ -237,7 +237,9 @@ export class Notification {
 		);
 
 		const parent = notification.anchorElement?.parentElement;
-		if (parent && parent !== document.body) {
+		if (notification.anchorElement === document.body) {
+			document.body.insertAdjacentElement('beforeend', notification);
+		} else if (parent && parent !== document.body) {
 			let insertionPoint = notification.anchorElement;
 			while (
 				insertionPoint.nextElementSibling &&
