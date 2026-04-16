@@ -17,7 +17,6 @@
 }
 
 .z-notification {
-	--offset: var(--z-offset-notification, 24px);
 	align-items: center;
 	animation: z-notification-fade-in 0.18s ease-out;
 	background-color: transparent;
@@ -53,7 +52,7 @@
 		bottom: auto;
 		left: auto;
 		margin-inline: 0;
-		right: calc(var(--offset) + env(safe-area-inset-right, 0px));
+		right: env(safe-area-inset-right);
 	}
 
 	&--error {
