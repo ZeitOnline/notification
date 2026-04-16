@@ -67,6 +67,7 @@ export class Notification {
 
 		const notification = this.createNotification({
 			element,
+			position,
 			type,
 			icon,
 			message,
@@ -76,7 +77,7 @@ export class Notification {
 			hasTimer,
 		});
 
-		this.insertNotification(notification, position);
+		this.insertNotification(notification);
 		this.notifications.push(notification);
 		this.positionNotifications(position);
 
@@ -183,6 +184,7 @@ export class Notification {
 
 	createNotification({
 		element = document.body,
+		position,
 		type,
 		icon,
 		message,
@@ -190,9 +192,9 @@ export class Notification {
 		button,
 		link,
 		hasTimer,
-	}: Omit<NotificationOptions, 'position'>): NotificationElement {
+	}: NotificationOptions): NotificationElement {
 		const notification = this.createNotificationElement(element);
-		notification.className = `z-notification z-notification--${status}`;
+		notification.className = `z-notification z-notification--${position} z-notification--${status}`;
 
 		const buttonClass = 'z-notification__action-btn';
 
@@ -236,9 +238,7 @@ export class Notification {
 		return notification;
 	}
 
-	insertNotification(notification: NotificationElement, position: NotificationPosition): void {
-		notification.classList.add(`z-notification--${position}`);
-
+	insertNotification(notification: NotificationElement): void {
 		const anchor = notification.anchorElement;
 		const parent = anchor?.parentElement;
 
