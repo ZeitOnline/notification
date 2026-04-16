@@ -18,7 +18,12 @@ import type {
 
 const GAP_STACKING = 8;
 const MAX_NUMBER_OF_NOTIFICATIONS = 3;
-const OFFSET = 24;
+const OFFSET =
+	parseInt(
+		getComputedStyle(document.documentElement)
+			.getPropertyValue('--z-offset-notification')
+			.trim(),
+	) || 24;
 const ZINDEX_BASE =
 	parseInt(
 		getComputedStyle(document.documentElement)
