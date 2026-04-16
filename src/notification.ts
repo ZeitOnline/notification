@@ -19,11 +19,8 @@ import type {
 const GAP_STACKING = 8;
 const MAX_NUMBER_OF_NOTIFICATIONS = 3;
 const OFFSET =
-	parseInt(
-		getComputedStyle(document.documentElement)
-			.getPropertyValue('--z-offset-notification')
-			.trim(),
-	) || 24;
+	getComputedStyle(document.documentElement).getPropertyValue('--z-offset-notification').trim() ||
+	'1.5rem';
 const ZINDEX_BASE =
 	parseInt(
 		getComputedStyle(document.documentElement)
@@ -276,20 +273,20 @@ export class Notification {
 		let offset = OFFSET;
 		this.notifications.forEach((notification, index) => {
 			if (position === 'bottom') {
-				notification.style.bottom = `calc(${offset}px + env(safe-area-inset-bottom, 0px))`;
+				notification.style.bottom = `calc(${offset} + env(safe-area-inset-bottom, 0px))`;
 				notification.style.top = 'auto';
 				notification.style.left = '0';
 				notification.style.right = '0';
 				notification.style.marginInline = 'auto';
 			} else if (position === 'top-right') {
 				notification.style.bottom = 'auto';
-				notification.style.top = `calc(${offset}px + env(safe-area-inset-top, 0px))`;
+				notification.style.top = `calc(${offset} + env(safe-area-inset-top, 0px))`;
 				notification.style.left = 'auto';
-				notification.style.right = `calc(${OFFSET}px + env(safe-area-inset-right, 0px))`;
+				notification.style.right = `calc(${OFFSET} + env(safe-area-inset-right, 0px))`;
 				notification.style.marginInline = '0';
 			} else {
 				notification.style.bottom = 'auto';
-				notification.style.top = `calc(${offset}px + env(safe-area-inset-top, 0px))`;
+				notification.style.top = `calc(${offset} + env(safe-area-inset-top, 0px))`;
 				notification.style.left = '0';
 				notification.style.right = '0';
 				notification.style.marginInline = 'auto';
