@@ -239,21 +239,23 @@ export class Notification {
 	insertNotification(notification: NotificationElement, position: NotificationPosition): void {
 		notification.classList.add(`z-notification--${position}`);
 
-		const parent = notification.anchorElement?.parentElement;
-		if (notification.anchorElement === document.body) {
+		const anchor = notification.anchorElement;
+		const parent = anchor?.parentElement;
+
+		if (anchor === document.body || !parent || parent === document.body) {
 			document.body.insertAdjacentElement('beforeend', notification);
-		} else if (parent && parent !== document.body) {
-			let insertionPoint = notification.anchorElement;
-			while (
-				insertionPoint.nextElementSibling &&
-				this.isNotificationElement(insertionPoint.nextElementSibling)
-			) {
-				insertionPoint = insertionPoint.nextElementSibling as HTMLElement;
-			}
-			insertionPoint.insertAdjacentElement('afterend', notification);
-		} else {
-			document.body.insertAdjacentElement('beforeend', notification);
+			return;
 		}
+
+		let insertionPoint = anchor;
+		while (
+			insertionPoint.nextElementSibling &&
+			this.isNotificationElement(insertionPoint.nextElementSibling)
+		) {
+			insertionPoint = insertionPoint.nextElementSibling as HTMLElement;
+		}
+
+		insertionPoint.insertAdjacentElement('afterend', notification);
 	}
 
 	getNotificationAnchor(notification: HTMLElement): HTMLElement | null {
