@@ -236,37 +236,19 @@ export class Notification {
 	}
 
 	insertNotification(notification: NotificationElement): void {
-		const anchor = notification.anchorElement;
-		const parent = anchor?.parentElement;
-
-		if (anchor === document.body || !parent || parent === document.body) {
+		let insertionPoint = notification.anchorElement;
+		const parent = insertionPoint.parentElement;
+		if (insertionPoint === document.body || parent === document.body) {
 			document.body.insertAdjacentElement('beforeend', notification);
 			return;
 		}
-
-		let insertionPoint = anchor;
 		while (
 			insertionPoint.nextElementSibling &&
-			this.isNotificationElement(insertionPoint.nextElementSibling)
+			notification.classList.contains('z-notification')
 		) {
 			insertionPoint = insertionPoint.nextElementSibling as HTMLElement;
 		}
-
 		insertionPoint.insertAdjacentElement('afterend', notification);
-	}
-
-	getNotificationAnchor(notification: HTMLElement): HTMLElement | null {
-		let anchor: Element | null = notification.previousElementSibling;
-
-		while (anchor && this.isNotificationElement(anchor)) {
-			anchor = anchor.previousElementSibling;
-		}
-
-		return anchor instanceof HTMLElement ? anchor : null;
-	}
-
-	isNotificationElement(element: Element): element is NotificationElement {
-		return element.classList.contains('z-notification');
 	}
 
 	positionNotifications(position: NotificationPosition): void {
