@@ -1,7 +1,14 @@
 @import './theme-switcher.css';
 
 :root {
-	--z-index-notification: 800;
+	--z-index-notification: 1000;
+	--z-offset-notification: 24px;
+}
+
+*, 
+*::before, 
+*::after {
+	box-sizing: border-box;
 }
 
 html,
@@ -15,15 +22,10 @@ body {
 		BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
 		Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 	min-height: 100vh;
-	color: var(--color-text);
 	font-size: var(--font-size-base);
 	line-height: 1.6;
-}
-
-body {
 	background: var(--z-ds-color-background-0);
 	color: var(--z-ds-color-text-100);
-	min-height: 100vh;
 	padding: var(--z-ds-space-m);
 }
 

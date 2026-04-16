@@ -70,7 +70,7 @@ describe.sequential('notification spoken accessibility', () => {
 		expect((inlineMessage as HTMLElement).innerText).toContain('Link copied to clipboard.');
 	});
 
-	it('exposes bottom alerts and speaks the action and close buttons in tab order', async () => {
+	it('exposes top-right alerts and speaks the action and close buttons in tab order', async () => {
 		await virtual.start({ container: document.body });
 		await virtual.interact();
 
@@ -105,7 +105,7 @@ describe.sequential('notification spoken accessibility', () => {
 		expect(spoken).toContain('schließen');
 	});
 
-	it('speaks link actions when navigating bottom notifications by keyboard', async () => {
+	it('speaks link actions when navigating top-right notifications by keyboard', async () => {
 		await virtual.start({ container: document.body });
 		await virtual.interact();
 

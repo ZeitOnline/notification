@@ -18,13 +18,15 @@ import type {
 
 const GAP_STACKING = 8;
 const MAX_NUMBER_OF_NOTIFICATIONS = 3;
-const OFFSET = 16;
+const OFFSET =
+	getComputedStyle(document.documentElement).getPropertyValue('--z-offset-notification').trim() ||
+	'1.5rem';
 const ZINDEX_BASE =
 	parseInt(
 		getComputedStyle(document.documentElement)
 			.getPropertyValue('--z-index-notification')
 			.trim(),
-	) || 800;
+	) || 1000;
 
 // Notifications manage ui elements and keep you informed about results, warnings and errors.
 // This includes deciding which type of notification to show (e.g., inline or bottom).
@@ -46,7 +48,7 @@ export class Notification {
 	}
 	show({
 		type,
-		position = 'bottom',
+		position = 'top-right',
 		element,
 		icon,
 		message,
@@ -62,6 +64,7 @@ export class Notification {
 
 		const notification = this.createNotification({
 			element,
+			position,
 			type,
 			icon,
 			message,
@@ -71,7 +74,7 @@ export class Notification {
 			hasTimer,
 		});
 
-		this.insertNotification(notification, position);
+		this.insertNotification(notification);
 		this.notifications.push(notification);
 		this.positionNotifications(position);
 
@@ -178,6 +181,7 @@ export class Notification {
 
 	createNotification({
 		element = document.body,
+		position,
 		type,
 		icon,
 		message,
@@ -185,9 +189,9 @@ export class Notification {
 		button,
 		link,
 		hasTimer,
-	}: Omit<NotificationOptions, 'position'>): NotificationElement {
+	}: NotificationOptions): NotificationElement {
 		const notification = this.createNotificationElement(element);
-		notification.className = `z-notification z-notification--${status}`;
+		notification.className = `z-notification z-notification--${position} z-notification--${status}`;
 
 		const buttonClass = 'z-notification__action-btn';
 
@@ -231,49 +235,43 @@ export class Notification {
 		return notification;
 	}
 
-	insertNotification(notification: NotificationElement, position: NotificationPosition): void {
-		notification.classList.add(
-			position === 'top' ? 'z-notification--top' : 'z-notification--bottom',
-		);
-
-		const parent = notification.anchorElement?.parentElement;
-		if (parent && parent !== document.body) {
-			let insertionPoint = notification.anchorElement;
-			while (
-				insertionPoint.nextElementSibling &&
-				this.isNotificationElement(insertionPoint.nextElementSibling)
-			) {
-				insertionPoint = insertionPoint.nextElementSibling as HTMLElement;
-			}
-			insertionPoint.insertAdjacentElement('afterend', notification);
-		} else {
+	insertNotification(notification: NotificationElement): void {
+		let insertionPoint = notification.anchorElement;
+		const parent = insertionPoint.parentElement;
+		if (insertionPoint === document.body || parent === document.body) {
 			document.body.insertAdjacentElement('beforeend', notification);
+			return;
 		}
-	}
-
-	getNotificationAnchor(notification: HTMLElement): HTMLElement | null {
-		let anchor: Element | null = notification.previousElementSibling;
-
-		while (anchor && this.isNotificationElement(anchor)) {
-			anchor = anchor.previousElementSibling;
+		while (
+			insertionPoint.nextElementSibling &&
+			notification.classList.contains('z-notification')
+		) {
+			insertionPoint = insertionPoint.nextElementSibling as HTMLElement;
 		}
-
-		return anchor instanceof HTMLElement ? anchor : null;
-	}
-
-	isNotificationElement(element: Element): element is NotificationElement {
-		return element.classList.contains('z-notification');
+		insertionPoint.insertAdjacentElement('afterend', notification);
 	}
 
 	positionNotifications(position: NotificationPosition): void {
-		let offset = GAP_STACKING + OFFSET;
+		let offset = OFFSET;
 		this.notifications.forEach((notification, index) => {
 			if (position === 'bottom') {
-				notification.style.bottom = `calc(${offset}px + env(safe-area-inset-bottom, 0px))`;
+				notification.style.bottom = `calc(${offset} + env(safe-area-inset-bottom, 0px))`;
 				notification.style.top = 'auto';
+				notification.style.left = '0';
+				notification.style.right = '0';
+				notification.style.marginInline = 'auto';
+			} else if (position === 'top-right') {
+				notification.style.bottom = 'auto';
+				notification.style.top = `calc(${offset} + env(safe-area-inset-top, 0px))`;
+				notification.style.left = 'auto';
+				notification.style.right = `calc(${OFFSET} + env(safe-area-inset-right, 0px))`;
+				notification.style.marginInline = '0';
 			} else {
 				notification.style.bottom = 'auto';
-				notification.style.top = `calc(${offset}px + env(safe-area-inset-top, 0px))`;
+				notification.style.top = `calc(${offset} + env(safe-area-inset-top, 0px))`;
+				notification.style.left = '0';
+				notification.style.right = '0';
+				notification.style.marginInline = 'auto';
 			}
 			notification.style.zIndex = `${ZINDEX_BASE + index}`;
 			offset += notification.getBoundingClientRect().height + GAP_STACKING;
@@ -372,7 +370,16 @@ export class Notification {
 	removeNotification(notification: NotificationElement | null): void {
 		if (!notification) return;
 
-		const position = notification.classList.contains('z-notification--top') ? 'top' : 'bottom';
+		let position: NotificationPosition;
+
+		if (notification.classList.contains('z-notification--top-right')) {
+			position = 'top-right';
+		} else if (notification.classList.contains('z-notification--top')) {
+			position = 'top';
+		} else {
+			position = 'bottom';
+		}
+
 		const anchor = notification.anchorElement;
 
 		if (notification.timeoutID) {
