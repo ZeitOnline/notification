@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.0](https://github.com/ZeitOnline/notification/compare/notification-v1.5.1...notification-v1.6.0) (2026-04-16)
+
+
+### 🚀 Features
+
+* create "top-right" position and make it default  ([#48](https://github.com/ZeitOnline/notification/issues/48)) ([4183077](https://github.com/ZeitOnline/notification/commit/4183077f0664239fafa9ffc28f32139aa7ab53c1))
+* send 'notification-removed' event after removal ([#45](https://github.com/ZeitOnline/notification/issues/45)) ([0aa188b](https://github.com/ZeitOnline/notification/commit/0aa188beda14c69dba463ca73d6d8d2d5eeb5bf2))
+
 ## [1.5.1](https://github.com/ZeitOnline/notification/compare/notification-v1.5.0...notification-v1.5.1) (2026-04-13)
 
 
