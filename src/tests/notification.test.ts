@@ -2,7 +2,7 @@ import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 
-import { MAX_NUMBER_OF_NOTIFICATIONS, Notification } from '../notification';
+import { MAX_NOTIFICATIONS_PER_POSITION, Notification } from '../notification';
 
 const ensureDialogMethods = (): void => {
 	if (!HTMLDialogElement.prototype.show) {
@@ -400,7 +400,7 @@ describe('notification accessibility behavior', () => {
 		notification.show({ message: 'Third notification', status: 'info' });
 		notification.show({ message: 'Fourth notification', status: 'info' });
 
-		expect(screen.queryAllByText(/notification$/)).toHaveLength(MAX_NUMBER_OF_NOTIFICATIONS);
+		expect(screen.queryAllByText(/notification$/)).toHaveLength(MAX_NOTIFICATIONS_PER_POSITION);
 		expect(screen.queryByText('First notification')).toBeNull();
 		expect(screen.getByText('Second notification')).not.toBeNull();
 		expect(screen.getByText('Third notification')).not.toBeNull();
@@ -480,7 +480,7 @@ describe('notification accessibility behavior', () => {
 
 		const toasts = Array.from(document.querySelectorAll('.z-notification')) as HTMLElement[];
 
-		expect(toasts).toHaveLength(MAX_NUMBER_OF_NOTIFICATIONS);
+		expect(toasts).toHaveLength(MAX_NOTIFICATIONS_PER_POSITION);
 		expect(screen.queryByText('Top 1')).toBeNull();
 		expect(screen.getByText('Top 2')).not.toBeNull();
 		expect(screen.getByText('Top 3')).not.toBeNull();
@@ -519,7 +519,7 @@ describe('notification accessibility behavior', () => {
 
 		const toasts = Array.from(document.querySelectorAll('.z-notification')) as HTMLElement[];
 
-		expect(toasts).toHaveLength(MAX_NUMBER_OF_NOTIFICATIONS);
+		expect(toasts).toHaveLength(MAX_NOTIFICATIONS_PER_POSITION);
 		expect(screen.queryByText('Bottom 1')).toBeNull();
 		expect(screen.getByText('Bottom 2')).not.toBeNull();
 		expect(screen.getByText('Bottom 3')).not.toBeNull();

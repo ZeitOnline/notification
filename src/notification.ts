@@ -17,7 +17,7 @@ import type {
 } from '../index';
 
 const GAP_STACKING = 8;
-export const MAX_NUMBER_OF_NOTIFICATIONS = 3;
+export const MAX_NOTIFICATIONS_PER_POSITION = 3;
 const OFFSET =
 	getComputedStyle(document.documentElement).getPropertyValue('--z-offset-notification').trim() ||
 	'1.5rem';
@@ -252,7 +252,7 @@ export class Notification {
 		const stack = this.getOrCreateStack(position);
 		stack.push(notification);
 
-		if (stack.length > MAX_NUMBER_OF_NOTIFICATIONS) {
+		if (stack.length > MAX_NOTIFICATIONS_PER_POSITION) {
 			this.removeNotification(stack[0], {
 				reposition: false,
 				restoreFocus: false,
