@@ -17,7 +17,7 @@ import type {
 } from '../index';
 
 const GAP_STACKING = 8;
-const MAX_NUMBER_OF_NOTIFICATIONS = 3;
+export const MAX_NUMBER_OF_NOTIFICATIONS = 3;
 const OFFSET =
 	getComputedStyle(document.documentElement).getPropertyValue('--z-offset-notification').trim() ||
 	'1.5rem';
@@ -277,7 +277,7 @@ export class Notification {
 	}
 
 	positionNotifications(position: NotificationPosition): void {
-		const stack = this.getNotificationStack(position);
+		const stack = this.getOrCreateStack(position);
 		let stackingOffset = 0;
 		stack.forEach((notification, index) => {
 			if (position === 'bottom') {
