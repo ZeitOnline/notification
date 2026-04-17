@@ -219,7 +219,7 @@ describe('notification accessibility behavior', () => {
 
 		const toasts = Array.from(document.querySelectorAll('.z-notification')) as HTMLElement[];
 
-		expect(toasts).toHaveLength(MAX_NUMBER_OF_NOTIFICATIONS);
+		expect(toasts).toHaveLength(3);
 		expect(toasts[0].className).toContain('z-notification--top-right');
 		expect(toasts[0].style.top).toContain('1.5rem');
 		expect(toasts[0].style.right).toContain('1.5rem');
