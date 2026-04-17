@@ -34,6 +34,7 @@ export class Notification {
 	static instance: Notification | undefined;
 	originatorCounter = 0;
 	notifications!: NotificationElement[];
+	notificationStacks!: Map<NotificationPosition, NotificationElement[]>;
 	container!: HTMLDivElement | null;
 	notificationTimeout!: number;
 
@@ -43,6 +44,7 @@ export class Notification {
 		}
 		Notification.instance = this;
 		this.notifications = [];
+		this.notificationStacks = new Map();
 		this.container = null;
 		this.notificationTimeout = 4000;
 	}
@@ -76,11 +78,9 @@ export class Notification {
 
 		this.insertNotification(notification);
 		this.notifications.push(notification);
-		this.positionNotifications(position);
 
-		if (this.notifications.length > MAX_NUMBER_OF_NOTIFICATIONS) {
-			this.removeNotification(this.notifications[0]);
-		}
+		this.addNotificationToStack(notification, position);
+		this.positionNotifications(position);
 
 		if (notification.hasTimer) {
 			this.startTimeout(notification);
@@ -192,6 +192,7 @@ export class Notification {
 	}: NotificationOptions): NotificationElement {
 		const notification = this.createNotificationElement(element);
 		notification.className = `z-notification z-notification--${position} z-notification--${status}`;
+		notification.dataset.position = position;
 
 		const buttonClass = 'z-notification__action-btn';
 
@@ -235,6 +236,30 @@ export class Notification {
 		return notification;
 	}
 
+	getOrCreateStack(position: NotificationPosition): NotificationElement[] {
+		const stack = this.notificationStacks.get(position);
+		if (stack) return stack;
+
+		const nextStack: NotificationElement[] = [];
+		this.notificationStacks.set(position, nextStack);
+		return nextStack;
+	}
+
+	addNotificationToStack(
+		notification: NotificationElement,
+		position: NotificationPosition,
+	): void {
+		const stack = this.getOrCreateStack(position);
+		stack.push(notification);
+
+		if (stack.length > MAX_NUMBER_OF_NOTIFICATIONS) {
+			this.removeNotification(stack[0], {
+				reposition: false,
+				restoreFocus: false,
+			});
+		}
+	}
+
 	insertNotification(notification: NotificationElement): void {
 		let insertionPoint = notification.anchorElement;
 		const parent = insertionPoint.parentElement;
@@ -252,29 +277,30 @@ export class Notification {
 	}
 
 	positionNotifications(position: NotificationPosition): void {
-		let offset = OFFSET;
-		this.notifications.forEach((notification, index) => {
+		const stack = this.getNotificationStack(position);
+		let stackingOffset = 0;
+		stack.forEach((notification, index) => {
 			if (position === 'bottom') {
-				notification.style.bottom = `calc(${offset} + env(safe-area-inset-bottom, 0px))`;
+				notification.style.bottom = `calc(${OFFSET} + ${stackingOffset}px + env(safe-area-inset-bottom, 0px))`;
 				notification.style.top = 'auto';
 				notification.style.left = '0';
 				notification.style.right = '0';
 				notification.style.marginInline = 'auto';
 			} else if (position === 'top-right') {
 				notification.style.bottom = 'auto';
-				notification.style.top = `calc(${offset} + env(safe-area-inset-top, 0px))`;
+				notification.style.top = `calc(${OFFSET} + ${stackingOffset}px + env(safe-area-inset-top, 0px))`;
 				notification.style.left = 'auto';
 				notification.style.right = `calc(${OFFSET} + env(safe-area-inset-right, 0px))`;
 				notification.style.marginInline = '0';
 			} else {
 				notification.style.bottom = 'auto';
-				notification.style.top = `calc(${offset} + env(safe-area-inset-top, 0px))`;
+				notification.style.top = `calc(${OFFSET} + ${stackingOffset}px + env(safe-area-inset-top, 0px))`;
 				notification.style.left = '0';
 				notification.style.right = '0';
 				notification.style.marginInline = 'auto';
 			}
 			notification.style.zIndex = `${ZINDEX_BASE + index}`;
-			offset += notification.getBoundingClientRect().height + GAP_STACKING;
+			stackingOffset += notification.getBoundingClientRect().height + GAP_STACKING;
 		});
 	}
 
@@ -367,18 +393,17 @@ export class Notification {
 		notification.addEventListener('pointerleave', resume);
 	}
 
-	removeNotification(notification: NotificationElement | null): void {
+	removeNotification(
+		notification: NotificationElement | null,
+		options: {
+			reposition?: boolean;
+			restoreFocus?: boolean;
+		} = {},
+	): void {
 		if (!notification) return;
+		const { reposition = true, restoreFocus = true } = options;
 
-		let position: NotificationPosition;
-
-		if (notification.classList.contains('z-notification--top-right')) {
-			position = 'top-right';
-		} else if (notification.classList.contains('z-notification--top')) {
-			position = 'top';
-		} else {
-			position = 'bottom';
-		}
+		const position = this.getNotificationPosition(notification);
 
 		const anchor = notification.anchorElement;
 
@@ -390,8 +415,49 @@ export class Notification {
 		notification.remove();
 
 		this.notifications = this.notifications.filter(t => t !== notification);
-		this.positionNotifications(position);
-		anchor?.focus();
+		const stack = this.notificationStacks.get(position);
+
+		this.removeNotificationFromStack(position, notification);
+
+		if (stack && stack.length > 0 && reposition) {
+			this.positionNotifications(position);
+		}
+		if (restoreFocus) {
+			anchor.focus();
+		}
+	}
+
+	removeNotificationFromStack(
+		position: NotificationPosition,
+		notification: NotificationElement,
+	): void {
+		const stack = this.notificationStacks.get(position);
+		if (!stack) return;
+
+		const stackIndex = stack.indexOf(notification);
+		// Remove only the matching notification from its position stack.
+		if (stackIndex !== -1) {
+			stack.splice(stackIndex, 1);
+		}
+
+		// Drop empty stacks so the map only stores active positions.
+		if (stack.length === 0) {
+			this.notificationStacks.delete(position);
+		}
+	}
+
+	getNotificationPosition(notification: NotificationElement): NotificationPosition {
+		const datasetPosition = notification.dataset.position as NotificationPosition | undefined;
+		if (datasetPosition) return datasetPosition;
+
+		switch (true) {
+			case notification.classList.contains('z-notification--top-right'):
+				return 'top-right';
+			case notification.classList.contains('z-notification--top'):
+				return 'top';
+			default:
+				return 'bottom';
+		}
 	}
 
 	dispatchEvent(eventName: string, anchor: HTMLElement | null): void {
