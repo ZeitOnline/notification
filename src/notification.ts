@@ -262,21 +262,29 @@ export class Notification {
 	/**
 	 * @param notification The notification element to be inserted into the DOM.
 	 * @returns void
-	 * @description Inserts the notification element into the DOM at the correct position based on its anchor element. If the anchor element is the body or a direct child of the body, the notification is appended to the end of the body. Otherwise, it is inserted after the last sibling of the anchor element that is a notification.
+	 * @description Inserts the notification element into the DOM at the correct position based on its anchor element. When the anchor is the body, a focused direct child can still act as the insertion point so body-level notifications stay next to the trigger instead of moving to the end of the document.
 	 */
 	insertNotification(notification: NotificationElement): void {
 		let insertionPoint = notification.anchorElement;
-		const parent = insertionPoint.parentElement;
-		if (insertionPoint === document.body || parent === document.body) {
-			document.body.insertAdjacentElement('beforeend', notification);
-			return;
+
+		if (insertionPoint === document.body) {
+			const activeElement = document.activeElement;
+			if (
+				activeElement instanceof HTMLElement &&
+				activeElement !== document.body &&
+				activeElement.parentElement === document.body
+			) {
+				insertionPoint = activeElement;
+			} else {
+				document.body.insertAdjacentElement('beforeend', notification);
+				return;
+			}
 		}
-		while (
-			insertionPoint.nextElementSibling &&
-			notification.classList.contains('z-notification')
-		) {
+
+		while (insertionPoint.nextElementSibling?.classList.contains('z-notification')) {
 			insertionPoint = insertionPoint.nextElementSibling as HTMLElement;
 		}
+
 		insertionPoint.insertAdjacentElement('afterend', notification);
 	}
 
