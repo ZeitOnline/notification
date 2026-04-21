@@ -235,7 +235,7 @@ export class Notification {
 		return notification;
 	}
 
-	getOrCreateStack(position: NotificationPosition): NotificationElement[] {
+	getStack(position: NotificationPosition): NotificationElement[] {
 		const stack = this.notificationStacks.get(position);
 		if (stack) return stack;
 
@@ -248,7 +248,7 @@ export class Notification {
 		notification: NotificationElement,
 		position: NotificationPosition,
 	): void {
-		const stack = this.getOrCreateStack(position);
+		const stack = this.getStack(position);
 		stack.push(notification);
 
 		if (stack.length > MAX_NOTIFICATIONS_PER_POSITION) {
@@ -289,7 +289,7 @@ export class Notification {
 	}
 
 	positionNotifications(position: NotificationPosition): void {
-		const stack = this.getOrCreateStack(position);
+		const stack = this.getStack(position);
 		let stackingOffset = 0;
 		stack.forEach((notification, index) => {
 			if (position === 'bottom') {
