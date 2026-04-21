@@ -4,6 +4,7 @@
  * @author joseph.mueller@zeit.de
  * @author moritz.stoltenburg@zeit.de
  * @author valentin.vonguttenberg@zeit.de
+ * @description This file contains the implementation of the Notification class, which manages the display and behavior of notifications in the application. It provides methods to show both inline and positioned notifications. It also handles their lifecycle (e.g., auto-dismissal, pause on hover). The class also ensures that only a certain number of notifications are displayed per position and that they are properly stacked and announced for accessibility.
  * @version 0.3.0
  */
 
@@ -28,8 +29,6 @@ const ZINDEX_BASE =
 			.trim(),
 	) || 1000;
 
-// Notifications manage ui elements and keep you informed about results, warnings and errors.
-// This includes deciding which type of notification to show (e.g., inline or bottom).
 export class Notification {
 	static instance: Notification | undefined;
 	originatorCounter = 0;
@@ -260,6 +259,11 @@ export class Notification {
 		}
 	}
 
+	/**
+	 * @param notification The notification element to be inserted into the DOM.
+	 * @returns void
+	 * @description Inserts the notification element into the DOM at the correct position based on its anchor element. If the anchor element is the body or a direct child of the body, the notification is appended to the end of the body. Otherwise, it is inserted after the last sibling of the anchor element that is a notification.
+	 */
 	insertNotification(notification: NotificationElement): void {
 		let insertionPoint = notification.anchorElement;
 		const parent = insertionPoint.parentElement;
