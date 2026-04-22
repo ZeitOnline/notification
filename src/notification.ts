@@ -215,6 +215,7 @@ export class Notification {
 			) as HTMLButtonElement;
 			actionElement.onclick = () => {
 				button.onClick();
+				this.setFocus(notification.anchorElement);
 				this.removeNotification(notification);
 			};
 		}
@@ -227,7 +228,10 @@ export class Notification {
 				'--z-notification-duration',
 				`${this.notificationTimeout}ms`,
 			);
-			closeButton.onclick = () => this.removeNotification(notification);
+			closeButton.onclick = () => {
+				this.setFocus(notification.anchorElement);
+				this.removeNotification(notification);
+			};
 		}
 
 		if (type) {
@@ -261,7 +265,6 @@ export class Notification {
 		if (stack.length > MAX_NOTIFICATIONS_PER_POSITION) {
 			this.removeNotification(stack[0], {
 				reposition: false,
-				restoreFocus: false,
 			});
 		}
 	}
@@ -373,6 +376,7 @@ export class Notification {
 		notification.startedAt = Date.now();
 		notification.timeoutID = setTimeout(() => {
 			if (!notification.isPaused) {
+				this.setFocus(notification.anchorElement);
 				this.removeNotification(notification);
 			}
 		}, duration);
@@ -399,6 +403,7 @@ export class Notification {
 			notification.startedAt = Date.now();
 			const remaining = this.notificationTimeout - notification.elapsed;
 			if (remaining <= 0) {
+				this.setFocus(notification.anchorElement);
 				this.removeNotification(notification);
 				return;
 			}
@@ -416,11 +421,10 @@ export class Notification {
 		notification: NotificationElement | null,
 		options: {
 			reposition?: boolean;
-			restoreFocus?: boolean;
 		} = {},
 	): void {
 		if (!notification) return;
-		const { reposition = true, restoreFocus = true } = options;
+		const { reposition = true } = options;
 
 		const anchor = notification.anchorElement;
 
@@ -438,14 +442,13 @@ export class Notification {
 		if (stack && stack.length > 0 && reposition) {
 			this.positionNotifications(notification.position);
 		}
-		if (restoreFocus) {
-			anchor.focus();
-		}
 	}
 
-	removeNotificationFromStack(
-		notification: NotificationElement,
-	): void {
+	setFocus(element: HTMLElement): void {
+		element.focus();
+	}
+
+	removeNotificationFromStack(notification: NotificationElement): void {
 		const stack = this.notificationStacks.get(notification.position);
 		if (!stack) return;
 
