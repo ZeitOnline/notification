@@ -82,7 +82,7 @@ export class Notification {
 
 		this.insertNotification(notification);
 
-		this.addNotificationToStack(notification, position);
+		this.addNotificationToStack(notification);
 		this.positionNotifications(position);
 
 		if (notification.hasTimer) {
@@ -255,11 +255,8 @@ export class Notification {
 		return nextStack;
 	}
 
-	addNotificationToStack(
-		notification: NotificationElement,
-		position: NotificationPosition,
-	): void {
-		const stack = this.getStack(position);
+	addNotificationToStack(notification: NotificationElement): void {
+		const stack = this.getStack(notification.position);
 		stack.push(notification);
 
 		if (stack.length > MAX_NOTIFICATIONS_PER_POSITION) {
