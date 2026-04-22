@@ -15,6 +15,7 @@ import type {
 	NotificationService,
 	NotificationPosition,
 } from '../index';
+import { TIMEOUT_STORAGE_KEY, DEFAULT_TIMEOUT_MS } from './notificationSettings';
 
 const GAP_STACKING = 8;
 const MAX_NUMBER_OF_NOTIFICATIONS = 3;
@@ -44,7 +45,8 @@ export class Notification {
 		Notification.instance = this;
 		this.notifications = [];
 		this.container = null;
-		this.notificationTimeout = 4000;
+		const storedTimeoutMs = parseInt(localStorage.getItem(TIMEOUT_STORAGE_KEY) || '', 10);
+		this.notificationTimeout = !isNaN(storedTimeoutMs) ? storedTimeoutMs : DEFAULT_TIMEOUT_MS;
 	}
 	show({
 		type,
@@ -200,7 +202,7 @@ export class Notification {
 			(message ? `<span aria-live="polite" class="z-notification__message">${message}</span>` : '') +
 			(link ? `<a href="${link.href}" class="${buttonClass}">${link.text}</a>` : '') +
 			(!link && button ? `<button class="${buttonClass}">${button.text}</button>` : '') +
-			this.getCloseButtonHTML(!!hasTimer);
+			this.getCloseButtonHTML(!!hasTimer && this.notificationTimeout > 0);
 
 		if (button && button.onClick) {
 			const actionElement = notification.querySelector(
@@ -216,10 +218,6 @@ export class Notification {
 			'.z-notification__close-btn',
 		) as HTMLButtonElement;
 		if (closeButton) {
-			closeButton.style.setProperty(
-				'--z-notification-duration',
-				`${this.notificationTimeout}ms`,
-			);
 			closeButton.onclick = () => this.removeNotification(notification);
 		}
 
@@ -227,8 +225,14 @@ export class Notification {
 			notification.type = type;
 		}
 
-		if (!!hasTimer) {
+		if (!!hasTimer && this.notificationTimeout > 0) {
 			notification.hasTimer = true;
+			if (closeButton) {
+				closeButton.style.setProperty(
+					'--z-notification-duration',
+					`${this.notificationTimeout}ms`,
+				);
+			}
 			this.addPauseResumeEvents(notification);
 		}
 
