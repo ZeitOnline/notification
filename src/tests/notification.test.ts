@@ -2,7 +2,7 @@ import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 
-import { Notification } from '../notification';
+import { MAX_NOTIFICATIONS_PER_POSITION, Notification } from '../notification';
 
 const ensureDialogMethods = (): void => {
 	if (!HTMLDialogElement.prototype.show) {
@@ -173,12 +173,61 @@ describe('notification accessibility behavior', () => {
 		expect(toasts).toHaveLength(2);
 		expect(trigger.nextElementSibling).toBe(toasts[0]);
 		expect(toasts[0].nextElementSibling).toBe(toasts[1]);
-		expect(toasts[0].style.top).toContain('calc(24px');
-		expect(toasts[0].style.right).toContain('calc(24px');
-		expect(toasts[1].style.top).toContain('calc(72px');
-		expect(toasts[1].style.right).toContain('calc(24px');
+		expect(toasts[0].style.top).toContain('1.5rem');
+		expect(toasts[0].style.right).toContain('1.5rem');
+		expect(toasts[1].style.top).toContain('1.5rem');
+		expect(toasts[1].style.right).toContain('1.5rem');
+		expect(toasts[0].style.top).not.toBe(toasts[1].style.top);
 		expect(toasts[0].style.zIndex).toBe('1000');
 		expect(toasts[1].style.zIndex).toBe('1001');
+
+		rectSpy.mockRestore();
+	});
+
+	it('keeps stacks separate across top-right, top, and bottom positions', () => {
+		const rectSpy = vi
+			.spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+			.mockImplementation(function getBoundingClientRect(this: HTMLElement): DOMRect {
+				const height = this.classList.contains('z-notification') ? 40 : 20;
+				return {
+					x: 0,
+					y: 0,
+					top: 0,
+					left: 0,
+					right: 100,
+					bottom: height,
+					width: 100,
+					height,
+					toJSON: () => ({}),
+				} as DOMRect;
+			});
+
+		notification.show({
+			message: 'Top-right notification.',
+			status: 'info',
+		});
+		notification.show({
+			message: 'Top notification.',
+			position: 'top',
+			status: 'info',
+		});
+		notification.show({
+			message: 'Bottom notification.',
+			position: 'bottom',
+			status: 'info',
+		});
+
+		const toasts = Array.from(document.querySelectorAll('.z-notification')) as HTMLElement[];
+
+		expect(toasts).toHaveLength(3);
+		expect(toasts[0].className).toContain('z-notification--top-right');
+		expect(toasts[0].style.top).toContain('1.5rem');
+		expect(toasts[0].style.right).toContain('1.5rem');
+		expect(toasts[1].className).toContain('z-notification--top');
+		expect(toasts[1].style.top).toContain('1.5rem');
+		expect(toasts[1].style.right).toBe('0px');
+		expect(toasts[2].className).toContain('z-notification--bottom');
+		expect(toasts[2].style.bottom).toContain('1.5rem');
 
 		rectSpy.mockRestore();
 	});
@@ -351,11 +400,22 @@ describe('notification accessibility behavior', () => {
 		notification.show({ message: 'Third notification', status: 'info' });
 		notification.show({ message: 'Fourth notification', status: 'info' });
 
-		expect(screen.queryAllByText(/notification$/)).toHaveLength(3);
+		expect(screen.queryAllByText(/notification$/)).toHaveLength(MAX_NOTIFICATIONS_PER_POSITION);
 		expect(screen.queryByText('First notification')).toBeNull();
 		expect(screen.getByText('Second notification')).not.toBeNull();
 		expect(screen.getByText('Third notification')).not.toBeNull();
 		expect(screen.getByText('Fourth notification')).not.toBeNull();
+	});
+
+	it('reflows a stack only once when overflow removes the oldest notification', () => {
+		const reflowSpy = vi.spyOn(notification, 'positionNotifications');
+
+		notification.show({ message: 'First notification', status: 'info' });
+		notification.show({ message: 'Second notification', status: 'info' });
+		notification.show({ message: 'Third notification', status: 'info' });
+		notification.show({ message: 'Fourth notification', status: 'info' });
+
+		expect(reflowSpy).toHaveBeenCalledTimes(4);
 	});
 
 	it('renders top-positioned notifications with an icon when a matching symbol exists', async () => {
@@ -388,7 +448,7 @@ describe('notification accessibility behavior', () => {
 		const container = document.querySelector('.z-notification') as HTMLElement | null;
 
 		expect(container?.className).toContain('z-notification--top');
-		expect(container?.style.top).toContain('calc(24px');
+		expect(container?.style.top).toContain('1.5rem');
 		expect(container?.style.bottom).toBe('auto');
 	});
 
@@ -402,8 +462,86 @@ describe('notification accessibility behavior', () => {
 		const container = document.querySelector('.z-notification') as HTMLElement | null;
 
 		expect(container?.className).toContain('z-notification--bottom');
-		expect(container?.style.bottom).toContain('calc(24px');
+		expect(container?.style.bottom).toContain('1.5rem');
 		expect(container?.style.top).toBe('auto');
+	});
+
+	it('stacks top notifications independently up to the maximum per position', () => {
+		const rectSpy = vi
+			.spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+			.mockImplementation(function getBoundingClientRect(this: HTMLElement): DOMRect {
+				const height = this.classList.contains('z-notification') ? 40 : 20;
+				return {
+					x: 0,
+					y: 0,
+					top: 0,
+					left: 0,
+					right: 100,
+					bottom: height,
+					width: 100,
+					height,
+					toJSON: () => ({}),
+				} as DOMRect;
+			});
+
+		notification.show({ message: 'Top 1', position: 'top', status: 'info' });
+		notification.show({ message: 'Top 2', position: 'top', status: 'info' });
+		notification.show({ message: 'Top 3', position: 'top', status: 'info' });
+		notification.show({ message: 'Top 4', position: 'top', status: 'info' });
+
+		const toasts = Array.from(document.querySelectorAll('.z-notification')) as HTMLElement[];
+
+		expect(toasts).toHaveLength(MAX_NOTIFICATIONS_PER_POSITION);
+		expect(screen.queryByText('Top 1')).toBeNull();
+		expect(screen.getByText('Top 2')).not.toBeNull();
+		expect(screen.getByText('Top 3')).not.toBeNull();
+		expect(screen.getByText('Top 4')).not.toBeNull();
+		expect(toasts[0].style.top).toContain('1.5rem');
+		expect(toasts[1].style.top).toContain('1.5rem');
+		expect(toasts[2].style.top).toContain('1.5rem');
+		expect(toasts[0].style.top).not.toBe(toasts[1].style.top);
+		expect(toasts[1].style.top).not.toBe(toasts[2].style.top);
+
+		rectSpy.mockRestore();
+	});
+
+	it('stacks bottom notifications independently up to the maximum per position', () => {
+		const rectSpy = vi
+			.spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+			.mockImplementation(function getBoundingClientRect(this: HTMLElement): DOMRect {
+				const height = this.classList.contains('z-notification') ? 40 : 20;
+				return {
+					x: 0,
+					y: 0,
+					top: 0,
+					left: 0,
+					right: 100,
+					bottom: height,
+					width: 100,
+					height,
+					toJSON: () => ({}),
+				} as DOMRect;
+			});
+
+		notification.show({ message: 'Bottom 1', position: 'bottom', status: 'info' });
+		notification.show({ message: 'Bottom 2', position: 'bottom', status: 'info' });
+		notification.show({ message: 'Bottom 3', position: 'bottom', status: 'info' });
+		notification.show({ message: 'Bottom 4', position: 'bottom', status: 'info' });
+
+		const toasts = Array.from(document.querySelectorAll('.z-notification')) as HTMLElement[];
+
+		expect(toasts).toHaveLength(MAX_NOTIFICATIONS_PER_POSITION);
+		expect(screen.queryByText('Bottom 1')).toBeNull();
+		expect(screen.getByText('Bottom 2')).not.toBeNull();
+		expect(screen.getByText('Bottom 3')).not.toBeNull();
+		expect(screen.getByText('Bottom 4')).not.toBeNull();
+		expect(toasts[0].style.bottom).toContain('1.5rem');
+		expect(toasts[1].style.bottom).toContain('1.5rem');
+		expect(toasts[2].style.bottom).toContain('1.5rem');
+		expect(toasts[0].style.bottom).not.toBe(toasts[1].style.bottom);
+		expect(toasts[1].style.bottom).not.toBe(toasts[2].style.bottom);
+
+		rectSpy.mockRestore();
 	});
 
 	it('renders top-right notifications with a right offset and icon when a matching symbol exists', async () => {
@@ -422,7 +560,7 @@ describe('notification accessibility behavior', () => {
 		const icon = document.querySelector('.z-notification__icon');
 
 		expect(container?.className).toContain('z-notification--top-right');
-		expect(container?.style.right).toContain('calc(24px');
+		expect(container?.style.right).toContain('1.5rem');
 		expect(container?.style.left).toBe('auto');
 		expect(icon).not.toBeNull();
 	});
@@ -471,6 +609,31 @@ describe('notification accessibility behavior', () => {
 
 		expect(screen.queryByText('First foo notification')).toBeNull();
 		expect(screen.getByText('Second foo notification')).not.toBeNull();
+	});
+
+	it('replaces notifications with the same type only within the same position stack', async () => {
+		notification.show({
+			type: 'foo',
+			position: 'top',
+			message: 'Top foo notification',
+		});
+
+		notification.show({
+			type: 'foo',
+			position: 'bottom',
+			message: 'Bottom foo notification',
+		});
+
+		notification.show({
+			type: 'foo',
+			position: 'top',
+			message: 'Replacement top foo notification',
+		});
+
+		expect(screen.queryByText('Top foo notification')).toBeNull();
+		expect(screen.getByText('Replacement top foo notification')).not.toBeNull();
+		expect(screen.getByText('Bottom foo notification')).not.toBeNull();
+		expect(document.querySelectorAll('.z-notification')).toHaveLength(2);
 	});
 
 	it('does not replace notifications with different types', async () => {

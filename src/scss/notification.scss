@@ -42,17 +42,26 @@
 	z-index: constants.$z-index-notification;
 
 	&--bottom {
+		bottom: env(safe-area-inset-bottom, 0px);
+		left: 0;
+		margin-inline: auto;
+		right: 0;
 		top: auto;
 	}
 	&--top {
 		bottom: auto;
+		left: 0;
+		margin-inline: auto;
+		right: 0;
+		top: env(safe-area-inset-top, 0px);
 	}
 
 	&--top-right {
 		bottom: auto;
 		left: auto;
 		margin-inline: 0;
-		right: env(safe-area-inset-right);
+		right: env(safe-area-inset-right, 0px);
+		top: env(safe-area-inset-top, 0px);
 	}
 
 	&--error {

@@ -68,7 +68,7 @@ trigger?.addEventListener('click', () => {
 });
 ```
 
-When `element` is provided for a bottom toast, the notification is inserted as the trigger's next sibling and the stack is reflowed from there.
+When `element` is provided for a toast, the notification is inserted after the trigger and any already-rendered notification siblings, and the stack is reflowed from there. If `element` is omitted and a direct child element is focused, the notification is inserted after that element instead of being appended to the end of the body.
 
 If you use the `icon` option, the notification expects an SVG symbol in the page with the id pattern `svg-<name>`.
 
@@ -95,15 +95,15 @@ notification.show({
 
 ## What the package provides
 
-- Bottom notifications with `top` or `bottom` placement.
-- Bottom notifications can be anchored next to the triggering element for better reading order.
+- Notifications with `top`, `top-right` and `bottom` placement.
+- Notifications can be anchored next to the triggering element for better reading order.
 - Status variants for `success`, `warning`, `info` and `error`.
 - Optional action button or link.
 - Inline notifications anchored to the element that triggered them.
-- Accessible live regions: bottom notifications use `role="alert"`, inline notifications use `role="status"`.
+- Optional `type` keys to replace earlier notifications within the same position stack.
 - Auto-dismiss after 4 seconds, with pause and resume on pointer hover, when timer property is set to true.
 - Timed notifications can emit the `notification-removed` custom event when they close.
-- Stacking of up to 3 bottom notifications at the same time.
+- Stacking of up to 3 notifications per position at the same time.
 
 ## Updates
 

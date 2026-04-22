@@ -2,7 +2,7 @@
 
 :root {
 	--z-index-notification: 1000;
-	--z-offset-notification: 24px;
+	--z-offset-notification: 1.5rem;
 }
 
 *, 

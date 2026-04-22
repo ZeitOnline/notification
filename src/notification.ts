@@ -4,6 +4,7 @@
  * @author joseph.mueller@zeit.de
  * @author moritz.stoltenburg@zeit.de
  * @author valentin.vonguttenberg@zeit.de
+ * @description This file contains the implementation of the Notification class, which manages the display and behavior of notifications in the application. It provides methods to show both inline and positioned notifications. It also handles their lifecycle (e.g., auto-dismissal, pause on hover). The class also ensures that only a certain number of notifications are displayed per position and that they are properly stacked and announced for accessibility.
  * @version 0.3.0
  */
 
@@ -17,7 +18,7 @@ import type {
 } from '../index';
 
 const GAP_STACKING = 8;
-const MAX_NUMBER_OF_NOTIFICATIONS = 3;
+export const MAX_NOTIFICATIONS_PER_POSITION = 3;
 const OFFSET =
 	getComputedStyle(document.documentElement).getPropertyValue('--z-offset-notification').trim() ||
 	'1.5rem';
@@ -28,12 +29,10 @@ const ZINDEX_BASE =
 			.trim(),
 	) || 1000;
 
-// Notifications manage ui elements and keep you informed about results, warnings and errors.
-// This includes deciding which type of notification to show (e.g., inline or bottom).
 export class Notification {
 	static instance: Notification | undefined;
 	originatorCounter = 0;
-	notifications!: NotificationElement[];
+	notificationStacks!: Map<NotificationPosition, NotificationElement[]>;
 	container!: HTMLDivElement | null;
 	notificationTimeout!: number;
 
@@ -42,7 +41,7 @@ export class Notification {
 			return Notification.instance;
 		}
 		Notification.instance = this;
-		this.notifications = [];
+		this.notificationStacks = new Map();
 		this.container = null;
 		this.notificationTimeout = 4000;
 	}
@@ -58,8 +57,13 @@ export class Notification {
 		hasTimer,
 	}: NotificationOptions): void {
 		if (type) {
-			const notificationsToRemove = this.notifications.filter(item => item.type === type);
-			notificationsToRemove.forEach(item => this.removeNotification(item));
+			let stack = this.notificationStacks.get(position);
+			if (stack) {
+				const notificationToRemove = stack.find(item => item.type === type);
+				if (notificationToRemove) {
+					this.removeNotification(notificationToRemove);
+				}
+			}
 		}
 
 		const notification = this.createNotification({
@@ -75,12 +79,9 @@ export class Notification {
 		});
 
 		this.insertNotification(notification);
-		this.notifications.push(notification);
-		this.positionNotifications(position);
 
-		if (this.notifications.length > MAX_NUMBER_OF_NOTIFICATIONS) {
-			this.removeNotification(this.notifications[0]);
-		}
+		this.addNotificationToStack(notification);
+		this.positionNotifications(position);
 
 		if (notification.hasTimer) {
 			this.startTimeout(notification);
@@ -167,11 +168,15 @@ export class Notification {
 	 * Creates a div element with NotificationElement properties initialized.
 	 * This allows us to attach custom properties (elapsed, isPaused, etc.) to the element.
 	 */
-	createNotificationElement(element: HTMLElement): NotificationElement {
+	createNotificationElement(
+		element: HTMLElement,
+		position: NotificationPosition,
+	): NotificationElement {
 		const el = document.createElement('div') as NotificationElement;
 		el.type = null;
 		el.hasTimer = false;
 		el.isPaused = false;
+		el.position = position;
 		el.timeoutID = null;
 		el.elapsed = 0;
 		el.startedAt = 0;
@@ -181,7 +186,7 @@ export class Notification {
 
 	createNotification({
 		element = document.body,
-		position,
+		position = 'top-right',
 		type,
 		icon,
 		message,
@@ -190,7 +195,7 @@ export class Notification {
 		link,
 		hasTimer,
 	}: NotificationOptions): NotificationElement {
-		const notification = this.createNotificationElement(element);
+		const notification = this.createNotificationElement(element, position);
 		notification.className = `z-notification z-notification--${position} z-notification--${status}`;
 
 		const buttonClass = 'z-notification__action-btn';
@@ -208,6 +213,7 @@ export class Notification {
 			) as HTMLButtonElement;
 			actionElement.onclick = () => {
 				button.onClick();
+				this.setFocus(notification.anchorElement);
 				this.removeNotification(notification);
 			};
 		}
@@ -220,7 +226,10 @@ export class Notification {
 				'--z-notification-duration',
 				`${this.notificationTimeout}ms`,
 			);
-			closeButton.onclick = () => this.removeNotification(notification);
+			closeButton.onclick = () => {
+				this.setFocus(notification.anchorElement);
+				this.removeNotification(notification);
+			};
 		}
 
 		if (type) {
@@ -235,46 +244,82 @@ export class Notification {
 		return notification;
 	}
 
+	getStack(position: NotificationPosition): NotificationElement[] {
+		const stack = this.notificationStacks.get(position);
+		if (stack) return stack;
+
+		const nextStack: NotificationElement[] = [];
+		this.notificationStacks.set(position, nextStack);
+		return nextStack;
+	}
+
+	addNotificationToStack(notification: NotificationElement): void {
+		const stack = this.getStack(notification.position);
+		stack.push(notification);
+
+		if (stack.length > MAX_NOTIFICATIONS_PER_POSITION) {
+			this.removeNotification(stack[0], { shouldReflow: false });
+		}
+	}
+
+	/**
+	 * @param notification The notification element to be inserted into the DOM.
+	 * @returns void
+	 * @description Inserts the notification element into the DOM at the correct position
+	 * based on its anchor element. When the anchor is the body, a focused direct child
+	 * can still act as the insertion point so body-level notifications stay next
+	 * to the trigger instead of moving to the end of the document.
+	 */
 	insertNotification(notification: NotificationElement): void {
 		let insertionPoint = notification.anchorElement;
-		const parent = insertionPoint.parentElement;
-		if (insertionPoint === document.body || parent === document.body) {
-			document.body.insertAdjacentElement('beforeend', notification);
-			return;
+
+		if (insertionPoint === document.body) {
+			const activeElement = document.activeElement;
+			if (
+				activeElement instanceof HTMLElement &&
+				activeElement !== document.body &&
+				activeElement.parentElement === document.body
+			) {
+				insertionPoint = activeElement;
+			} else {
+				document.body.insertAdjacentElement('beforeend', notification);
+				return;
+			}
 		}
-		while (
-			insertionPoint.nextElementSibling &&
-			notification.classList.contains('z-notification')
-		) {
+
+		while (insertionPoint.nextElementSibling?.classList.contains('z-notification')) {
 			insertionPoint = insertionPoint.nextElementSibling as HTMLElement;
 		}
+
 		insertionPoint.insertAdjacentElement('afterend', notification);
 	}
 
 	positionNotifications(position: NotificationPosition): void {
-		let offset = OFFSET;
-		this.notifications.forEach((notification, index) => {
+		const stack = this.getStack(position);
+		let stackingOffset = 0;
+		stack.forEach((notification, index) => {
 			if (position === 'bottom') {
-				notification.style.bottom = `calc(${offset} + env(safe-area-inset-bottom, 0px))`;
+				notification.style.bottom = `calc(${OFFSET} + ${stackingOffset}px + env(safe-area-inset-bottom, 0px))`;
 				notification.style.top = 'auto';
 				notification.style.left = '0';
 				notification.style.right = '0';
 				notification.style.marginInline = 'auto';
-			} else if (position === 'top-right') {
+			} else if (position === 'top') {
+				notification.style.top = `calc(${OFFSET} + ${stackingOffset}px + env(safe-area-inset-top, 0px))`;
 				notification.style.bottom = 'auto';
-				notification.style.top = `calc(${offset} + env(safe-area-inset-top, 0px))`;
-				notification.style.left = 'auto';
-				notification.style.right = `calc(${OFFSET} + env(safe-area-inset-right, 0px))`;
-				notification.style.marginInline = '0';
-			} else {
-				notification.style.bottom = 'auto';
-				notification.style.top = `calc(${offset} + env(safe-area-inset-top, 0px))`;
 				notification.style.left = '0';
 				notification.style.right = '0';
 				notification.style.marginInline = 'auto';
+			} else {
+				// default position is 'top-right'
+				notification.style.top = `calc(${OFFSET} + ${stackingOffset}px + env(safe-area-inset-top, 0px))`;
+				notification.style.bottom = 'auto';
+				notification.style.left = 'auto';
+				notification.style.right = `calc(${OFFSET} + env(safe-area-inset-right, 0px))`;
+				notification.style.marginInline = '0';
 			}
 			notification.style.zIndex = `${ZINDEX_BASE + index}`;
-			offset += notification.getBoundingClientRect().height + GAP_STACKING;
+			stackingOffset += notification.getBoundingClientRect().height + GAP_STACKING;
 		});
 	}
 
@@ -328,6 +373,7 @@ export class Notification {
 		notification.startedAt = Date.now();
 		notification.timeoutID = setTimeout(() => {
 			if (!notification.isPaused) {
+				this.setFocus(notification.anchorElement);
 				this.removeNotification(notification);
 			}
 		}, duration);
@@ -354,6 +400,7 @@ export class Notification {
 			notification.startedAt = Date.now();
 			const remaining = this.notificationTimeout - notification.elapsed;
 			if (remaining <= 0) {
+				this.setFocus(notification.anchorElement);
 				this.removeNotification(notification);
 				return;
 			}
@@ -367,18 +414,11 @@ export class Notification {
 		notification.addEventListener('pointerleave', resume);
 	}
 
-	removeNotification(notification: NotificationElement | null): void {
+	removeNotification(
+		notification: NotificationElement | null,
+		{ shouldReflow = true }: { shouldReflow?: boolean } = {},
+	): void {
 		if (!notification) return;
-
-		let position: NotificationPosition;
-
-		if (notification.classList.contains('z-notification--top-right')) {
-			position = 'top-right';
-		} else if (notification.classList.contains('z-notification--top')) {
-			position = 'top';
-		} else {
-			position = 'bottom';
-		}
 
 		const anchor = notification.anchorElement;
 
@@ -389,9 +429,33 @@ export class Notification {
 		this.dispatchEvent('notification-removed', anchor);
 		notification.remove();
 
-		this.notifications = this.notifications.filter(t => t !== notification);
-		this.positionNotifications(position);
-		anchor?.focus();
+		const stack = this.notificationStacks.get(notification.position);
+
+		this.removeNotificationFromStack(notification);
+
+		if (shouldReflow && stack && stack.length) {
+			this.positionNotifications(notification.position);
+		}
+	}
+
+	setFocus(element: HTMLElement): void {
+		element.focus();
+	}
+
+	removeNotificationFromStack(notification: NotificationElement): void {
+		const stack = this.notificationStacks.get(notification.position);
+		if (!stack) return;
+
+		// Remove matching notification from its position stack.
+		const stackIndex = stack.indexOf(notification);
+		if (stackIndex !== -1) {
+			stack.splice(stackIndex, 1);
+		}
+
+		// Drop empty stacks so the map only stores active positions.
+		if (stack.length === 0) {
+			this.notificationStacks.delete(notification.position);
+		}
 	}
 
 	dispatchEvent(eventName: string, anchor: HTMLElement | null): void {
