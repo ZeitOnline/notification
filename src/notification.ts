@@ -269,7 +269,10 @@ export class Notification {
 	/**
 	 * @param notification The notification element to be inserted into the DOM.
 	 * @returns void
-	 * @description Inserts the notification element into the DOM at the correct position based on its anchor element. When the anchor is the body, a focused direct child can still act as the insertion point so body-level notifications stay next to the trigger instead of moving to the end of the document.
+	 * @description Inserts the notification element into the DOM at the correct position
+	 * based on its anchor element. When the anchor is the body, a focused direct child
+	 * can still act as the insertion point so body-level notifications stay next
+	 * to the trigger instead of moving to the end of the document.
 	 */
 	insertNotification(notification: NotificationElement): void {
 		let insertionPoint = notification.anchorElement;
