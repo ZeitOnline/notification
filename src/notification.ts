@@ -170,11 +170,15 @@ export class Notification {
 	 * Creates a div element with NotificationElement properties initialized.
 	 * This allows us to attach custom properties (elapsed, isPaused, etc.) to the element.
 	 */
-	createNotificationElement(element: HTMLElement): NotificationElement {
+	createNotificationElement(
+		element: HTMLElement,
+		position: NotificationPosition,
+	): NotificationElement {
 		const el = document.createElement('div') as NotificationElement;
 		el.type = null;
 		el.hasTimer = false;
 		el.isPaused = false;
+		el.position = position;
 		el.timeoutID = null;
 		el.elapsed = 0;
 		el.startedAt = 0;
@@ -184,7 +188,7 @@ export class Notification {
 
 	createNotification({
 		element = document.body,
-		position,
+		position = 'top-right',
 		type,
 		icon,
 		message,
@@ -193,9 +197,8 @@ export class Notification {
 		link,
 		hasTimer,
 	}: NotificationOptions): NotificationElement {
-		const notification = this.createNotificationElement(element);
+		const notification = this.createNotificationElement(element, position);
 		notification.className = `z-notification z-notification--${position} z-notification--${status}`;
-		notification.dataset.position = position;
 
 		const buttonClass = 'z-notification__action-btn';
 
@@ -419,8 +422,6 @@ export class Notification {
 		if (!notification) return;
 		const { reposition = true, restoreFocus = true } = options;
 
-		const position = this.getNotificationPosition(notification);
-
 		const anchor = notification.anchorElement;
 
 		if (notification.timeoutID) {
@@ -430,12 +431,12 @@ export class Notification {
 		this.dispatchEvent('notification-removed', anchor);
 		notification.remove();
 
-		const stack = this.notificationStacks.get(position);
+		const stack = this.notificationStacks.get(notification.position);
 
-		this.removeNotificationFromStack(position, notification);
+		this.removeNotificationFromStack(notification);
 
 		if (stack && stack.length > 0 && reposition) {
-			this.positionNotifications(position);
+			this.positionNotifications(notification.position);
 		}
 		if (restoreFocus) {
 			anchor.focus();
@@ -443,10 +444,9 @@ export class Notification {
 	}
 
 	removeNotificationFromStack(
-		position: NotificationPosition,
 		notification: NotificationElement,
 	): void {
-		const stack = this.notificationStacks.get(position);
+		const stack = this.notificationStacks.get(notification.position);
 		if (!stack) return;
 
 		const stackIndex = stack.indexOf(notification);
@@ -457,21 +457,7 @@ export class Notification {
 
 		// Drop empty stacks so the map only stores active positions.
 		if (stack.length === 0) {
-			this.notificationStacks.delete(position);
-		}
-	}
-
-	getNotificationPosition(notification: NotificationElement): NotificationPosition {
-		const datasetPosition = notification.dataset.position as NotificationPosition | undefined;
-		if (datasetPosition) return datasetPosition;
-
-		switch (true) {
-			case notification.classList.contains('z-notification--top-right'):
-				return 'top-right';
-			case notification.classList.contains('z-notification--top'):
-				return 'top';
-			default:
-				return 'bottom';
+			this.notificationStacks.delete(notification.position);
 		}
 	}
 
