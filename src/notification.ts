@@ -61,9 +61,7 @@ export class Notification {
 			if (stack) {
 				const notificationToRemove = stack.find(item => item.type === type);
 				if (notificationToRemove) {
-					this.removeNotification(notificationToRemove, {
-						reposition: false,
-					});
+					this.removeNotification(notificationToRemove);
 				}
 			}
 		}
@@ -260,9 +258,7 @@ export class Notification {
 		stack.push(notification);
 
 		if (stack.length > MAX_NOTIFICATIONS_PER_POSITION) {
-			this.removeNotification(stack[0], {
-				reposition: false,
-			});
+			this.removeNotification(stack[0]);
 		}
 	}
 
@@ -417,14 +413,8 @@ export class Notification {
 		notification.addEventListener('pointerleave', resume);
 	}
 
-	removeNotification(
-		notification: NotificationElement | null,
-		options: {
-			reposition?: boolean;
-		} = {},
-	): void {
+	removeNotification(notification: NotificationElement | null): void {
 		if (!notification) return;
-		const { reposition = true } = options;
 
 		const anchor = notification.anchorElement;
 
@@ -439,7 +429,7 @@ export class Notification {
 
 		this.removeNotificationFromStack(notification);
 
-		if (stack && stack.length > 0 && reposition) {
+		if (stack && stack.length) {
 			this.positionNotifications(notification.position);
 		}
 	}
@@ -452,8 +442,8 @@ export class Notification {
 		const stack = this.notificationStacks.get(notification.position);
 		if (!stack) return;
 
+		// Remove matching notification from its position stack.
 		const stackIndex = stack.indexOf(notification);
-		// Remove only the matching notification from its position stack.
 		if (stackIndex !== -1) {
 			stack.splice(stackIndex, 1);
 		}
