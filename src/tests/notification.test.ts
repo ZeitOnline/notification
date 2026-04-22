@@ -600,6 +600,31 @@ describe('notification accessibility behavior', () => {
 		expect(screen.getByText('Second foo notification')).not.toBeNull();
 	});
 
+	it('replaces notifications with the same type only within the same position stack', async () => {
+		notification.show({
+			type: 'foo',
+			position: 'top',
+			message: 'Top foo notification',
+		});
+
+		notification.show({
+			type: 'foo',
+			position: 'bottom',
+			message: 'Bottom foo notification',
+		});
+
+		notification.show({
+			type: 'foo',
+			position: 'top',
+			message: 'Replacement top foo notification',
+		});
+
+		expect(screen.queryByText('Top foo notification')).toBeNull();
+		expect(screen.getByText('Replacement top foo notification')).not.toBeNull();
+		expect(screen.getByText('Bottom foo notification')).not.toBeNull();
+		expect(document.querySelectorAll('.z-notification')).toHaveLength(2);
+	});
+
 	it('does not replace notifications with different types', async () => {
 		notification.show({
 			type: 'foo',
