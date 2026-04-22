@@ -1,0 +1,32 @@
+.z-notification-settings {
+	&__fieldset {
+		border: 0;
+		margin: 0;
+		padding: 0;
+	}
+
+	&__legend {
+		font-size: var(--z-ds-fontsize-14);
+		padding: 0;
+	}
+
+	&__item {
+		margin-block-start: var(--z-ds-space-6);
+	}
+
+	&__label {
+		align-items: center;
+		cursor: pointer;
+		display: flex;
+		gap: var(--z-ds-space-s);
+	}
+
+	&__radio {
+		cursor: pointer;
+		flex-shrink: 0;
+	}
+
+	&__submit {
+		margin-block-start: var(--z-ds-space-l);
+	}
+}
