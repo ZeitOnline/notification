@@ -60,7 +60,7 @@
 		bottom: auto;
 		left: auto;
 		margin-inline: 0;
-		right: env(safe-area-inset-right);
+		right: env(safe-area-inset-right, 0px);
 		top: env(safe-area-inset-top, 0px);
 	}
 
