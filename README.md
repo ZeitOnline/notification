@@ -68,7 +68,7 @@ trigger?.addEventListener('click', () => {
 });
 ```
 
-When `element` is provided for a toast, the notification is inserted after the trigger and any already-rendered notification siblings, and the stack is reflowed from there. If `element` is omitted and a direct child button is focused, the notification is inserted after that button instead of being appended to the end of the body.
+When `element` is provided for a toast, the notification is inserted after the trigger and any already-rendered notification siblings, and the stack is reflowed from there. If `element` is omitted and a direct child element is focused, the notification is inserted after that element instead of being appended to the end of the body.
 
 If you use the `icon` option, the notification expects an SVG symbol in the page with the id pattern `svg-<name>`.
 
