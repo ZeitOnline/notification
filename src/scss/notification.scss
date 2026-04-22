@@ -2,6 +2,7 @@
 @use "functions";
 @use "constants";
 @use "mixins";
+@use "notification-settings";
 
 .z-notification-inline {
 	background-color: var(--z-ds-color-text-100);
