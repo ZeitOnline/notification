@@ -300,22 +300,12 @@ export class Notification {
 		stack.forEach((notification, index) => {
 			if (position === 'bottom') {
 				notification.style.bottom = `calc(${OFFSET} + ${stackingOffset}px + env(safe-area-inset-bottom, 0px))`;
-				notification.style.top = 'auto';
-				notification.style.left = '0';
-				notification.style.right = '0';
-				notification.style.marginInline = 'auto';
-			} else if (position === 'top-right') {
-				notification.style.bottom = 'auto';
+			} else if (position === 'top') {
 				notification.style.top = `calc(${OFFSET} + ${stackingOffset}px + env(safe-area-inset-top, 0px))`;
-				notification.style.left = 'auto';
-				notification.style.right = `calc(${OFFSET} + env(safe-area-inset-right, 0px))`;
-				notification.style.marginInline = '0';
 			} else {
-				notification.style.bottom = 'auto';
+				// default position is 'top-right'
 				notification.style.top = `calc(${OFFSET} + ${stackingOffset}px + env(safe-area-inset-top, 0px))`;
-				notification.style.left = '0';
-				notification.style.right = '0';
-				notification.style.marginInline = 'auto';
+				notification.style.right = `calc(${OFFSET} + env(safe-area-inset-right, 0px))`;
 			}
 			notification.style.zIndex = `${ZINDEX_BASE + index}`;
 			stackingOffset += notification.getBoundingClientRect().height + GAP_STACKING;
