@@ -32,7 +32,6 @@ const ZINDEX_BASE =
 export class Notification {
 	static instance: Notification | undefined;
 	originatorCounter = 0;
-	notifications!: NotificationElement[];
 	notificationStacks!: Map<NotificationPosition, NotificationElement[]>;
 	container!: HTMLDivElement | null;
 	notificationTimeout!: number;
@@ -42,7 +41,6 @@ export class Notification {
 			return Notification.instance;
 		}
 		Notification.instance = this;
-		this.notifications = [];
 		this.notificationStacks = new Map();
 		this.container = null;
 		this.notificationTimeout = 4000;
@@ -59,8 +57,15 @@ export class Notification {
 		hasTimer,
 	}: NotificationOptions): void {
 		if (type) {
-			const notificationsToRemove = this.notifications.filter(item => item.type === type);
-			notificationsToRemove.forEach(item => this.removeNotification(item));
+			let stack = this.notificationStacks.get(position);
+			if (stack) {
+				const notificationToRemove = stack.find(item => item.type === type);
+				if (notificationToRemove) {
+					this.removeNotification(notificationToRemove, {
+						reposition: false,
+					});
+				}
+			}
 		}
 
 		const notification = this.createNotification({
@@ -76,7 +81,6 @@ export class Notification {
 		});
 
 		this.insertNotification(notification);
-		this.notifications.push(notification);
 
 		this.addNotificationToStack(notification, position);
 		this.positionNotifications(position);
@@ -426,7 +430,6 @@ export class Notification {
 		this.dispatchEvent('notification-removed', anchor);
 		notification.remove();
 
-		this.notifications = this.notifications.filter(t => t !== notification);
 		const stack = this.notificationStacks.get(position);
 
 		this.removeNotificationFromStack(position, notification);
