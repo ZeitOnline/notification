@@ -48,6 +48,8 @@ export type NotificationService = {
 	debug(): void;
 };
 
+export declare function initNotificationSettings(form: HTMLFormElement, onSaved?: () => void): void;
+
 declare global {
 	interface Window {
 		Zeit?: {
