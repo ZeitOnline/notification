@@ -407,6 +407,17 @@ describe('notification accessibility behavior', () => {
 		expect(screen.getByText('Fourth notification')).not.toBeNull();
 	});
 
+	it('reflows a stack only once when overflow removes the oldest notification', () => {
+		const reflowSpy = vi.spyOn(notification, 'positionNotifications');
+
+		notification.show({ message: 'First notification', status: 'info' });
+		notification.show({ message: 'Second notification', status: 'info' });
+		notification.show({ message: 'Third notification', status: 'info' });
+		notification.show({ message: 'Fourth notification', status: 'info' });
+
+		expect(reflowSpy).toHaveBeenCalledTimes(4);
+	});
+
 	it('renders top-positioned notifications with an icon when a matching symbol exists', async () => {
 		document.body.innerHTML = `
 			<svg aria-hidden="true">

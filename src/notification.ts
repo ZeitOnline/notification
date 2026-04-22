@@ -258,7 +258,7 @@ export class Notification {
 		stack.push(notification);
 
 		if (stack.length > MAX_NOTIFICATIONS_PER_POSITION) {
-			this.removeNotification(stack[0]);
+			this.removeNotification(stack[0], { shouldReflow: false });
 		}
 	}
 
@@ -414,7 +414,10 @@ export class Notification {
 		notification.addEventListener('pointerleave', resume);
 	}
 
-	removeNotification(notification: NotificationElement | null): void {
+	removeNotification(
+		notification: NotificationElement | null,
+		{ shouldReflow = true }: { shouldReflow?: boolean } = {},
+	): void {
 		if (!notification) return;
 
 		const anchor = notification.anchorElement;
@@ -430,7 +433,7 @@ export class Notification {
 
 		this.removeNotificationFromStack(notification);
 
-		if (stack && stack.length) {
+		if (shouldReflow && stack && stack.length) {
 			this.positionNotifications(notification.position);
 		}
 	}
