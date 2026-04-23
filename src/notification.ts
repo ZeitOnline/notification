@@ -420,13 +420,11 @@ export class Notification {
 	): void {
 		if (!notification) return;
 
-		const anchor = notification.anchorElement;
-
 		if (notification.timeoutID) {
 			clearTimeout(notification.timeoutID);
 		}
 
-		this.dispatchEvent('notification-removed', anchor);
+		this.dispatchEvent('notification-removed', notification.anchorElement);
 		try {
 			notification.hidePopover();
 		} catch {
