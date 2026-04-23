@@ -31,7 +31,7 @@
 					<a href="index.html">home</a>
 					<a href="focus-test.html">focus test</a>
 				</div>
-			
+
 
 				<fieldset class="theme-switcher" aria-label="Select a display theme">
 					<legend class="sr-only">Select a display theme:</legend>
@@ -70,7 +70,7 @@
 					</span>
 				</fieldset>
 			</nav>
-			
+
 			<section class="hero">
 				<img src="logo-meerkat.png" height="600" width="420" alt="notifications mascot" class="mascot" />
 				<h1>Notifications</h1>
@@ -125,7 +125,7 @@
 						case 'type-of-foo-with-link':
 							notification.show({
 								element: target,
-								type: "foo",
+								group: "foo",
 								position: "bottom",
 								status: "success",
 								icon: "bookmark",
@@ -140,7 +140,7 @@
 						case 'type-of-foo-with-callback':
 							notification.show({
 								element: target,
-								type: "foo",
+								group: "foo",
 								icon: "bookmark",
 								message: "Der Artikel wurde von der Merkliste entfernt.",
 								button: {
@@ -154,7 +154,7 @@
 							notification.show({
 								element: target,
 								status: "info",
-								type: "info",
+								group: "info",
 								message: "A new version of Notification is available.",
 								link: {
 									text: "Open docs",

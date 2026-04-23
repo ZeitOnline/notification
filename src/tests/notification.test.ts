@@ -594,16 +594,16 @@ describe('notification accessibility behavior', () => {
 		expect(closeButton?.className).not.toContain('z-notification__close-btn--timer');
 	});
 
-	it('replaces a notification with the same type', async () => {
+	it('replaces a notification with the same group', async () => {
 		notification.show({
-			type: 'foo',
+			group: 'foo',
 			message: 'First foo notification',
 		});
 
 		expect(screen.getByText('First foo notification')).not.toBeNull();
 
 		notification.show({
-			type: 'foo',
+			group: 'foo',
 			message: 'Second foo notification',
 		});
 
@@ -611,21 +611,21 @@ describe('notification accessibility behavior', () => {
 		expect(screen.getByText('Second foo notification')).not.toBeNull();
 	});
 
-	it('replaces notifications with the same type only within the same position stack', async () => {
+	it('replaces notifications with the same group only within the same position stack', async () => {
 		notification.show({
-			type: 'foo',
+			group: 'foo',
 			position: 'top',
 			message: 'Top foo notification',
 		});
 
 		notification.show({
-			type: 'foo',
+			group: 'foo',
 			position: 'bottom',
 			message: 'Bottom foo notification',
 		});
 
 		notification.show({
-			type: 'foo',
+			group: 'foo',
 			position: 'top',
 			message: 'Replacement top foo notification',
 		});
@@ -636,14 +636,14 @@ describe('notification accessibility behavior', () => {
 		expect(document.querySelectorAll('.z-notification')).toHaveLength(2);
 	});
 
-	it('does not replace notifications with different types', async () => {
+	it('does not replace notifications with different groups', async () => {
 		notification.show({
-			type: 'foo',
+			group: 'foo',
 			message: 'Foo notification',
 		});
 
 		notification.show({
-			type: 'share',
+			group: 'share',
 			message: 'Share notification',
 		});
 

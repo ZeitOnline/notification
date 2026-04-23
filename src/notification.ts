@@ -48,7 +48,7 @@ export class Notification {
 		this.notificationTimeout = !isNaN(storedTimeoutMs) ? storedTimeoutMs : DEFAULT_TIMEOUT_MS;
 	}
 	show({
-		type,
+		group,
 		position = 'top-right',
 		element,
 		icon,
@@ -58,10 +58,10 @@ export class Notification {
 		link,
 		hasTimer,
 	}: NotificationOptions): void {
-		if (type) {
+		if (group) {
 			let stack = this.notificationStacks.get(position);
 			if (stack) {
-				const notificationToRemove = stack.find(item => item.type === type);
+				const notificationToRemove = stack.find(item => item.group === group);
 				if (notificationToRemove) {
 					this.removeNotification(notificationToRemove);
 				}
@@ -71,7 +71,7 @@ export class Notification {
 		const notification = this.createNotification({
 			element,
 			position,
-			type,
+			group,
 			icon,
 			message,
 			status,
@@ -172,10 +172,11 @@ export class Notification {
 	 */
 	createNotificationElement(
 		element: HTMLElement,
+		group: string | null,
 		position: NotificationPosition,
 	): NotificationElement {
 		const el = document.createElement('div') as NotificationElement;
-		el.type = null;
+		el.group = group;
 		el.hasTimer = false;
 		el.isPaused = false;
 		el.position = position;
@@ -188,8 +189,8 @@ export class Notification {
 
 	createNotification({
 		element = document.body,
+		group = null,
 		position = 'top-right',
-		type,
 		icon,
 		message,
 		status = 'info',
@@ -197,7 +198,7 @@ export class Notification {
 		link,
 		hasTimer,
 	}: NotificationOptions): NotificationElement {
-		const notification = this.createNotificationElement(element, position);
+		const notification = this.createNotificationElement(element, group, position);
 		notification.className = `z-notification z-notification--${position} z-notification--${status}`;
 
 		const buttonClass = 'z-notification__action-btn';
@@ -228,10 +229,6 @@ export class Notification {
 				this.setFocus(notification.anchorElement);
 				this.removeNotification(notification);
 			};
-		}
-
-		if (type) {
-			notification.type = type;
 		}
 
 		if (!!hasTimer && this.notificationTimeout > 0) {
@@ -488,7 +485,7 @@ const notification: NotificationService = {
 		return this.notification.showInline({ message, element });
 	},
 	show({
-		type,
+		group,
 		position,
 		element,
 		icon,
@@ -499,7 +496,7 @@ const notification: NotificationService = {
 		hasTimer,
 	}: NotificationOptions): void {
 		this.notification.show({
-			type,
+			group,
 			position,
 			element,
 			icon,

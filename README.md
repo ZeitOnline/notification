@@ -120,7 +120,7 @@ The form must contain radio inputs with `name="notification-timeout"` and numeri
 - Status variants for `success`, `warning`, `info` and `error`.
 - Optional action button or link.
 - Inline notifications anchored to the element that triggered them.
-- Optional `type` keys to replace earlier notifications within the same position stack.
+- Optional `group` keys to replace earlier notifications within the same position stack.
 - Auto-dismiss after 4 seconds, with pause and resume on pointer hover, when timer property is set to true.
 - Timed notifications can emit the `notification-removed` custom event when they close.
 - Stacking of up to 3 notifications per position at the same time.
