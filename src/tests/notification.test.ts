@@ -4,10 +4,25 @@ import userEvent from '@testing-library/user-event';
 
 import { MAX_NOTIFICATIONS_PER_POSITION, Notification } from '../notification';
 
+const ensurePopoverMethods = (): void => {
+	if (!HTMLElement.prototype.showPopover) {
+		HTMLElement.prototype.showPopover = function showPopover(): void {
+			this.toggleAttribute('open', true);
+		};
+	}
+
+	if (!HTMLElement.prototype.hidePopover) {
+		HTMLElement.prototype.hidePopover = function hidePopover(): void {
+			this.removeAttribute('open');
+		};
+	}
+};
+
 describe('notification accessibility behavior', () => {
 	let notification: Notification;
 
 	beforeEach(() => {
+		ensurePopoverMethods();
 		Notification.instance = undefined;
 		document.body.innerHTML = '';
 		vi.useFakeTimers();
