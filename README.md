@@ -111,48 +111,7 @@ if (form) {
 }
 ```
 
-The form must contain radio inputs with `name="notification-timeout"` and numeric `value` attributes (duration in milliseconds):
-
-```html
-<form class="z-notification-settings" aria-describedby="z-notification-settings-desc" onsubmit="return false">
-        <fieldset class="z-notification-settings__fieldset">
-            <legend class="z-notification-settings__legend">Optionale Hinweise automatisch ausblenden:</legend>
-            <div class="z-notification-settings__item">
-                <label class="z-notification-settings__label">
-                    <input class="z-notification-settings__radio" type="radio" name="notification-timeout" value="0" required>
-                    nie, immer manuell wegklicken
-                </label>
-            </div>
-            <div class="z-notification-settings__item">
-                <label class="z-notification-settings__label">
-                    <input class="z-notification-settings__radio" type="radio" name="notification-timeout" value="3000" checked>
-                    nach 3 Sekunden
-                </label>
-            </div>
-            <div class="z-notification-settings__item">
-                <label class="z-notification-settings__label">
-                    <input class="z-notification-settings__radio" type="radio" name="notification-timeout" value="6000">
-                    nach 6 Sekunden
-                </label>
-            </div>
-            <div class="z-notification-settings__item">
-                <label class="z-notification-settings__label">
-                    <input class="z-notification-settings__radio" type="radio" name="notification-timeout" value="12000">
-                    nach 12 Sekunden
-                </label>
-            </div>
-            <div class="z-notification-settings__item">
-                <label class="z-notification-settings__label">
-                    <input class="z-notification-settings__radio" type="radio" name="notification-timeout" value="24000">
-                    nach 24 Sekunden
-                </label>
-            </div>
-        </fieldset>
-        <button class="z-notification-settings__submit z-button z-button--primary" type="submit">Speichern</button>
-</form>
-```
-
-The `onSaved` callback is optional. If omitted, the value is still saved silently.
+The form must contain radio inputs with `name="notification-timeout"` and numeric `value` attributes (duration in milliseconds). The `onSaved` callback is optional; if omitted, the value is still saved silently.
 
 ## What the package provides
 
