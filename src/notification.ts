@@ -22,12 +22,6 @@ export const MAX_NOTIFICATIONS_PER_POSITION = 3;
 const OFFSET =
 	getComputedStyle(document.documentElement).getPropertyValue('--z-offset-notification').trim() ||
 	'1.5rem';
-const ZINDEX_BASE =
-	parseInt(
-		getComputedStyle(document.documentElement)
-			.getPropertyValue('--z-index-notification')
-			.trim(),
-	) || 1000;
 
 export class Notification {
 	static instance: Notification | undefined;
@@ -318,7 +312,6 @@ export class Notification {
 				notification.style.right = `calc(${OFFSET} + env(safe-area-inset-right, 0px))`;
 				notification.style.marginInline = '0';
 			}
-			notification.style.zIndex = `${ZINDEX_BASE + index}`;
 			stackingOffset += notification.getBoundingClientRect().height + GAP_STACKING;
 		});
 	}
