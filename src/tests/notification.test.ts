@@ -130,6 +130,7 @@ describe('notification accessibility behavior', () => {
 		expect(trigger.nextElementSibling).toBe(container);
 		expect(document.body.querySelectorAll('.z-notification')).toHaveLength(1);
 		expect(document.querySelector('dialog')).toBeNull();
+		expect(container?.getAttribute('popover')).toBe('manual');
 		expect(container?.classList.contains('z-notification--top-right')).toBe(true);
 		expect(container?.nodeName).toBe('DIV');
 		expect(screen.getByText(message)).not.toBeNull();
