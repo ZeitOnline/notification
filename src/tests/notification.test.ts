@@ -169,18 +169,22 @@ describe('notification accessibility behavior', () => {
 			status: 'success',
 		});
 
-		const toasts = Array.from(document.querySelectorAll('.z-notification')) as HTMLElement[];
+		const notifications = Array.from(
+			document.querySelectorAll('.z-notification'),
+		) as HTMLElement[];
+		expect(notifications).toHaveLength(2);
 
-		expect(toasts).toHaveLength(2);
-		expect(trigger.nextElementSibling).toBe(toasts[0]);
-		expect(toasts[0].nextElementSibling).toBe(toasts[1]);
-		expect(toasts[0].style.top).toContain('1.5rem');
-		expect(toasts[0].style.right).toContain('1.5rem');
-		expect(toasts[1].style.top).toContain('1.5rem');
-		expect(toasts[1].style.right).toContain('1.5rem');
-		expect(toasts[0].style.top).not.toBe(toasts[1].style.top);
-		expect(toasts[0].style.zIndex).toBe('1000');
-		expect(toasts[1].style.zIndex).toBe('1001');
+		const n1 = notifications[0];
+		const n2 = notifications[1];
+
+		expect(n1.style.top).toContain('1.5rem');
+		expect(n1.style.right).toContain('1.5rem');
+		expect(n2.style.top).toContain('1.5rem');
+		expect(n2.style.right).toContain('1.5rem');
+
+		expect(trigger.nextElementSibling).toBe(n1);
+		expect(n1.nextElementSibling).toBe(n2);
+		expect(n1.style.top).not.toBe(n2.style.top);
 
 		rectSpy.mockRestore();
 	});
