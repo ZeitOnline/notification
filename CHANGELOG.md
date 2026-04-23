@@ -1,14 +1,5 @@
 # Changelog
 
-## [1.7.0] (unreleased)
-
-
-### 🚀 Features
-
-* add `initNotificationSettings` to allow users to configure notification display duration
-* persist notification timeout preference in `localStorage` under key `z-notification-timeout`
-* use stored timeout on `Notification` instantiation, falling back to `DEFAULT_TIMEOUT_MS` (3500ms)
-
 ## [1.6.0](https://github.com/ZeitOnline/notification/compare/notification-v1.5.1...notification-v1.6.0) (2026-04-16)
 
 
