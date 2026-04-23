@@ -11,7 +11,7 @@ export type LinkOptions = {
 export type NotificationPosition = 'top' | 'bottom' | 'top-right';
 
 export type NotificationOptions = {
-	type?: string;
+	group?: string | null;
 	position?: NotificationPosition;
 	element?: HTMLElement;
 	icon?: string;
@@ -32,7 +32,7 @@ export type InlineNotification = {
 };
 
 export interface NotificationElement extends HTMLDivElement {
-	type: string | null;
+	group: string | null;
 	hasTimer: boolean;
 	isPaused: boolean;
 	position: NotificationPosition;
