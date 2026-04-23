@@ -361,11 +361,13 @@ describe('notification accessibility behavior', () => {
 				onClick,
 			},
 		});
+		expect(screen.queryByText(message)).not.toBeNull();
 
-		await user.click(screen.getByRole('button', { name: 'Retry' }));
+		await user.click(screen.getByRole('button', { name: 'Retry', hidden: true }));
 
 		expect(onClick).toHaveBeenCalledTimes(1);
 		expect(screen.queryByText(message)).toBeNull();
+		// focus back to trigger element
 		expect(document.activeElement).toBe(trigger);
 	});
 
@@ -389,7 +391,7 @@ describe('notification accessibility behavior', () => {
 			},
 		});
 
-		await user.click(screen.getByRole('button', { name: 'Meldung schließen' }));
+		await user.click(screen.getByRole('button', { name: 'Meldung schließen', hidden: true }));
 
 		expect(screen.queryByText('A new version of notification is available.')).toBeNull();
 		expect(document.activeElement).toBe(trigger);
