@@ -4,25 +4,10 @@ import userEvent from '@testing-library/user-event';
 
 import { MAX_NOTIFICATIONS_PER_POSITION, Notification } from '../notification';
 
-const ensureDialogMethods = (): void => {
-	if (!HTMLDialogElement.prototype.show) {
-		HTMLDialogElement.prototype.show = function show(): void {
-			this.setAttribute('open', '');
-		};
-	}
-
-	if (!HTMLDialogElement.prototype.close) {
-		HTMLDialogElement.prototype.close = function close(): void {
-			this.removeAttribute('open');
-		};
-	}
-};
-
 describe('notification accessibility behavior', () => {
 	let notification: Notification;
 
 	beforeEach(() => {
-		ensureDialogMethods();
 		Notification.instance = undefined;
 		document.body.innerHTML = '';
 		vi.useFakeTimers();
