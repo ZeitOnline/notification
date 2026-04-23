@@ -587,7 +587,10 @@ describe('notification accessibility behavior', () => {
 			status: 'error',
 			hasTimer: true,
 		});
-		const closeButton = screen.getByRole('button', { name: 'Meldung schließen' });
+		const closeButton = screen.getByRole('button', {
+			name: 'Meldung schließen',
+			hidden: true,
+		}) as HTMLButtonElement;
 		expect(closeButton.className).toContain('z-notification__close-btn--timer');
 	});
 
@@ -597,7 +600,10 @@ describe('notification accessibility behavior', () => {
 			status: 'error',
 			hasTimer: false,
 		});
-		const closeButton = screen.getByRole('button', { name: 'Meldung schließen' });
+		const closeButton = screen.getByRole('button', {
+			name: 'Meldung schließen',
+			hidden: true,
+		}) as HTMLButtonElement;
 		expect(closeButton?.className).not.toContain('z-notification__close-btn--timer');
 	});
 
