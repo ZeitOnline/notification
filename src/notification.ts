@@ -173,7 +173,8 @@ export class Notification {
 		group: string | null,
 		position: NotificationPosition,
 	): NotificationElement {
-		const el = document.createElement('div') as NotificationElement;
+		const el = document.createElement('div') as unknown as NotificationElement;
+		el.setAttribute('popover', 'manual');
 		el.group = group;
 		el.hasTimer = false;
 		el.isPaused = false;
@@ -280,6 +281,7 @@ export class Notification {
 				insertionPoint = activeElement;
 			} else {
 				document.body.insertAdjacentElement('beforeend', notification);
+				notification.showPopover();
 				return;
 			}
 		}
@@ -289,6 +291,7 @@ export class Notification {
 		}
 
 		insertionPoint.insertAdjacentElement('afterend', notification);
+		notification.showPopover();
 	}
 
 	positionNotifications(position: NotificationPosition): void {
@@ -424,6 +427,11 @@ export class Notification {
 		}
 
 		this.dispatchEvent('notification-removed', anchor);
+		try {
+			notification.hidePopover();
+		} catch {
+			// notification is already removed from the DOM
+		}
 		notification.remove();
 
 		const stack = this.notificationStacks.get(notification.position);
