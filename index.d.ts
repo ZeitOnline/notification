@@ -35,6 +35,7 @@ export interface NotificationElement extends HTMLDivElement {
 	type: string | null;
 	hasTimer: boolean;
 	isPaused: boolean;
+	position: NotificationPosition;
 	timeoutID: ReturnType<typeof setTimeout> | null;
 	elapsed: number;
 	startedAt: number;
