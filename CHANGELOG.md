@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/ZeitOnline/notification/compare/notification-v2.0.0...notification-v2.0.1) (2026-04-24)
+
+
+### 🐛 Bug Fixes
+
+* use popover element to show notifications ([#53](https://github.com/ZeitOnline/notification/issues/53)) ([6bcc45b](https://github.com/ZeitOnline/notification/commit/6bcc45bd64d8dd4193c564a08df9798b4ee0d6a8))
+
 ## [2.0.0](https://github.com/ZeitOnline/notification/compare/notification-v1.6.0...notification-v2.0.0) (2026-04-23)
 
 

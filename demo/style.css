@@ -5,8 +5,8 @@
 	--z-offset-notification: 1.5rem;
 }
 
-*, 
-*::before, 
+*,
+*::before,
 *::after {
 	box-sizing: border-box;
 }
@@ -53,6 +53,11 @@ body {
 	font-weight: 600;
 	letter-spacing: -0.01em;
 	display: inline-block;
+	margin: 0;
+}
+
+.hero h2 {
+	margin: 0;
 }
 
 .hero p {
@@ -85,18 +90,14 @@ nav {
 	display: flex;
 	flex-direction: column;
 	gap: var(--z-ds-space-l);
-	margin-top: var(--z-ds-space-m)
-}
-
-.demo h2 {
-	font-size: var(--z-ds-fontsize-24);
-	font-weight: 600;
-	margin-bottom: var(--z-ds-space-xs);
+	max-width: 800px;
+	width: 100%;
+	margin-inline: auto;
 }
 
 .demo p {
 	color: var(--z-ds-color-text-muted);
-	margin-bottom: var(--z-ds-space-s);
+	margin: 0 0 var(--z-ds-space-l);
 }
 
 .button-group {
@@ -208,4 +209,122 @@ nav>a {
 		margin-top: 0;
 		margin-left: var(--spacing-md);
 	}
+}
+
+/* Notification Form */
+.notification-form {
+	display: flex;
+	flex-direction: column;
+	gap: var(--z-ds-space-s);
+	margin-block: 0 var(--z-ds-space-m);
+	margin-inline: auto;
+	max-width: 500px;
+}
+
+.notification-form .form-row {
+	display: flex;
+	flex-direction: row;
+	gap: var(--z-ds-space-m);
+	justify-content: center;
+
+}
+
+/* Toggle Button Group */
+.toggle-button-group {
+	border: 1px solid var(--z-ds-color-border-100);
+	border-radius: var(--z-ds-border-radius-8);
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	gap: var(--z-ds-space-xs);
+	padding: var(--z-ds-space-xs);
+}
+
+.toggle-button-group .form-label {
+	color: var(--z-ds-color-text-55);
+	font-size: var(--z-ds-fontsize-14);
+	line-height: 1.2;
+}
+
+.toggle-button-group legend {
+	flex-basis: 100%;
+	padding: 0 var(--z-ds-space-xxs);
+}
+
+.toggle-button {
+	appearance: none;
+	border: none;
+	background-color: var(--z-ds-color-background-20);
+	color: var(--z-ds-color-text-100);
+	padding: var(--z-ds-space-xxxs) var(--z-ds-space-xs);
+	font: inherit;
+	font-size: inherit;
+	font-size: var(--z-ds-fontsize-14);
+	cursor: pointer;
+	transition: background-color 0.15s ease, color 0.15s ease;
+	border-radius: 4px;
+}
+
+.toggle-button:hover {
+	background-color: var(--z-ds-color-background-10);
+}
+
+.toggle-button:focus-visible {
+	z-index: 1;
+}
+
+.toggle-button.selected {
+	background: var(--z-ds-color-text-100);
+	color: var(--z-ds-color-background-0);
+}
+
+.form-message {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	width: 100%;
+	gap: var(--z-ds-space-xs);
+	margin-top: var(--z-ds-space-s);
+
+}
+
+.form-message .input--underline {
+	width: min(50%, 28rem);
+	text-align: center;
+}
+
+.form-label--stacked {
+	color: var(--z-ds-color-text-55);
+	font-size: var(--z-ds-fontsize-14);
+	line-height: 1.2;
+}
+
+.input--underline {
+	appearance: none;
+	padding: var(--z-ds-space-xs) 0;
+	border: none;
+	border-bottom: 1px solid var(--z-ds-color-text-55);
+	border-radius: 0;
+	color: var(--z-ds-color-text-100);
+	background: transparent;
+	font: inherit;
+	font-size: var(--z-ds-fontsize-14);
+	flex: 1;
+	min-width: 0;
+	text-align: left;
+}
+
+.input--underline:focus {
+	outline: none;
+	border-bottom-color: var(--z-ds-color-focus-100);
+	box-shadow: 0 1px 0 0 var(--z-ds-color-focus-100);
+}
+
+.notification-form button[type="submit"] {
+	margin-top: var(--z-ds-space-l);
+	padding: var(--z-ds-space-s) var(--z-ds-space-m);
+	align-self: center;
 }
