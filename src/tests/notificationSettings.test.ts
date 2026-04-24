@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { initNotificationSettings, TIMEOUT_STORAGE_KEY } from '../notificationSettings';
+import { initNotificationSettings, TIMER_STORAGE_KEY } from '../notificationSettings';
 
 const buildForm = (values: number[]): HTMLFormElement => {
 	const form = document.createElement('form');
@@ -21,7 +21,7 @@ describe('initNotificationSettings', () => {
 	});
 
 	it('restores the previously saved selection on init', () => {
-		localStorage.setItem(TIMEOUT_STORAGE_KEY, '5000');
+		localStorage.setItem(TIMER_STORAGE_KEY, '5000');
 		const form = buildForm([0, 3000, 5000, 8000]);
 		initNotificationSettings(form);
 
@@ -36,7 +36,7 @@ describe('initNotificationSettings', () => {
 		form.querySelector<HTMLInputElement>('input[value="8000"]')!.checked = true;
 		form.dispatchEvent(new Event('submit'));
 
-		expect(localStorage.getItem(TIMEOUT_STORAGE_KEY)).toBe('8000');
+		expect(localStorage.getItem(TIMER_STORAGE_KEY)).toBe('8000');
 	});
 
 	it('calls onSaved after saving', () => {
@@ -56,7 +56,7 @@ describe('initNotificationSettings', () => {
 
 		form.dispatchEvent(new Event('submit'));
 
-		expect(localStorage.getItem(TIMEOUT_STORAGE_KEY)).toBeNull();
+		expect(localStorage.getItem(TIMER_STORAGE_KEY)).toBeNull();
 	});
 
 });

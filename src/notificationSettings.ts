@@ -1,8 +1,8 @@
-export const TIMEOUT_STORAGE_KEY = 'z-notification-timeout';
-export const DEFAULT_TIMEOUT_MS = 3500;
+export const TIMER_STORAGE_KEY = 'z-notification-timeout';
+const DEFAULT_TIMER_MS = 3500;
 
 function restoreSavedSelection(form: HTMLFormElement): void {
-	const timeoutMs = parseInt(localStorage.getItem(TIMEOUT_STORAGE_KEY) ?? '', 10);
+	const timeoutMs = parseInt(localStorage.getItem(TIMER_STORAGE_KEY) ?? '', 10);
 	if (isNaN(timeoutMs)) {
 		return;
 	}
@@ -15,8 +15,8 @@ function restoreSavedSelection(form: HTMLFormElement): void {
 }
 
 export function getNotificationTimeout(): number {
-	const stored = parseInt(localStorage.getItem(TIMEOUT_STORAGE_KEY) ?? '', 10);
-	return isNaN(stored) ? DEFAULT_TIMEOUT_MS : stored;
+	const stored = parseInt(localStorage.getItem(TIMER_STORAGE_KEY) ?? '', 10);
+	return isNaN(stored) ? DEFAULT_TIMER_MS : stored;
 }
 
 export function initNotificationSettings(form: HTMLFormElement, onSaved?: () => void): void {
@@ -30,7 +30,7 @@ export function initNotificationSettings(form: HTMLFormElement, onSaved?: () => 
 		if (!checkedRadio) {
 			return;
 		}
-		localStorage.setItem(TIMEOUT_STORAGE_KEY, checkedRadio.value);
+		localStorage.setItem(TIMER_STORAGE_KEY, checkedRadio.value);
 		onSaved?.();
 	});
 }
