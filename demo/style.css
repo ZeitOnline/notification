@@ -229,19 +229,27 @@ nav>a {
 
 }
 
-.notification-form .form-label {
-	color: var(--z-ds-color-text-55);
-	font-size: var(--z-ds-fontsize-14);
-	display: block;
-	padding: var(--z-ds-space-xxxs) var(--z-ds-space-xs);
-}
-
 /* Toggle Button Group */
 .toggle-button-group {
+	border: 1px solid var(--z-ds-color-border-100);
+	border-radius: var(--z-ds-border-radius-8);
 	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
 	align-items: center;
-	gap: 0;
-	overflow: hidden;
+	gap: var(--z-ds-space-xs);
+	padding: var(--z-ds-space-xs);
+}
+
+.toggle-button-group .form-label {
+	color: var(--z-ds-color-text-55);
+	font-size: var(--z-ds-fontsize-14);
+	line-height: 1.2;
+}
+
+.toggle-button-group legend {
+	flex-basis: 100%;
+	padding: 0 var(--z-ds-space-xxs);
 }
 
 .toggle-button {
@@ -255,12 +263,7 @@ nav>a {
 	font-size: var(--z-ds-fontsize-14);
 	cursor: pointer;
 	transition: background-color 0.15s ease, color 0.15s ease;
-	margin-right: 3px;
 	border-radius: 4px;
-}
-
-.toggle-button:last-child {
-	border-right: none;
 }
 
 .toggle-button:hover {
