@@ -39,6 +39,7 @@
 	top: auto;
 	width: max-content;
 	will-change: opacity;
+	z-index: constants.$z-index-notification;
 
 	&:popover-open {
 		display: flex;
