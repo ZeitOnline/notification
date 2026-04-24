@@ -4,15 +4,15 @@ import userEvent from '@testing-library/user-event';
 
 import { MAX_NOTIFICATIONS_PER_POSITION, Notification } from '../notification';
 
-const ensureDialogMethods = (): void => {
-	if (!HTMLDialogElement.prototype.show) {
-		HTMLDialogElement.prototype.show = function show(): void {
-			this.setAttribute('open', '');
+const ensurePopoverMethods = (): void => {
+	if (!HTMLElement.prototype.showPopover) {
+		HTMLElement.prototype.showPopover = function showPopover(): void {
+			this.toggleAttribute('open', true);
 		};
 	}
 
-	if (!HTMLDialogElement.prototype.close) {
-		HTMLDialogElement.prototype.close = function close(): void {
+	if (!HTMLElement.prototype.hidePopover) {
+		HTMLElement.prototype.hidePopover = function hidePopover(): void {
 			this.removeAttribute('open');
 		};
 	}
@@ -22,7 +22,7 @@ describe('notification accessibility behavior', () => {
 	let notification: Notification;
 
 	beforeEach(() => {
-		ensureDialogMethods();
+		ensurePopoverMethods();
 		Notification.instance = undefined;
 		document.body.innerHTML = '';
 		vi.useFakeTimers();
@@ -130,6 +130,7 @@ describe('notification accessibility behavior', () => {
 		expect(trigger.nextElementSibling).toBe(container);
 		expect(document.body.querySelectorAll('.z-notification')).toHaveLength(1);
 		expect(document.querySelector('dialog')).toBeNull();
+		expect(container?.getAttribute('popover')).toBe('manual');
 		expect(container?.classList.contains('z-notification--top-right')).toBe(true);
 		expect(container?.nodeName).toBe('DIV');
 		expect(screen.getByText(message)).not.toBeNull();
@@ -168,18 +169,22 @@ describe('notification accessibility behavior', () => {
 			status: 'success',
 		});
 
-		const toasts = Array.from(document.querySelectorAll('.z-notification')) as HTMLElement[];
+		const notifications = Array.from(
+			document.querySelectorAll('.z-notification'),
+		) as HTMLElement[];
+		expect(notifications).toHaveLength(2);
 
-		expect(toasts).toHaveLength(2);
-		expect(trigger.nextElementSibling).toBe(toasts[0]);
-		expect(toasts[0].nextElementSibling).toBe(toasts[1]);
-		expect(toasts[0].style.top).toContain('1.5rem');
-		expect(toasts[0].style.right).toContain('1.5rem');
-		expect(toasts[1].style.top).toContain('1.5rem');
-		expect(toasts[1].style.right).toContain('1.5rem');
-		expect(toasts[0].style.top).not.toBe(toasts[1].style.top);
-		expect(toasts[0].style.zIndex).toBe('1000');
-		expect(toasts[1].style.zIndex).toBe('1001');
+		const n1 = notifications[0];
+		const n2 = notifications[1];
+
+		expect(n1.style.top).toContain('1.5rem');
+		expect(n1.style.right).toContain('1.5rem');
+		expect(n2.style.top).toContain('1.5rem');
+		expect(n2.style.right).toContain('1.5rem');
+
+		expect(trigger.nextElementSibling).toBe(n1);
+		expect(n1.nextElementSibling).toBe(n2);
+		expect(n1.style.top).not.toBe(n2.style.top);
 
 		rectSpy.mockRestore();
 	});
@@ -360,11 +365,13 @@ describe('notification accessibility behavior', () => {
 				onClick,
 			},
 		});
+		expect(screen.queryByText(message)).not.toBeNull();
 
-		await user.click(screen.getByRole('button', { name: 'Retry' }));
+		await user.click(screen.getByRole('button', { name: 'Retry', hidden: true }));
 
 		expect(onClick).toHaveBeenCalledTimes(1);
 		expect(screen.queryByText(message)).toBeNull();
+		// focus back to trigger element
 		expect(document.activeElement).toBe(trigger);
 	});
 
@@ -388,7 +395,7 @@ describe('notification accessibility behavior', () => {
 			},
 		});
 
-		await user.click(screen.getByRole('button', { name: 'Meldung schließen' }));
+		await user.click(screen.getByRole('button', { name: 'Meldung schließen', hidden: true }));
 
 		expect(screen.queryByText('A new version of notification is available.')).toBeNull();
 		expect(document.activeElement).toBe(trigger);
@@ -580,7 +587,10 @@ describe('notification accessibility behavior', () => {
 			status: 'error',
 			hasTimer: true,
 		});
-		const closeButton = screen.getByRole('button', { name: 'Meldung schließen' });
+		const closeButton = screen.getByRole('button', {
+			name: 'Meldung schließen',
+			hidden: true,
+		}) as HTMLButtonElement;
 		expect(closeButton.className).toContain('z-notification__close-btn--timer');
 	});
 
@@ -590,7 +600,10 @@ describe('notification accessibility behavior', () => {
 			status: 'error',
 			hasTimer: false,
 		});
-		const closeButton = screen.getByRole('button', { name: 'Meldung schließen' });
+		const closeButton = screen.getByRole('button', {
+			name: 'Meldung schließen',
+			hidden: true,
+		}) as HTMLButtonElement;
 		expect(closeButton?.className).not.toContain('z-notification__close-btn--timer');
 	});
 

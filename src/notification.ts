@@ -22,12 +22,6 @@ export const MAX_NOTIFICATIONS_PER_POSITION = 3;
 const OFFSET =
 	getComputedStyle(document.documentElement).getPropertyValue('--z-offset-notification').trim() ||
 	'1.5rem';
-const ZINDEX_BASE =
-	parseInt(
-		getComputedStyle(document.documentElement)
-			.getPropertyValue('--z-index-notification')
-			.trim(),
-	) || 1000;
 
 export class Notification {
 	static instance: Notification | undefined;
@@ -174,6 +168,7 @@ export class Notification {
 		position: NotificationPosition,
 	): NotificationElement {
 		const el = document.createElement('div') as NotificationElement;
+		el.setAttribute('popover', 'manual');
 		el.group = group;
 		el.hasTimer = false;
 		el.isPaused = false;
@@ -280,6 +275,7 @@ export class Notification {
 				insertionPoint = activeElement;
 			} else {
 				document.body.insertAdjacentElement('beforeend', notification);
+				notification.showPopover();
 				return;
 			}
 		}
@@ -289,6 +285,7 @@ export class Notification {
 		}
 
 		insertionPoint.insertAdjacentElement('afterend', notification);
+		notification.showPopover();
 	}
 
 	positionNotifications(position: NotificationPosition): void {
@@ -315,7 +312,6 @@ export class Notification {
 				notification.style.right = `calc(${OFFSET} + env(safe-area-inset-right, 0px))`;
 				notification.style.marginInline = '0';
 			}
-			notification.style.zIndex = `${ZINDEX_BASE + index}`;
 			stackingOffset += notification.getBoundingClientRect().height + GAP_STACKING;
 		});
 	}
@@ -417,13 +413,16 @@ export class Notification {
 	): void {
 		if (!notification) return;
 
-		const anchor = notification.anchorElement;
-
 		if (notification.timeoutID) {
 			clearTimeout(notification.timeoutID);
 		}
 
-		this.dispatchEvent('notification-removed', anchor);
+		this.dispatchEvent('notification-removed', notification.anchorElement);
+		try {
+			notification.hidePopover();
+		} catch {
+			// notification is already removed from the DOM
+		}
 		notification.remove();
 
 		const stack = this.notificationStacks.get(notification.position);

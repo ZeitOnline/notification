@@ -29,7 +29,7 @@
 	gap: var(--z-ds-space-6);
 	left: 0;
 	line-height: var(--z-ds-lineheight-12);
-	margin-inline: auto;
+	margin: 0 auto;
 	max-width: calc(100vw - (var(--z-ds-space-s) * 2));
 	opacity: 1;
 	padding-block: var(--z-ds-space-12);
@@ -39,7 +39,10 @@
 	top: auto;
 	width: max-content;
 	will-change: opacity;
-	z-index: constants.$z-index-notification;
+
+	&:popover-open {
+		display: flex;
+	}
 
 	&--bottom {
 		bottom: env(safe-area-inset-bottom, 0px);
