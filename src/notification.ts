@@ -167,7 +167,7 @@ export class Notification {
 		group: string | null,
 		position: NotificationPosition,
 	): NotificationElement {
-		const el = document.createElement('div') as unknown as NotificationElement;
+		const el = document.createElement('div') as NotificationElement;
 		el.setAttribute('popover', 'manual');
 		el.group = group;
 		el.hasTimer = false;
