@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.0.0](https://github.com/ZeitOnline/notification/compare/notification-v1.6.0...notification-v2.0.0) (2026-04-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* rename property type into group  ([#52](https://github.com/ZeitOnline/notification/issues/52))
+
+### 🚀 Features
+
+* add stacks per position for the notifications ([#49](https://github.com/ZeitOnline/notification/issues/49)) ([1d0dcb9](https://github.com/ZeitOnline/notification/commit/1d0dcb909dd7ea39d80c72320d8f2f4276d4c9ed))
+
+
+### 📝 Other Changes
+
+* rename property type into group  ([#52](https://github.com/ZeitOnline/notification/issues/52)) ([c01b319](https://github.com/ZeitOnline/notification/commit/c01b3196557b0088585515fced66524cbe8eb2bf))
+
 ## [1.6.0](https://github.com/ZeitOnline/notification/compare/notification-v1.5.1...notification-v1.6.0) (2026-04-16)
 
 

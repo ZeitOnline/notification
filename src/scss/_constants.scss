@@ -125,8 +125,6 @@ $z-index-inside-modules: 3 !default;
 
 // Elements that are part of the regular content flow, but above the regular content.
 $z-index-above-regular-content: 10;
-// Notification
-$z-index-notification: 800;
 // For the main navigation, above all normal content
 $z-index-nav: 900 !default;
 // Modals, really above everything

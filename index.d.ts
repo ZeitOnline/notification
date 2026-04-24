@@ -31,7 +31,7 @@ export type InlineNotification = {
 	timeoutID: ReturnType<typeof setTimeout> | null;
 };
 
-export interface NotificationElement extends HTMLDivElement {
+export interface NotificationElement extends HTMLElement {
 	group: string | null;
 	hasTimer: boolean;
 	isPaused: boolean;
