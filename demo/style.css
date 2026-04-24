@@ -279,8 +279,27 @@ nav>a {
 	color: var(--z-ds-color-background-0);
 }
 
-.form-row--message {
+.form-message {
+	display: flex;
+	flex-direction: column;
 	align-items: center;
+	justify-content: center;
+	text-align: center;
+	width: 100%;
+	gap: var(--z-ds-space-xs);
+	margin-top: var(--z-ds-space-s);
+
+}
+
+.form-message .input--underline {
+	width: min(50%, 28rem);
+	text-align: center;
+}
+
+.form-label--stacked {
+	color: var(--z-ds-color-text-55);
+	font-size: var(--z-ds-fontsize-14);
+	line-height: 1.2;
 }
 
 .input--underline {
@@ -295,7 +314,7 @@ nav>a {
 	font-size: var(--z-ds-fontsize-14);
 	flex: 1;
 	min-width: 0;
-	text-align: center;
+	text-align: left;
 }
 
 .input--underline:focus {
