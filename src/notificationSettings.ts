@@ -14,6 +14,11 @@ function restoreSavedSelection(form: HTMLFormElement): void {
 	}
 }
 
+export function getNotificationTimeout(): number {
+	const stored = parseInt(localStorage.getItem(TIMEOUT_STORAGE_KEY) ?? '', 10);
+	return isNaN(stored) ? DEFAULT_TIMEOUT_MS : stored;
+}
+
 export function initNotificationSettings(form: HTMLFormElement, onSaved?: () => void): void {
 	restoreSavedSelection(form);
 

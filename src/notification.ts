@@ -16,7 +16,7 @@ import type {
 	NotificationService,
 	NotificationPosition,
 } from '../index';
-import { TIMEOUT_STORAGE_KEY, DEFAULT_TIMEOUT_MS } from './notificationSettings';
+import { getNotificationTimeout } from './notificationSettings';
 
 const GAP_STACKING = 8;
 export const MAX_NOTIFICATIONS_PER_POSITION = 3;
@@ -38,8 +38,7 @@ export class Notification {
 		Notification.instance = this;
 		this.notificationStacks = new Map();
 		this.container = null;
-		const storedTimeoutMs = parseInt(localStorage.getItem(TIMEOUT_STORAGE_KEY) || '', 10);
-		this.notificationTimeout = !isNaN(storedTimeoutMs) ? storedTimeoutMs : DEFAULT_TIMEOUT_MS;
+		this.notificationTimeout = getNotificationTimeout();
 	}
 	show({
 		group,
