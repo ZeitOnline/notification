@@ -152,6 +152,7 @@
 			</article>
 		</section>
 	</main>
+	<div class="motion-indicator" id="motion-indicator" aria-hidden="true"></div>
 	<script>
 		// Initialize window.Zeit before any modules load
 		window.Zeit = window.Zeit || {};
@@ -160,6 +161,20 @@
 		import { initThemeSwitcher } from './theme-switcher.js';
 		import notification from "/index.js";
 		initThemeSwitcher();
+
+		const motionIndicator = document.getElementById('motion-indicator');
+		const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+		function updateMotionIndicator() {
+			const reducedMotion = reducedMotionQuery.matches;
+			motionIndicator.dataset.motion = reducedMotion ? 'reduced' : 'full';
+			motionIndicator.textContent = reducedMotion ? 'Motion: Reduced' : 'Motion: Full';
+		}
+
+		updateMotionIndicator();
+		if (typeof reducedMotionQuery.addEventListener === 'function') {
+			reducedMotionQuery.addEventListener('change', updateMotionIndicator);
+		}
 
 		function callBack(message) {
 			alert(message);
