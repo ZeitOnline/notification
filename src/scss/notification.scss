@@ -21,7 +21,6 @@
 	--notification-motion-distance: 1rem;
 
 	align-items: center;
-	animation: z-notification-fade-in 0.18s ease-out;
 	background-color: transparent;
 	background-color: var(--z-ds-color-text-100);
 	border-radius: var(--z-ds-border-radius-4);
@@ -100,15 +99,6 @@
 
 	@include utils.respond-max(constants.$break-phablet-min) {
 		width: 90vw;
-	}
-}
-
-@keyframes z-notification-fade-in {
-	0% {
-		opacity: 0;
-	}
-	100% {
-		opacity: 1;
 	}
 }
 
@@ -235,11 +225,7 @@
 			transform var(--notification-motion-duration) ease-in-out;
 	}
 
-	.z-notification--leaving {
-		animation-name: z-notification-exit;
-	}
-
-	.z-notification--leaving.z-notification--replaced {
+	.z-notification--replaced {
 		animation-name: z-notification-replaced-exit;
 	}
 }
@@ -263,22 +249,6 @@
 	100% {
 		opacity: 1;
 		transform: translateY(0);
-	}
-}
-
-@keyframes z-notification-exit {
-	0% {
-		opacity: 1;
-		transform: translateY(0);
-	}
-	100% {
-		opacity: 0;
-		transform: translateY(
-			calc(
-				var(--z-notification-motion-direction, 1) * var(--notification-motion-distance) *
-					var(--z-notification-motion-index, 1)
-			)
-		);
 	}
 }
 
