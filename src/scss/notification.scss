@@ -17,6 +17,9 @@
 }
 
 .z-notification {
+	--notification-motion-duration: 180ms;
+	--notification-motion-distance: 1rem;
+
 	align-items: center;
 	animation: z-notification-fade-in 0.18s ease-out;
 	background-color: transparent;
@@ -219,5 +222,78 @@
 		to {
 			stroke-dashoffset: var(--z-stroke-dasharray-neg);
 		}
+	}
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+	.z-notification {
+		animation: z-notification-enter var(--notification-motion-duration) ease-in-out both;
+		transition:
+			bottom var(--notification-motion-duration) ease-in-out,
+			top var(--notification-motion-duration) ease-in-out,
+			opacity var(--notification-motion-duration) ease-in-out,
+			transform var(--notification-motion-duration) ease-in-out;
+	}
+
+	.z-notification--leaving {
+		animation-name: z-notification-exit;
+	}
+
+	.z-notification--leaving.z-notification--replaced {
+		animation-name: z-notification-replaced-exit;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.z-notification {
+		--notification-motion-duration: 0ms;
+	}
+}
+
+@keyframes z-notification-enter {
+	0% {
+		opacity: 0;
+		transform: translateY(
+			calc(
+				var(--z-notification-motion-direction, 1) * var(--notification-motion-distance) *
+					var(--z-notification-motion-index, 1)
+			)
+		);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes z-notification-exit {
+	0% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+	100% {
+		opacity: 0;
+		transform: translateY(
+			calc(
+				var(--z-notification-motion-direction, 1) * var(--notification-motion-distance) *
+					var(--z-notification-motion-index, 1)
+			)
+		);
+	}
+}
+
+@keyframes z-notification-replaced-exit {
+	0% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+	100% {
+		opacity: 0;
+		transform: translateY(
+			calc(
+				var(--z-notification-motion-direction, 1) * -1 *
+					var(--notification-motion-distance) * var(--z-notification-motion-index, 1)
+			)
+		);
 	}
 }
