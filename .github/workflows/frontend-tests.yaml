@@ -8,6 +8,7 @@ on:
     paths:
       - '.github/workflows/frontend-tests.yaml'
       - 'src/**'
+      - 'testing.yaml'
 jobs:
   build:
     uses: zeitonline/gh-action-workflows/.github/workflows/build-test-push.yaml@31595f13b5f4c8439708dbecf9a85b2ce6df600a # 3.0.1

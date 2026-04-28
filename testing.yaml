@@ -1,0 +1,10 @@
+services:
+  frontend:
+    build:
+      context: .
+      target: frontend-testing
+    restart: always
+    volumes:
+      - ./testing:/testing
+networks:
+  default: {}
