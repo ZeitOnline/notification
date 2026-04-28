@@ -18,8 +18,8 @@ import type {
 } from '../index';
 
 export const MAX_NOTIFICATIONS_PER_POSITION = 3;
-const GAP_STACKING = 8;
-const OFFSET = 24;
+export const OFFSET = 24;
+export const GAP_STACKING = 8;
 
 export class Notification {
 	static instance: Notification | undefined;
