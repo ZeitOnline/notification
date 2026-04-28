@@ -244,18 +244,3 @@
 		transform: translateY(0);
 	}
 }
-
-@keyframes z-notification-replaced-exit {
-	0% {
-		opacity: 1;
-		transform: translateY(0);
-	}
-	100% {
-		opacity: 0;
-		transform: translateY(
-			calc(
-				var(--z-notification-motion-direction, 1) * -1 * var(--notification-motion-distance)
-			)
-		);
-	}
-}
