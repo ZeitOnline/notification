@@ -53,7 +53,13 @@ export class Notification {
 		if (group) {
 			let stack = this.notificationStacks.get(position);
 			if (stack) {
-				const notificationToRemove = stack.find(item => item.group === group);
+				const notificationToRemove = [...stack]
+					.reverse()
+					.find(
+						item =>
+							item.group === group &&
+							!item.classList.contains('z-notification--leaving'),
+					);
 				if (notificationToRemove) {
 					this.removeNotification(notificationToRemove);
 				}
@@ -167,7 +173,7 @@ export class Notification {
 		group: string | null,
 		position: NotificationPosition,
 	): NotificationElement {
-		const el = document.createElement('div') as NotificationElement;
+		const el = document.createElement('div') as unknown as NotificationElement;
 		el.setAttribute('popover', 'manual');
 		el.group = group;
 		el.hasTimer = false;
@@ -249,8 +255,11 @@ export class Notification {
 		const stack = this.getStack(notification.position);
 		stack.push(notification);
 
-		if (stack.length > MAX_NOTIFICATIONS_PER_POSITION) {
-			this.removeNotification(stack[0], { shouldReflow: false });
+		const activeNotifications = stack.filter(
+			item => !item.classList.contains('z-notification--leaving'),
+		);
+		if (activeNotifications.length > MAX_NOTIFICATIONS_PER_POSITION) {
+			this.removeNotification(activeNotifications[0], { shouldReflow: false });
 		}
 	}
 
@@ -291,7 +300,14 @@ export class Notification {
 	positionNotifications(position: NotificationPosition): void {
 		const stack = this.getStack(position);
 		let stackingOffset = 0;
-		stack.forEach((notification, index) => {
+		const visualStack = [...stack].reverse();
+
+		visualStack.forEach(notification => {
+			notification.style.setProperty(
+				'--z-notification-motion-direction',
+				position === 'bottom' ? '1' : '-1',
+			);
+
 			if (position === 'bottom') {
 				notification.style.bottom = `calc(${OFFSET} + ${stackingOffset}px + env(safe-area-inset-bottom, 0px))`;
 				notification.style.top = 'auto';
@@ -418,6 +434,15 @@ export class Notification {
 		}
 
 		this.dispatchEvent('notification-removed', notification.anchorElement);
+		this.finishRemovingNotification(notification, { shouldReflow });
+	}
+
+	finishRemovingNotification(
+		notification: NotificationElement,
+		{ shouldReflow = true }: { shouldReflow?: boolean } = {},
+	): void {
+		if (!notification.isConnected) return;
+
 		try {
 			notification.hidePopover();
 		} catch {

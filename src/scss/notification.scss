@@ -17,8 +17,9 @@
 }
 
 .z-notification {
+	--notification-motion-duration: 180ms;
+
 	align-items: center;
-	animation: z-notification-fade-in 0.18s ease-out;
 	background-color: transparent;
 	background-color: var(--z-ds-color-text-100);
 	border-radius: var(--z-ds-border-radius-4);
@@ -38,7 +39,7 @@
 	right: 0;
 	top: auto;
 	width: max-content;
-	will-change: opacity;
+	will-change: opacity, transform, bottom, top;
 
 	&:popover-open {
 		display: flex;
@@ -97,15 +98,6 @@
 
 	@include utils.respond-max(constants.$break-phablet-min) {
 		width: 90vw;
-	}
-}
-
-@keyframes z-notification-fade-in {
-	0% {
-		opacity: 0;
-	}
-	100% {
-		opacity: 1;
 	}
 }
 
@@ -219,5 +211,35 @@
 		to {
 			stroke-dashoffset: var(--z-stroke-dasharray-neg);
 		}
+	}
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+	.z-notification {
+		animation: z-notification-enter var(--notification-motion-duration) ease-in-out both;
+		transition:
+			bottom var(--notification-motion-duration) ease-in-out,
+			top var(--notification-motion-duration) ease-in-out,
+			opacity var(--notification-motion-duration) ease-in-out,
+			transform var(--notification-motion-duration) ease-in-out;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.z-notification {
+		--notification-motion-duration: 0ms;
+	}
+}
+
+@keyframes z-notification-enter {
+	0% {
+		opacity: 0;
+		transform: translateY(
+			calc(var(--z-notification-motion-direction, 1) * var(--z-ds-space-16, 1rem))
+		);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
 	}
 }
