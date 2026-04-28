@@ -22,7 +22,6 @@ export const MAX_NOTIFICATIONS_PER_POSITION = 3;
 const OFFSET =
 	getComputedStyle(document.documentElement).getPropertyValue('--z-offset-notification').trim() ||
 	'1.5rem';
-const ZINDEX = 1000;
 
 export class Notification {
 	static instance: Notification | undefined;
@@ -309,7 +308,6 @@ export class Notification {
 				position === 'bottom' ? '1' : '-1',
 			);
 			notification.style.setProperty('--z-notification-motion-index', `${index + 1}`);
-			notification.style.zIndex = `${ZINDEX + stack.indexOf(notification)}`;
 
 			if (position === 'bottom') {
 				notification.style.bottom = `calc(${OFFSET} + ${stackingOffset}px + env(safe-area-inset-bottom, 0px))`;

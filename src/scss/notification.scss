@@ -224,10 +224,6 @@
 			opacity var(--notification-motion-duration) ease-in-out,
 			transform var(--notification-motion-duration) ease-in-out;
 	}
-
-	.z-notification--replaced {
-		animation-name: z-notification-replaced-exit;
-	}
 }
 
 @media (prefers-reduced-motion: reduce) {
