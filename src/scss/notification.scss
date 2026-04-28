@@ -39,7 +39,7 @@
 	right: 0;
 	top: auto;
 	width: max-content;
-	will-change: opacity;
+	will-change: opacity, transform, bottom, top;
 
 	&:popover-open {
 		display: flex;
