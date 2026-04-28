@@ -18,6 +18,7 @@
 
 .z-notification {
 	--notification-motion-duration: 180ms;
+	--z-notification-motion-direction: -1;
 
 	align-items: center;
 	background-color: transparent;
@@ -46,6 +47,8 @@
 	}
 
 	&--bottom {
+		--z-notification-motion-direction: 1;
+
 		bottom: env(safe-area-inset-bottom, 0px);
 		left: 0;
 		margin-inline: auto;

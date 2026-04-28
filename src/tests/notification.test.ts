@@ -2,20 +2,31 @@ import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 
-import { MAX_NOTIFICATIONS_PER_POSITION, Notification } from '../notification';
+import {
+	GAP_STACKING,
+	MAX_NOTIFICATIONS_PER_POSITION,
+	Notification,
+	OFFSET,
+} from '../notification';
 
 const ensurePopoverMethods = (): void => {
 	if (!HTMLElement.prototype.showPopover) {
 		HTMLElement.prototype.showPopover = function showPopover(): void {
 			this.toggleAttribute('open', true);
+			this.style.display = 'flex';
 		};
 	}
 
 	if (!HTMLElement.prototype.hidePopover) {
 		HTMLElement.prototype.hidePopover = function hidePopover(): void {
 			this.removeAttribute('open');
+			this.style.display = '';
 		};
 	}
+};
+
+const expectOffset = (value: string, expectedOffset: number): void => {
+	expect(value).toContain(`${expectedOffset}px`);
 };
 
 describe('notification accessibility behavior', () => {
@@ -177,10 +188,10 @@ describe('notification accessibility behavior', () => {
 		const n1 = notifications[0];
 		const n2 = notifications[1];
 
-		expect(n1.style.top).toContain('1.5rem');
-		expect(n1.style.right).toContain('1.5rem');
-		expect(n2.style.top).toContain('1.5rem');
-		expect(n2.style.right).toContain('1.5rem');
+		expectOffset(n1.style.top, OFFSET + 40 + GAP_STACKING);
+		expectOffset(n1.style.right, OFFSET);
+		expectOffset(n2.style.top, OFFSET);
+		expectOffset(n2.style.right, OFFSET);
 
 		expect(trigger.nextElementSibling).toBe(n1);
 		expect(n1.nextElementSibling).toBe(n2);
@@ -226,13 +237,13 @@ describe('notification accessibility behavior', () => {
 
 		expect(toasts).toHaveLength(3);
 		expect(toasts[0].className).toContain('z-notification--top-right');
-		expect(toasts[0].style.top).toContain('1.5rem');
-		expect(toasts[0].style.right).toContain('1.5rem');
+		expectOffset(toasts[0].style.top, OFFSET);
+		expectOffset(toasts[0].style.right, OFFSET);
 		expect(toasts[1].className).toContain('z-notification--top');
-		expect(toasts[1].style.top).toContain('1.5rem');
+		expectOffset(toasts[1].style.top, OFFSET);
 		expect(toasts[1].style.right).toBe('0px');
 		expect(toasts[2].className).toContain('z-notification--bottom');
-		expect(toasts[2].style.bottom).toContain('1.5rem');
+		expectOffset(toasts[2].style.bottom, OFFSET);
 
 		rectSpy.mockRestore();
 	});
@@ -455,7 +466,7 @@ describe('notification accessibility behavior', () => {
 		const container = document.querySelector('.z-notification') as HTMLElement | null;
 
 		expect(container?.className).toContain('z-notification--top');
-		expect(container?.style.top).toContain('1.5rem');
+		expectOffset(container?.style.top ?? '', OFFSET);
 		expect(container?.style.bottom).toBe('auto');
 	});
 
@@ -469,7 +480,7 @@ describe('notification accessibility behavior', () => {
 		const container = document.querySelector('.z-notification') as HTMLElement | null;
 
 		expect(container?.className).toContain('z-notification--bottom');
-		expect(container?.style.bottom).toContain('1.5rem');
+		expectOffset(container?.style.bottom ?? '', OFFSET);
 		expect(container?.style.top).toBe('auto');
 	});
 
@@ -503,9 +514,9 @@ describe('notification accessibility behavior', () => {
 		expect(screen.getByText('Top 2')).not.toBeNull();
 		expect(screen.getByText('Top 3')).not.toBeNull();
 		expect(screen.getByText('Top 4')).not.toBeNull();
-		expect(toasts[0].style.top).toContain('1.5rem');
-		expect(toasts[1].style.top).toContain('1.5rem');
-		expect(toasts[2].style.top).toContain('1.5rem');
+		expectOffset(toasts[0].style.top, OFFSET + (40 + GAP_STACKING) * 2);
+		expectOffset(toasts[1].style.top, OFFSET + 40 + GAP_STACKING);
+		expectOffset(toasts[2].style.top, OFFSET);
 		expect(toasts[0].style.top).not.toBe(toasts[1].style.top);
 		expect(toasts[1].style.top).not.toBe(toasts[2].style.top);
 
@@ -542,9 +553,9 @@ describe('notification accessibility behavior', () => {
 		expect(screen.getByText('Bottom 2')).not.toBeNull();
 		expect(screen.getByText('Bottom 3')).not.toBeNull();
 		expect(screen.getByText('Bottom 4')).not.toBeNull();
-		expect(toasts[0].style.bottom).toContain('1.5rem');
-		expect(toasts[1].style.bottom).toContain('1.5rem');
-		expect(toasts[2].style.bottom).toContain('1.5rem');
+		expectOffset(toasts[0].style.bottom, OFFSET + (40 + GAP_STACKING) * 2);
+		expectOffset(toasts[1].style.bottom, OFFSET + 40 + GAP_STACKING);
+		expectOffset(toasts[2].style.bottom, OFFSET);
 		expect(toasts[0].style.bottom).not.toBe(toasts[1].style.bottom);
 		expect(toasts[1].style.bottom).not.toBe(toasts[2].style.bottom);
 
@@ -567,7 +578,7 @@ describe('notification accessibility behavior', () => {
 		const icon = document.querySelector('.z-notification__icon');
 
 		expect(container?.className).toContain('z-notification--top-right');
-		expect(container?.style.right).toContain('1.5rem');
+		expectOffset(container?.style.right ?? '', OFFSET);
 		expect(container?.style.left).toBe('auto');
 		expect(icon).not.toBeNull();
 	});
