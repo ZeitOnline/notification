@@ -302,12 +302,11 @@ export class Notification {
 		let stackingOffset = 0;
 		const visualStack = [...stack].reverse();
 
-		visualStack.forEach((notification, index) => {
+		visualStack.forEach(notification => {
 			notification.style.setProperty(
 				'--z-notification-motion-direction',
 				position === 'bottom' ? '1' : '-1',
 			);
-			notification.style.setProperty('--z-notification-motion-index', `${index + 1}`);
 
 			if (position === 'bottom') {
 				notification.style.bottom = `calc(${OFFSET} + ${stackingOffset}px + env(safe-area-inset-bottom, 0px))`;
