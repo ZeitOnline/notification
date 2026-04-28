@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/ZeitOnline/notification/compare/notification-v2.1.0...notification-v2.2.0) (2026-04-28)
+
+
+### 🚀 Features
+
+* make position be handled in scss and remove unused variables (index, offset) ([#58](https://github.com/ZeitOnline/notification/issues/58)) ([1c5eade](https://github.com/ZeitOnline/notification/commit/1c5eade431fe301ba68d985c3dfff017648aaac3))
+
 ## [2.1.0](https://github.com/ZeitOnline/notification/compare/notification-v2.0.1...notification-v2.1.0) (2026-04-28)
 
 
