@@ -18,7 +18,6 @@
 
 .z-notification {
 	--notification-motion-duration: 180ms;
-	--notification-motion-distance: 1rem;
 
 	align-items: center;
 	background-color: transparent;
@@ -236,7 +235,7 @@
 	0% {
 		opacity: 0;
 		transform: translateY(
-			calc(var(--z-notification-motion-direction, 1) * var(--notification-motion-distance))
+			calc(var(--z-notification-motion-direction, 1) * var(--z-ds-space-16, 1rem))
 		);
 	}
 	100% {
