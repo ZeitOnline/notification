@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.1.0](https://github.com/ZeitOnline/notification/compare/notification-v2.0.1...notification-v2.1.0) (2026-04-28)
+
+
+### 🚀 Features
+
+* add animation to notifications in the stacks ([#57](https://github.com/ZeitOnline/notification/issues/57)) ([a9934b2](https://github.com/ZeitOnline/notification/commit/a9934b245b03e65800e49f420e5e1673ecb3dcb6))
+
+
+### 📝 Other Changes
+
+* update demo page ([#55](https://github.com/ZeitOnline/notification/issues/55)) ([74ddf85](https://github.com/ZeitOnline/notification/commit/74ddf857553496aaa9459f6607cd188928d2b411))
+
 ## [2.0.1](https://github.com/ZeitOnline/notification/compare/notification-v2.0.0...notification-v2.0.1) (2026-04-24)
 
 
