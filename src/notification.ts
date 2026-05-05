@@ -53,11 +53,7 @@ export class Notification {
 			if (stack) {
 				const notificationToRemove = [...stack]
 					.reverse()
-					.find(
-						item =>
-							item.group === group &&
-							!item.classList.contains('z-notification--leaving'),
-					);
+					.find(item => item.group === group);
 				if (notificationToRemove) {
 					this.removeNotification(notificationToRemove);
 				}
@@ -252,12 +248,8 @@ export class Notification {
 	addNotificationToStack(notification: NotificationElement): void {
 		const stack = this.getStack(notification.position);
 		stack.push(notification);
-
-		const activeNotifications = stack.filter(
-			item => !item.classList.contains('z-notification--leaving'),
-		);
-		if (activeNotifications.length > MAX_NOTIFICATIONS_PER_POSITION) {
-			this.removeNotification(activeNotifications[0], { shouldReflow: false });
+		if (stack.length > MAX_NOTIFICATIONS_PER_POSITION) {
+			this.removeNotification(stack[0], { shouldReflow: false });
 		}
 	}
 
