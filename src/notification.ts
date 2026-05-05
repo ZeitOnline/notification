@@ -49,15 +49,12 @@ export class Notification {
 		hasTimer,
 	}: NotificationOptions): void {
 		if (group) {
-			let stack = this.notificationStacks.get(position);
-			if (stack) {
-				const notificationToRemove = [...stack]
-					.reverse()
-					.find(item => item.group === group);
-				if (notificationToRemove) {
-					this.removeNotification(notificationToRemove);
-				}
-			}
+			const notificationsToRemove = this.notificationStacks
+				.get(position)
+				?.filter(item => item.group === group);
+			notificationsToRemove?.forEach(notification => {
+				this.removeNotification(notification, { shouldReflow: false });
+			});
 		}
 
 		const notification = this.createNotification({
