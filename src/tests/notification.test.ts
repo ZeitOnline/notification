@@ -674,4 +674,54 @@ describe('notification accessibility behavior', () => {
 		expect(screen.getByText('Foo notification')).not.toBeNull();
 		expect(screen.getByText('Share notification')).not.toBeNull();
 	});
+
+	it('dispatches notification-removed event when timer expires', async () => {
+		const trigger = document.createElement('button');
+		trigger.textContent = 'Trigger';
+		document.body.append(trigger);
+
+		const eventHandler = vi.fn();
+		document.addEventListener('notification-removed', eventHandler);
+
+		notification.show({
+			element: trigger,
+			message: 'Dispatch event after timer ended',
+			status: 'info',
+			hasTimer: true,
+		});
+
+		await vi.advanceTimersByTimeAsync(notification.notificationTimeout);
+
+		expect(eventHandler).toHaveBeenCalledTimes(1);
+		expect(eventHandler.mock.calls[0][0].detail.originator).toBe(trigger);
+
+		document.removeEventListener('notification-removed', eventHandler);
+	});
+
+	it('dispatches notification-removed event when closed manually', async () => {
+		const trigger = document.createElement('button');
+		trigger.textContent = 'Trigger';
+		document.body.append(trigger);
+
+		const user = userEvent.setup({
+			advanceTimers: vi.advanceTimersByTime,
+		});
+
+		const eventHandler = vi.fn();
+		document.addEventListener('notification-removed', eventHandler);
+
+		notification.show({
+			element: trigger,
+			message: 'Dispatch Event manual with close button',
+			status: 'info',
+			hasTimer: true,
+		});
+
+		await user.click(screen.getByRole('button', { name: 'Meldung schließen', hidden: true }));
+
+		expect(eventHandler).toHaveBeenCalledTimes(1);
+		expect(eventHandler.mock.calls[0][0].detail.originator).toBe(trigger);
+
+		document.removeEventListener('notification-removed', eventHandler);
+	});
 });
