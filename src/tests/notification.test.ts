@@ -724,4 +724,50 @@ describe('notification accessibility behavior', () => {
 
 		document.removeEventListener('notification-removed', eventHandler);
 	});
+
+	it('dispatches events only for notifications whose timer expires, not for replaced ones', async () => {
+		const trigger1 = document.createElement('button');
+		const trigger2 = document.createElement('button');
+		trigger1.textContent = 'Trigger 1';
+		trigger2.textContent = 'Trigger 2';
+		document.body.append(trigger1, trigger2);
+
+		const eventHandler = vi.fn();
+		document.addEventListener('notification-removed', eventHandler);
+
+		// First notification with timer
+		notification.show({
+			element: trigger1,
+			group: 'test-group',
+			message: 'First notification',
+			status: 'info',
+			hasTimer: true,
+		});
+
+		// Advance time partially (not enough to trigger timeout)
+		await vi.advanceTimersByTimeAsync(1000);
+
+		// Second notification replaces the first one (same group)
+		notification.show({
+			element: trigger2,
+			group: 'test-group',
+			message: 'Second notification',
+			status: 'info',
+			hasTimer: true,
+		});
+
+		// First notification was replaced, no event should have been dispatched yet
+		expect(eventHandler).not.toHaveBeenCalled();
+		expect(screen.queryByText('First notification')).toBeNull();
+		expect(screen.getByText('Second notification')).not.toBeNull();
+
+		// Wait for second notification's timer to expire
+		await vi.advanceTimersByTimeAsync(notification.notificationTimeout);
+
+		// Only one event should be dispatched (from second notification)
+		expect(eventHandler).toHaveBeenCalledTimes(1);
+		expect(eventHandler.mock.calls[0][0].detail.originator).toBe(trigger2);
+
+		document.removeEventListener('notification-removed', eventHandler);
+	});
 });
