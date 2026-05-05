@@ -173,6 +173,7 @@ export class Notification {
 		el.timeoutID = null;
 		el.elapsed = 0;
 		el.startedAt = 0;
+		el.remaining = this.notificationTimeout;
 		el.anchorElement = element;
 		return el;
 	}
@@ -221,6 +222,7 @@ export class Notification {
 			);
 			closeButton.onclick = () => {
 				this.setFocus(notification.anchorElement);
+				notification.remaining = 0;
 				this.removeNotification(notification);
 			};
 		}
@@ -364,6 +366,7 @@ export class Notification {
 		notification.startedAt = Date.now();
 		notification.timeoutID = setTimeout(() => {
 			if (!notification.isPaused) {
+				notification.remaining = 0;
 				this.setFocus(notification.anchorElement);
 				this.removeNotification(notification);
 			}
@@ -389,13 +392,13 @@ export class Notification {
 		const resume = () => {
 			notification.isPaused = false;
 			notification.startedAt = Date.now();
-			const remaining = this.notificationTimeout - notification.elapsed;
-			if (remaining <= 0) {
+			notification.remaining = this.notificationTimeout - notification.elapsed;
+			if (notification.remaining <= 0) {
 				this.setFocus(notification.anchorElement);
 				this.removeNotification(notification);
 				return;
 			}
-			this.startTimeout(notification, remaining);
+			this.startTimeout(notification, notification.remaining);
 			if (ring) {
 				ring.style.animationPlayState = 'running';
 			}
@@ -415,7 +418,9 @@ export class Notification {
 			clearTimeout(notification.timeoutID);
 		}
 
-		this.dispatchEvent('notification-removed', notification.anchorElement);
+		if (notification.remaining <= 0) {
+			this.dispatchEvent('notification-removed', notification.anchorElement);
+		}
 		this.finishRemovingNotification(notification, { shouldReflow });
 	}
 
