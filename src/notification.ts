@@ -47,21 +47,15 @@ export class Notification {
 		button,
 		link,
 		hasTimer,
+		onClose,
 	}: NotificationOptions): void {
 		if (group) {
-			let stack = this.notificationStacks.get(position);
-			if (stack) {
-				const notificationToRemove = [...stack]
-					.reverse()
-					.find(
-						item =>
-							item.group === group &&
-							!item.classList.contains('z-notification--leaving'),
-					);
-				if (notificationToRemove) {
-					this.removeNotification(notificationToRemove);
-				}
-			}
+			const notificationsToRemove = this.notificationStacks
+				.get(position)
+				?.filter(item => item.group === group);
+			notificationsToRemove?.forEach(notification => {
+				this.removeNotification(notification, { shouldReflow: false });
+			});
 		}
 
 		const notification = this.createNotification({
@@ -74,6 +68,7 @@ export class Notification {
 			button,
 			link,
 			hasTimer,
+			onClose,
 		});
 
 		this.insertNotification(notification);
@@ -170,16 +165,19 @@ export class Notification {
 		element: HTMLElement,
 		group: string | null,
 		position: NotificationPosition,
+		onClose?: (() => void) | null,
 	): NotificationElement {
 		const el = document.createElement('div') as unknown as NotificationElement;
 		el.setAttribute('popover', 'manual');
 		el.group = group;
 		el.hasTimer = false;
+		el.onClose = onClose;
 		el.isPaused = false;
 		el.position = position;
 		el.timeoutID = null;
 		el.elapsed = 0;
 		el.startedAt = 0;
+		el.remaining = this.notificationTimeout;
 		el.anchorElement = element;
 		return el;
 	}
@@ -194,8 +192,9 @@ export class Notification {
 		button,
 		link,
 		hasTimer,
+		onClose = null,
 	}: NotificationOptions): NotificationElement {
-		const notification = this.createNotificationElement(element, group, position);
+		const notification = this.createNotificationElement(element, group, position, onClose);
 		notification.className = `z-notification z-notification--${position} z-notification--${status}`;
 
 		const buttonClass = 'z-notification__action-btn';
@@ -228,6 +227,7 @@ export class Notification {
 			);
 			closeButton.onclick = () => {
 				this.setFocus(notification.anchorElement);
+				notification.remaining = 0;
 				this.removeNotification(notification);
 			};
 		}
@@ -252,12 +252,8 @@ export class Notification {
 	addNotificationToStack(notification: NotificationElement): void {
 		const stack = this.getStack(notification.position);
 		stack.push(notification);
-
-		const activeNotifications = stack.filter(
-			item => !item.classList.contains('z-notification--leaving'),
-		);
-		if (activeNotifications.length > MAX_NOTIFICATIONS_PER_POSITION) {
-			this.removeNotification(activeNotifications[0], { shouldReflow: false });
+		if (stack.length > MAX_NOTIFICATIONS_PER_POSITION) {
+			this.removeNotification(stack[0], { shouldReflow: false });
 		}
 	}
 
@@ -375,6 +371,7 @@ export class Notification {
 		notification.startedAt = Date.now();
 		notification.timeoutID = setTimeout(() => {
 			if (!notification.isPaused) {
+				notification.remaining = 0;
 				this.setFocus(notification.anchorElement);
 				this.removeNotification(notification);
 			}
@@ -400,13 +397,13 @@ export class Notification {
 		const resume = () => {
 			notification.isPaused = false;
 			notification.startedAt = Date.now();
-			const remaining = this.notificationTimeout - notification.elapsed;
-			if (remaining <= 0) {
+			notification.remaining = this.notificationTimeout - notification.elapsed;
+			if (notification.remaining <= 0) {
 				this.setFocus(notification.anchorElement);
 				this.removeNotification(notification);
 				return;
 			}
-			this.startTimeout(notification, remaining);
+			this.startTimeout(notification, notification.remaining);
 			if (ring) {
 				ring.style.animationPlayState = 'running';
 			}
@@ -425,8 +422,12 @@ export class Notification {
 		if (notification.timeoutID) {
 			clearTimeout(notification.timeoutID);
 		}
-
-		this.dispatchEvent('notification-removed', notification.anchorElement);
+		// when a grouped notification is removed, it can have some time remaining
+		// this happens, when the next notification of the same group appears.
+		// onClose won't get called then.
+		if (notification.remaining <= 0 && notification.onClose) {
+			notification.onClose();
+		}
 		this.finishRemovingNotification(notification, { shouldReflow });
 	}
 
@@ -472,14 +473,6 @@ export class Notification {
 		}
 	}
 
-	dispatchEvent(eventName: string, anchor: HTMLElement | null): void {
-		document.dispatchEvent(
-			new CustomEvent(eventName, {
-				detail: { originator: anchor },
-			}),
-		);
-	}
-
 	removeInlineNotification(container: HTMLElement, inline: InlineNotification): void {
 		if (inline.timeoutID) {
 			clearTimeout(inline.timeoutID);
@@ -507,6 +500,7 @@ const notification: NotificationService = {
 		button,
 		link,
 		hasTimer,
+		onClose,
 	}: NotificationOptions): void {
 		this.notification.show({
 			group,
@@ -518,6 +512,7 @@ const notification: NotificationService = {
 			button,
 			link,
 			hasTimer,
+			onClose,
 		});
 	},
 	debug(): void {

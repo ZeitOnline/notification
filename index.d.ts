@@ -20,6 +20,7 @@ export type NotificationOptions = {
 	button?: ButtonOptions;
 	link?: LinkOptions;
 	hasTimer?: boolean;
+	onClose?: (() => void) | null;
 };
 
 export type InlineNotificationOptions = {
@@ -39,7 +40,9 @@ export interface NotificationElement extends HTMLElement {
 	timeoutID: ReturnType<typeof setTimeout> | null;
 	elapsed: number;
 	startedAt: number;
+	remaining: number;
 	anchorElement: HTMLElement;
+	onClose?: (() => void) | null;
 }
 
 export type NotificationService = {
