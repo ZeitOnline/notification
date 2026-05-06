@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.3.0](https://github.com/ZeitOnline/notification/compare/notification-v2.2.0...notification-v2.3.0) (2026-05-06)
+
+
+### 🚀 Features
+
+* add npm test workflow ([#61](https://github.com/ZeitOnline/notification/issues/61)) ([9d9b321](https://github.com/ZeitOnline/notification/commit/9d9b32152585075f39605d47232e623b5a66fc05))
+
+
+### 🐛 Bug Fixes
+
+* get notification running with merkls list of bookmarks ([#63](https://github.com/ZeitOnline/notification/issues/63)) ([ea548fa](https://github.com/ZeitOnline/notification/commit/ea548fa4de77d755a84ff107e0f180fa4fa23733))
+
 ## [2.2.0](https://github.com/ZeitOnline/notification/compare/notification-v2.1.0...notification-v2.2.0) (2026-04-28)
 
 
