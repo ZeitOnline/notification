@@ -47,6 +47,7 @@ export class Notification {
 		button,
 		link,
 		hasTimer,
+		onClose,
 	}: NotificationOptions): void {
 		if (group) {
 			const notificationsToRemove = this.notificationStacks
@@ -67,6 +68,7 @@ export class Notification {
 			button,
 			link,
 			hasTimer,
+			onClose,
 		});
 
 		this.insertNotification(notification);
@@ -163,11 +165,13 @@ export class Notification {
 		element: HTMLElement,
 		group: string | null,
 		position: NotificationPosition,
+		onClose: Function | null,
 	): NotificationElement {
 		const el = document.createElement('div') as unknown as NotificationElement;
 		el.setAttribute('popover', 'manual');
 		el.group = group;
 		el.hasTimer = false;
+		el.onClose = onClose;
 		el.isPaused = false;
 		el.position = position;
 		el.timeoutID = null;
@@ -188,8 +192,9 @@ export class Notification {
 		button,
 		link,
 		hasTimer,
+		onClose = null,
 	}: NotificationOptions): NotificationElement {
-		const notification = this.createNotificationElement(element, group, position);
+		const notification = this.createNotificationElement(element, group, position, onClose);
 		notification.className = `z-notification z-notification--${position} z-notification--${status}`;
 
 		const buttonClass = 'z-notification__action-btn';
@@ -417,9 +422,12 @@ export class Notification {
 		if (notification.timeoutID) {
 			clearTimeout(notification.timeoutID);
 		}
-
-		if (notification.remaining <= 0) {
-			this.dispatchEvent('notification-removed', notification.anchorElement);
+		// when a grouped notification is removed, it can have some time remaining
+		// this happens, when the next notification of the same group appears.
+		// onClose won't get called then.
+		if (notification.remaining <= 0 && notification.onClose) {
+			console.log('Notification: close callback', notification, notification.onClose);
+			notification.onClose();
 		}
 		this.finishRemovingNotification(notification, { shouldReflow });
 	}
@@ -501,6 +509,7 @@ const notification: NotificationService = {
 		button,
 		link,
 		hasTimer,
+		onClose,
 	}: NotificationOptions): void {
 		this.notification.show({
 			group,
@@ -512,6 +521,7 @@ const notification: NotificationService = {
 			button,
 			link,
 			hasTimer,
+			onClose,
 		});
 	},
 	debug(): void {
