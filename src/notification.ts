@@ -426,7 +426,6 @@ export class Notification {
 		// this happens, when the next notification of the same group appears.
 		// onClose won't get called then.
 		if (notification.remaining <= 0 && notification.onClose) {
-			console.log('Notification: close callback', notification, notification.onClose);
 			notification.onClose();
 		}
 		this.finishRemovingNotification(notification, { shouldReflow });
@@ -472,14 +471,6 @@ export class Notification {
 		if (stack.length === 0) {
 			this.notificationStacks.delete(notification.position);
 		}
-	}
-
-	dispatchEvent(eventName: string, anchor: HTMLElement | null): void {
-		document.dispatchEvent(
-			new CustomEvent(eventName, {
-				detail: { originator: anchor },
-			}),
-		);
 	}
 
 	removeInlineNotification(container: HTMLElement, inline: InlineNotification): void {
