@@ -42,7 +42,7 @@ export interface NotificationElement extends HTMLElement {
 	startedAt: number;
 	remaining: number;
 	anchorElement: HTMLElement;
-	onClose?: Function | null;
+	onClose?: (() => void) | null;
 }
 
 export type NotificationService = {

@@ -165,7 +165,7 @@ export class Notification {
 		element: HTMLElement,
 		group: string | null,
 		position: NotificationPosition,
-		onClose: Function | null,
+		onClose?: (() => void) | null,
 	): NotificationElement {
 		const el = document.createElement('div') as unknown as NotificationElement;
 		el.setAttribute('popover', 'manual');
