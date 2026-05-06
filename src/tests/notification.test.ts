@@ -674,4 +674,71 @@ describe('notification accessibility behavior', () => {
 		expect(screen.getByText('Foo notification')).not.toBeNull();
 		expect(screen.getByText('Share notification')).not.toBeNull();
 	});
+
+	it('calls onClose callback when timer expires', async () => {
+		const onCloseMock = vi.fn();
+
+		notification.show({
+			message: 'Notification with onClose',
+			status: 'info',
+			hasTimer: true,
+			onClose: onCloseMock,
+		});
+
+		expect(onCloseMock).not.toHaveBeenCalled();
+
+		await vi.advanceTimersByTimeAsync(notification.notificationTimeout);
+
+		expect(onCloseMock).toHaveBeenCalledTimes(1);
+	});
+
+	it('calls onClose callback when closed manually', async () => {
+		const onCloseMock = vi.fn();
+
+		const user = userEvent.setup({
+			advanceTimers: vi.advanceTimersByTime,
+		});
+
+		notification.show({
+			message: 'Notification with onClose manual',
+			status: 'info',
+			hasTimer: true,
+			onClose: onCloseMock,
+		});
+
+		await user.click(screen.getByRole('button', { name: 'Meldung schließen', hidden: true }));
+
+		expect(onCloseMock).toHaveBeenCalledTimes(1);
+	});
+
+	it('does not call onClose when notification is replaced by same group', async () => {
+		const onCloseMock = vi.fn();
+
+		notification.show({
+			group: 'test-group',
+			message: 'First notification',
+			status: 'info',
+			hasTimer: true,
+			onClose: onCloseMock,
+		});
+
+		await vi.advanceTimersByTimeAsync(1000);
+
+		notification.show({
+			group: 'test-group',
+			message: 'Second notification',
+			status: 'info',
+			hasTimer: true,
+		});
+
+		// First notification was replaced, onClose should not have been called
+		expect(onCloseMock).not.toHaveBeenCalled();
+		expect(screen.queryByText('First notification')).toBeNull();
+		expect(screen.getByText('Second notification')).not.toBeNull();
+
+		await vi.advanceTimersByTimeAsync(notification.notificationTimeout);
+
+		// Still not called since first was replaced
+		expect(onCloseMock).not.toHaveBeenCalled();
+	});
 });
