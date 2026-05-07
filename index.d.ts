@@ -1,10 +1,12 @@
-export type ButtonOptions = {
+type TextOptions = {
 	text: string;
+};
+
+export type ButtonOptions = TextOptions & {
 	onClick: () => void;
 };
 
-export type LinkOptions = {
-	text: string;
+export type LinkOptions = TextOptions & {
 	href: string;
 };
 
