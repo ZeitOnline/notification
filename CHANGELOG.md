@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.1](https://github.com/ZeitOnline/notification/compare/notification-v2.3.0...notification-v2.3.1) (2026-05-07)
+
+
+### 📝 Other Changes
+
+* consolidate text type for ButtonOptions and LinkOptions ([#64](https://github.com/ZeitOnline/notification/issues/64)) ([0ef26b0](https://github.com/ZeitOnline/notification/commit/0ef26b04d9b2f813fef7d554649fbcaac955639c))
+
 ## [2.3.0](https://github.com/ZeitOnline/notification/compare/notification-v2.2.0...notification-v2.3.0) (2026-05-06)
 
 
