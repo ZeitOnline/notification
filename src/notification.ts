@@ -409,6 +409,10 @@ export class Notification {
 				if (messageEl) {
 					messageEl.textContent = 'Neuer Tab wird geöffnet …';
 				}
+				const closeButton = notification.querySelector(
+					'.z-notification__close-btn',
+				) as HTMLButtonElement | null;
+				closeButton?.focus();
 				actionButton.remove();
 				setTimeout(() => {
 					window.open(settingsHref, '_blank', 'noopener,noreferrer');
