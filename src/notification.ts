@@ -381,15 +381,19 @@ export class Notification {
 	}
 
 	getStoredDuration(): number | null {
-		const value = localStorage.getItem('z.notification.duration');
-		if (!value) {
+		try {
+			const value = localStorage.getItem('z.notification.duration');
+			if (!value) {
+				return null;
+			}
+			const parsed = Number(value);
+			if (isNaN(parsed) || parsed <= 0) {
+				return null;
+			}
+			return parsed;
+		} catch {
 			return null;
 		}
-		const parsed = Number(value);
-		if (isNaN(parsed) || parsed <= 0) {
-			return null;
-		}
-		return parsed;
 	}
 
 	showDurationHint(anchorElement: HTMLElement, settingsHref: string, position: NotificationPosition): NotificationElement {
