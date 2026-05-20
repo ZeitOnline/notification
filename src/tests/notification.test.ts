@@ -692,6 +692,29 @@ describe('notification accessibility behavior', () => {
 		expect(onCloseMock).toHaveBeenCalledTimes(1);
 	});
 
+	it('does not restore focus to the trigger when timer expires', async () => {
+		const trigger = document.createElement('button');
+		const nextFocusTarget = document.createElement('button');
+
+		trigger.textContent = 'Open notification';
+		nextFocusTarget.textContent = 'Keep focus here';
+		document.body.append(trigger, nextFocusTarget);
+		trigger.focus();
+
+		notification.show({
+			element: trigger,
+			message: 'Notification with timer',
+			status: 'info',
+			hasTimer: true,
+		});
+		nextFocusTarget.focus();
+
+		await vi.advanceTimersByTimeAsync(notification.notificationTimeout);
+
+		expect(screen.queryByText('Notification with timer')).toBeNull();
+		expect(document.activeElement).toBe(nextFocusTarget);
+	});
+
 	it('calls onClose callback when closed manually', async () => {
 		const onCloseMock = vi.fn();
 
