@@ -23,6 +23,7 @@ export type NotificationOptions = {
 	link?: LinkOptions;
 	hasTimer?: boolean;
 	onClose?: (() => void) | null;
+	settingsHref?: string;
 };
 
 export type InlineNotificationOptions = {
@@ -45,6 +46,7 @@ export interface NotificationElement extends HTMLElement {
 	remaining: number;
 	anchorElement: HTMLElement;
 	onClose?: (() => void) | null;
+	companionNotification?: NotificationElement | null;
 }
 
 export type NotificationService = {
