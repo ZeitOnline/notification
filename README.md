@@ -104,7 +104,7 @@ notification.show({
 - Auto-dismiss after 4 seconds, with pause and resume on pointer hover, when timer property is set to true.
 - Timed notifications can emit the `notification-removed` custom event when they close.
 - Stacking of up to 3 notifications per position at the same time.
-- Optional `settingsHref` on timed notifications: shows a companion notification with a "Konfigurieren" button that opens the auto-dismiss settings page in a new tab.
+- Optional `settingsHref` on timed notifications: when no stored auto-dismiss duration preference exists yet, shows a companion notification with a "Konfigurieren" button that opens the auto-dismiss settings page in a new tab.
 
 ## Updates
 
