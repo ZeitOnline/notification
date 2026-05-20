@@ -20,6 +20,7 @@ import type {
 export const MAX_NOTIFICATIONS_PER_POSITION = 3;
 export const OFFSET = 24;
 export const GAP_STACKING = 8;
+const HINT_DISMISSED_KEY = 'z.notification.hint';
 
 export class Notification {
 	static instance: Notification | undefined;
@@ -83,7 +84,7 @@ export class Notification {
 		this.positionNotifications(position);
 
 		if (notification.hasTimer) {
-			if (storedDuration === null && settingsHref) {
+			if (storedDuration === null && settingsHref && !this.isDurationHintDismissed()) {
 				notification.companionNotification = this.showDurationHint(
 					notification.anchorElement,
 					settingsHref,
@@ -380,6 +381,22 @@ export class Notification {
 		}
 	}
 
+	isDurationHintDismissed(): boolean {
+		try {
+			return localStorage.getItem(HINT_DISMISSED_KEY) === '1';
+		} catch {
+			return false;
+		}
+	}
+
+	dismissDurationHint(): void {
+		try {
+			localStorage.setItem(HINT_DISMISSED_KEY, '1');
+		} catch {
+			// localStorage not available
+		}
+	}
+
 	getStoredDuration(): number | null {
 		try {
 			const value = localStorage.getItem('z.notification.duration');
@@ -402,6 +419,7 @@ export class Notification {
 			position,
 			message: 'Automatisch ausblenden',
 			button: { text: 'Konfigurieren' },
+			onClose: () => this.dismissDurationHint(),
 		});
 
 		const actionButton = notification.querySelector(
