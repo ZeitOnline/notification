@@ -58,6 +58,11 @@ export class Notification {
 			});
 		}
 
+		const storedDuration = hasTimer ? this.getStoredDuration() : null;
+		if (storedDuration !== null) {
+			this.notificationTimeout = storedDuration;
+		}
+
 		const notification = this.createNotification({
 			element,
 			position,
@@ -365,6 +370,18 @@ export class Notification {
 			container.style.left = 'auto';
 			container.style.right = 'var(--z-gap)';
 		}
+	}
+
+	getStoredDuration(): number | null {
+		const value = localStorage.getItem('z.notification.duration');
+		if (!value) {
+			return null;
+		}
+		const parsed = Number(value);
+		if (isNaN(parsed) || parsed <= 0) {
+			return null;
+		}
+		return parsed;
 	}
 
 	startTimeout(notification: NotificationElement, duration = this.notificationTimeout): void {
