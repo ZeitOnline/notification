@@ -372,7 +372,6 @@ export class Notification {
 		notification.timeoutID = setTimeout(() => {
 			if (!notification.isPaused) {
 				notification.remaining = 0;
-				this.setFocus(notification.anchorElement);
 				this.removeNotification(notification);
 			}
 		}, duration);
@@ -399,7 +398,6 @@ export class Notification {
 			notification.startedAt = Date.now();
 			notification.remaining = this.notificationTimeout - notification.elapsed;
 			if (notification.remaining <= 0) {
-				this.setFocus(notification.anchorElement);
 				this.removeNotification(notification);
 				return;
 			}
