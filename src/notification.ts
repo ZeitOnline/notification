@@ -83,7 +83,14 @@ export class Notification {
 		this.positionNotifications(position);
 
 		if (notification.hasTimer) {
-			this.startTimeout(notification);
+			if (storedDuration === null && settingsHref) {
+				notification.companionNotification = this.showDurationHint(
+					notification.anchorElement,
+					settingsHref,
+					notification.position,
+				);
+			}
+			this.startTimeout(notification, notification.remaining);
 		}
 	}
 
@@ -496,6 +503,11 @@ export class Notification {
 			// notification is already removed from the DOM
 		}
 		notification.remove();
+
+		if (notification.companionNotification) {
+			this.removeNotification(notification.companionNotification);
+			notification.companionNotification = null;
+		}
 
 		const stack = this.notificationStacks.get(notification.position);
 
