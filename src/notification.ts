@@ -20,12 +20,19 @@ import type {
 export const MAX_NOTIFICATIONS_PER_POSITION = 3;
 export const OFFSET = 24;
 export const GAP_STACKING = 8;
+export const MIN_ANNOUNCEMENT_DELAY = 1500;
+export const MAX_ANNOUNCEMENT_DELAY = 4000;
+export const ANNOUNCEMENT_DELAY_PER_CHARACTER = 80;
+type LiveRegionPoliteness = 'polite' | 'assertive';
 
 export class Notification {
 	static instance: Notification | undefined;
 	originatorCounter = 0;
 	notificationStacks!: Map<NotificationPosition, NotificationElement[]>;
 	container!: HTMLDivElement | null;
+	liveRegions!: Map<LiveRegionPoliteness, HTMLDivElement>;
+	announcementQueues!: Map<LiveRegionPoliteness, string[]>;
+	announcementQueueRunning!: Map<LiveRegionPoliteness, boolean>;
 	notificationTimeout!: number;
 
 	constructor() {
@@ -35,6 +42,9 @@ export class Notification {
 		Notification.instance = this;
 		this.notificationStacks = new Map();
 		this.container = null;
+		this.liveRegions = new Map();
+		this.announcementQueues = new Map();
+		this.announcementQueueRunning = new Map();
 		this.notificationTimeout = 4000;
 	}
 	show({
@@ -72,6 +82,7 @@ export class Notification {
 		});
 
 		this.insertNotification(notification);
+		this.announceNotification(message, status);
 
 		this.addNotificationToStack(notification);
 		this.positionNotifications(position);
@@ -157,6 +168,68 @@ export class Notification {
 		return container;
 	}
 
+	createLiveRegion(politeness: LiveRegionPoliteness): HTMLDivElement {
+		const existingRegion = this.liveRegions.get(politeness);
+		if (existingRegion?.isConnected) return existingRegion;
+
+		let region = document.querySelector(
+			`.z-notification-live-region--${politeness}`,
+		) as HTMLDivElement | null;
+
+		if (!region) {
+			region = document.createElement('div');
+			region.className = `z-notification-live-region z-notification-live-region--${politeness}`;
+			region.setAttribute('aria-atomic', 'true');
+			region.setAttribute('aria-live', politeness);
+			region.setAttribute('role', politeness === 'assertive' ? 'alert' : 'status');
+			document.body.insertAdjacentElement('beforeend', region);
+		}
+
+		this.liveRegions.set(politeness, region);
+		return region;
+	}
+
+	announceNotification(message: string, status: NotificationOptions['status'] = 'info'): void {
+		const politeness: LiveRegionPoliteness = status === 'error' ? 'assertive' : 'polite';
+		const queue = this.announcementQueues.get(politeness) ?? [];
+
+		queue.push(message);
+		this.announcementQueues.set(politeness, queue);
+
+		if (!this.announcementQueueRunning.get(politeness)) {
+			this.processAnnouncementQueue(politeness);
+		}
+	}
+
+	processAnnouncementQueue(politeness: LiveRegionPoliteness): void {
+		const queue = this.announcementQueues.get(politeness) ?? [];
+		const message = queue.shift();
+
+		if (!message) {
+			this.announcementQueueRunning.set(politeness, false);
+			return;
+		}
+
+		this.announcementQueueRunning.set(politeness, true);
+		const region = this.createLiveRegion(politeness);
+		region.textContent = '';
+
+		setTimeout(() => {
+			region.textContent = message;
+
+			setTimeout(() => {
+				this.processAnnouncementQueue(politeness);
+			}, this.getAnnouncementDelay(message));
+		}, 50);
+	}
+
+	getAnnouncementDelay(message: string): number {
+		return Math.min(
+			MAX_ANNOUNCEMENT_DELAY,
+			Math.max(MIN_ANNOUNCEMENT_DELAY, message.length * ANNOUNCEMENT_DELAY_PER_CHARACTER),
+		);
+	}
+
 	/**
 	 * Creates a div element with NotificationElement properties initialized.
 	 * This allows us to attach custom properties (elapsed, isPaused, etc.) to the element.
@@ -201,7 +274,7 @@ export class Notification {
 
 		// prettier-ignore
 		notification.innerHTML = this.getSvgIcon(icon) +
-			(message ? `<span aria-live="polite" class="z-notification__message">${message}</span>` : '') +
+			(message ? `<span class="z-notification__message">${message}</span>` : '') +
 			(link ? `<a href="${link.href}" class="${buttonClass}">${link.text}</a>` : '') +
 			(!link && button ? `<button class="${buttonClass}">${button.text}</button>` : '') +
 			this.getCloseButtonHTML(!!hasTimer);
