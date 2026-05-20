@@ -3,8 +3,11 @@ import { screen } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 
 import {
+	ANNOUNCEMENT_DELAY_PER_CHARACTER,
 	GAP_STACKING,
+	MAX_ANNOUNCEMENT_DELAY,
 	MAX_NOTIFICATIONS_PER_POSITION,
+	MIN_ANNOUNCEMENT_DELAY,
 	Notification,
 	OFFSET,
 } from '../notification';
@@ -89,9 +92,17 @@ describe('notification accessibility behavior', () => {
 		const notificationMessage = screen.getByText(message);
 		const closeButton = screen.getByRole('button', { name: 'Meldung schließen' });
 		const actionButton = screen.getByRole('button', { name: 'Retry' });
+		const liveRegion = document.querySelector('.z-notification-live-region--assertive');
 
 		expect(notificationMessage).not.toBeNull();
 		expect(notificationMessage.textContent).toBe(message);
+		expect(notificationMessage.getAttribute('aria-live')).toBeNull();
+		expect(liveRegion?.getAttribute('role')).toBe('alert');
+		expect(liveRegion?.getAttribute('aria-live')).toBe('assertive');
+		expect(liveRegion?.getAttribute('aria-atomic')).toBe('true');
+
+		await vi.advanceTimersByTimeAsync(50);
+		expect(liveRegion?.textContent).toBe(message);
 
 		await user.tab();
 		expect(document.activeElement).toBe(actionButton);
@@ -110,11 +121,17 @@ describe('notification accessibility behavior', () => {
 			},
 		});
 
+		const liveRegion = document.querySelector('.z-notification-live-region--polite');
 		const user = userEvent.setup({
 			advanceTimers: vi.advanceTimersByTime,
 		});
 		const closeButton = screen.getByRole('button', { name: 'Meldung schließen' });
 		const actionLink = screen.getByRole('link', { name: 'Open docs' });
+
+		expect(liveRegion?.getAttribute('role')).toBe('status');
+		expect(liveRegion?.getAttribute('aria-live')).toBe('polite');
+		await vi.advanceTimersByTimeAsync(50);
+		expect(liveRegion?.textContent).toBe('A new version of notification is available.');
 
 		await user.tab();
 		expect(document.activeElement).toBe(actionLink);
@@ -122,6 +139,36 @@ describe('notification accessibility behavior', () => {
 		await user.tab();
 		expect(document.activeElement).toBe(closeButton);
 		expect(actionLink.getAttribute('href')).toBe('https://example.com/docs');
+	});
+
+	it('queues top-right announcements with the same politeness instead of replacing earlier messages', async () => {
+		notification.show({
+			message: 'First saved toast.',
+			status: 'success',
+		});
+		notification.show({
+			message: 'Second saved toast.',
+			status: 'success',
+		});
+
+		const liveRegion = document.querySelector('.z-notification-live-region--polite');
+
+		await vi.advanceTimersByTimeAsync(50);
+		expect(liveRegion?.textContent).toBe('First saved toast.');
+
+		await vi.advanceTimersByTimeAsync(MIN_ANNOUNCEMENT_DELAY);
+		expect(liveRegion?.textContent).toBe('');
+
+		await vi.advanceTimersByTimeAsync(50);
+		expect(liveRegion?.textContent).toBe('Second saved toast.');
+	});
+
+	it('keeps queued announcements visible based on message length with lower and upper bounds', () => {
+		expect(notification.getAnnouncementDelay('Saved.')).toBe(MIN_ANNOUNCEMENT_DELAY);
+		expect(notification.getAnnouncementDelay('A'.repeat(30))).toBe(
+			30 * ANNOUNCEMENT_DELAY_PER_CHARACTER,
+		);
+		expect(notification.getAnnouncementDelay('A'.repeat(100))).toBe(MAX_ANNOUNCEMENT_DELAY);
 	});
 
 	it('inserts anchored top-right notifications next to the triggering element', async () => {
@@ -324,7 +371,7 @@ describe('notification accessibility behavior', () => {
 
 		await vi.advanceTimersByTimeAsync(notification.notificationTimeout);
 
-		expect(screen.queryByText(message)).toBeNull();
+		expect(document.querySelector('.z-notification__message')?.textContent).toBeUndefined();
 	});
 
 	it('pauses and resumes the top-right notification timeout on pointer hover', async () => {
@@ -346,14 +393,14 @@ describe('notification accessibility behavior', () => {
 		notificationElement?.dispatchEvent(new Event('pointerenter'));
 		await vi.advanceTimersByTimeAsync(4000);
 
-		expect(screen.getByText(message)).toBe(notificationMessage);
+		expect(document.querySelector('.z-notification__message')).toBe(notificationMessage);
 
 		notificationElement?.dispatchEvent(new Event('pointerleave'));
 		await vi.advanceTimersByTimeAsync(1999);
-		expect(screen.getByText(message)).toBe(notificationMessage);
+		expect(document.querySelector('.z-notification__message')).toBe(notificationMessage);
 
 		await vi.advanceTimersByTimeAsync(1);
-		expect(screen.queryByText(message)).toBeNull();
+		expect(document.querySelector('.z-notification__message')).toBeNull();
 	});
 
 	it('invokes the action callback and removes the notification on click', async () => {
@@ -733,8 +780,12 @@ describe('notification accessibility behavior', () => {
 
 		// First notification was replaced, onClose should not have been called
 		expect(onCloseMock).not.toHaveBeenCalled();
-		expect(screen.queryByText('First notification')).toBeNull();
-		expect(screen.getByText('Second notification')).not.toBeNull();
+		const visibleMessages = Array.from(
+			document.querySelectorAll('.z-notification__message'),
+			message => message.textContent,
+		);
+		expect(visibleMessages).not.toContain('First notification');
+		expect(visibleMessages).toContain('Second notification');
 
 		await vi.advanceTimersByTimeAsync(notification.notificationTimeout);
 
