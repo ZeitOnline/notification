@@ -384,6 +384,41 @@ export class Notification {
 		return parsed;
 	}
 
+	showDurationHint(anchorElement: HTMLElement, settingsHref: string, position: NotificationPosition): NotificationElement {
+		const notification = this.createNotification({
+			element: anchorElement,
+			position,
+			message: 'Automatisch ausblenden',
+			button: { text: 'Konfigurieren', onClick: () => {} },
+		});
+
+		const actionButton = notification.querySelector(
+			'.z-notification__action-btn',
+		) as HTMLButtonElement | null;
+		if (actionButton) {
+			actionButton.onclick = () => {
+				const messageEl = notification.querySelector('.z-notification__message');
+				if (messageEl) {
+					messageEl.textContent = 'Neuer Tab wird geöffnet …';
+				}
+				actionButton.remove();
+				setTimeout(() => {
+					window.open(settingsHref, '_blank', 'noopener,noreferrer');
+				}, 2000);
+			};
+		}
+
+		this.insertNotification(notification);
+		const stack = this.getStack(notification.position);
+		if (notification.position === 'bottom') {
+			stack.push(notification);
+		} else {
+			stack.unshift(notification);
+		}
+		this.positionNotifications(notification.position);
+		return notification;
+	}
+
 	startTimeout(notification: NotificationElement, duration = this.notificationTimeout): void {
 		notification.startedAt = Date.now();
 		notification.timeoutID = setTimeout(() => {
