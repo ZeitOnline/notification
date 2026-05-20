@@ -741,4 +741,51 @@ describe('notification accessibility behavior', () => {
 		// Still not called since first was replaced
 		expect(onCloseMock).not.toHaveBeenCalled();
 	});
+
+	it('shows a companion notification when settingsHref is provided', () => {
+		notification.show({
+			message: 'Article saved.',
+			hasTimer: true,
+			settingsHref: 'https://example.com/settings',
+		});
+
+		expect(document.querySelectorAll('.z-notification')).toHaveLength(2);
+		expect(screen.getByText('Automatisch ausblenden')).not.toBeNull();
+	});
+
+	it('replaces the companion message and removes the button when Konfigurieren is clicked', async () => {
+		const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+
+		notification.show({
+			message: 'Article saved.',
+			status: 'success',
+			hasTimer: true,
+			settingsHref: 'https://example.com/settings',
+		});
+
+		const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+		await user.click(screen.getByRole('button', { name: 'Konfigurieren', hidden: true }));
+
+		expect(screen.getByText('Neuer Tab wird geöffnet …')).not.toBeNull();
+		expect(screen.queryByRole('button', { name: 'Konfigurieren', hidden: true })).toBeNull();
+
+		await vi.advanceTimersByTimeAsync(2000);
+		expect(openSpy).toHaveBeenCalledWith('https://example.com/settings', '_blank', 'noopener,noreferrer');
+
+		openSpy.mockRestore();
+	});
+
+	it('does not show a companion notification when a stored duration already exists', () => {
+		vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('3000');
+
+		notification.show({
+			message: 'Article saved.',
+			status: 'success',
+			hasTimer: true,
+			settingsHref: 'https://example.com/settings',
+		});
+
+		expect(document.querySelectorAll('.z-notification')).toHaveLength(1);
+		expect(screen.queryByText('Automatisch ausblenden')).toBeNull();
+	});
 });
