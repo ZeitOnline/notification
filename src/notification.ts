@@ -397,7 +397,7 @@ export class Notification {
 			element: anchorElement,
 			position,
 			message: 'Automatisch ausblenden',
-			button: { text: 'Konfigurieren', onClick: () => {} },
+			button: { text: 'Konfigurieren' },
 		});
 
 		const actionButton = notification.querySelector(
@@ -421,7 +421,12 @@ export class Notification {
 		if (notification.position === 'bottom') {
 			stack.push(notification);
 		} else {
-			stack.unshift(notification);
+			stack.splice(stack.length - 1, 0, notification);
+		}
+		// Companion is general UI scaffolding, not a user-event notification,
+		// so it gets a dedicated extra slot instead of evicting an older notification.
+		if (stack.length > MAX_NOTIFICATIONS_PER_POSITION + 1) {
+			this.removeNotification(stack[0], { shouldReflow: false });
 		}
 		this.positionNotifications(notification.position);
 		return notification;
