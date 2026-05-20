@@ -399,15 +399,8 @@ export class Notification {
 
 	getStoredDuration(): number | null {
 		try {
-			const value = localStorage.getItem('z.notification.duration');
-			if (!value) {
-				return null;
-			}
-			const parsed = Number(value);
-			if (isNaN(parsed) || parsed <= 0) {
-				return null;
-			}
-			return parsed;
+			const parsed = Number(localStorage.getItem('z.notification.duration'));
+			return !isNaN(parsed) && parsed > 0 ? parsed : null;
 		} catch {
 			return null;
 		}
@@ -431,14 +424,9 @@ export class Notification {
 				if (messageEl) {
 					messageEl.textContent = 'Neuer Tab wird geöffnet …';
 				}
-				const closeButton = notification.querySelector(
-					'.z-notification__close-btn',
-				) as HTMLButtonElement | null;
-				closeButton?.focus();
+				notification.querySelector<HTMLButtonElement>('.z-notification__close-btn')?.focus();
 				actionButton.remove();
-				setTimeout(() => {
-					window.open(settingsHref, '_blank', 'noopener,noreferrer');
-				}, 2000);
+				setTimeout(() => window.open(settingsHref, '_blank', 'noopener,noreferrer'), 2000);
 			};
 		}
 
