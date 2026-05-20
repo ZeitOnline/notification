@@ -48,6 +48,7 @@ export class Notification {
 		link,
 		hasTimer,
 		onClose,
+		settingsHref,
 	}: NotificationOptions): void {
 		if (group) {
 			const notificationsToRemove = this.notificationStacks
@@ -553,6 +554,7 @@ const notification: NotificationService = {
 		link,
 		hasTimer,
 		onClose,
+		settingsHref,
 	}: NotificationOptions): void {
 		this.notification.show({
 			group,
@@ -565,6 +567,7 @@ const notification: NotificationService = {
 			link,
 			hasTimer,
 			onClose,
+			settingsHref,
 		});
 	},
 	debug(): void {
