@@ -3,8 +3,11 @@ import { screen } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 
 import {
+	ANNOUNCEMENT_DELAY_PER_CHARACTER,
 	GAP_STACKING,
+	MAX_ANNOUNCEMENT_DELAY,
 	MAX_NOTIFICATIONS_PER_POSITION,
+	MIN_ANNOUNCEMENT_DELAY,
 	Notification,
 	OFFSET,
 } from '../notification';
@@ -47,7 +50,7 @@ describe('notification accessibility behavior', () => {
 		Notification.instance = undefined;
 	});
 
-	it('keeps focus on the trigger and exposes inline messages through a polite live region', async () => {
+	it('keeps focus on the trigger and exposes inline messages through the shared polite live region', async () => {
 		const trigger = document.createElement('button');
 		trigger.textContent = 'Copy link';
 		document.body.append(trigger);
@@ -62,13 +65,18 @@ describe('notification accessibility behavior', () => {
 		await showInlinePromise;
 
 		const inlineMessage = document.querySelector('.z-notification-inline');
+		const liveRegion = document.querySelector('.z-notification-live-region--polite');
 
 		expect(document.activeElement).toBe(trigger);
 		expect(inlineMessage).not.toBeNull();
-		expect(inlineMessage?.getAttribute('role')).toBe('status');
-		expect(inlineMessage?.getAttribute('aria-live')).toBe('polite');
-		expect(inlineMessage?.getAttribute('aria-atomic')).toBe('true');
+		expect(inlineMessage?.getAttribute('role')).toBeNull();
+		expect(inlineMessage?.getAttribute('aria-live')).toBeNull();
+		expect(inlineMessage?.getAttribute('aria-atomic')).toBeNull();
 		expect((inlineMessage as HTMLElement | null)?.innerText).toBe('Link copied to clipboard.');
+		expect(liveRegion?.getAttribute('role')).toBe('status');
+		expect(liveRegion?.getAttribute('aria-live')).toBe('polite');
+		expect(liveRegion?.getAttribute('aria-atomic')).toBe('true');
+		expect(liveRegion?.textContent).toBe('Link copied to clipboard.');
 	});
 
 	it('keeps top-right notification controls in rendered keyboard order and exposes an assertive live message', async () => {
@@ -89,9 +97,17 @@ describe('notification accessibility behavior', () => {
 		const notificationMessage = screen.getByText(message);
 		const closeButton = screen.getByRole('button', { name: 'Meldung schließen' });
 		const actionButton = screen.getByRole('button', { name: 'Retry' });
+		const liveRegion = document.querySelector('.z-notification-live-region--assertive');
 
 		expect(notificationMessage).not.toBeNull();
 		expect(notificationMessage.textContent).toBe(message);
+		expect(notificationMessage.getAttribute('aria-live')).toBeNull();
+		expect(liveRegion?.getAttribute('role')).toBe('alert');
+		expect(liveRegion?.getAttribute('aria-live')).toBe('assertive');
+		expect(liveRegion?.getAttribute('aria-atomic')).toBe('true');
+
+		await vi.advanceTimersByTimeAsync(50);
+		expect(liveRegion?.textContent).toBe(message);
 
 		await user.tab();
 		expect(document.activeElement).toBe(actionButton);
@@ -110,11 +126,17 @@ describe('notification accessibility behavior', () => {
 			},
 		});
 
+		const liveRegion = document.querySelector('.z-notification-live-region--polite');
 		const user = userEvent.setup({
 			advanceTimers: vi.advanceTimersByTime,
 		});
 		const closeButton = screen.getByRole('button', { name: 'Meldung schließen' });
 		const actionLink = screen.getByRole('link', { name: 'Open docs' });
+
+		expect(liveRegion?.getAttribute('role')).toBe('status');
+		expect(liveRegion?.getAttribute('aria-live')).toBe('polite');
+		await vi.advanceTimersByTimeAsync(50);
+		expect(liveRegion?.textContent).toBe('A new version of notification is available.');
 
 		await user.tab();
 		expect(document.activeElement).toBe(actionLink);
@@ -122,6 +144,92 @@ describe('notification accessibility behavior', () => {
 		await user.tab();
 		expect(document.activeElement).toBe(closeButton);
 		expect(actionLink.getAttribute('href')).toBe('https://example.com/docs');
+	});
+
+	it('queues top-right announcements with the same politeness instead of replacing earlier messages', async () => {
+		notification.show({
+			message: 'First saved toast.',
+			status: 'success',
+		});
+		notification.show({
+			message: 'Second saved toast.',
+			status: 'success',
+		});
+
+		const liveRegion = document.querySelector('.z-notification-live-region--polite');
+
+		await vi.advanceTimersByTimeAsync(50);
+		expect(liveRegion?.textContent).toBe('First saved toast.');
+
+		await vi.advanceTimersByTimeAsync(MIN_ANNOUNCEMENT_DELAY);
+		expect(liveRegion?.textContent).toBe('');
+
+		await vi.advanceTimersByTimeAsync(50);
+		expect(liveRegion?.textContent).toBe('Second saved toast.');
+	});
+
+	it('keeps live regions after body-level notifications when regions are reused', async () => {
+		notification.show({
+			message: 'First saved toast.',
+			status: 'success',
+		});
+
+		await vi.advanceTimersByTimeAsync(50);
+
+		notification.show({
+			message: 'Second saved toast.',
+			status: 'success',
+		});
+
+		const bodyChildren = Array.from(document.body.children);
+		const liveRegion = document.querySelector('.z-notification-live-region--polite');
+		const lastNotification = bodyChildren.findLast(child =>
+			child.classList.contains('z-notification'),
+		);
+
+		expect(liveRegion).not.toBeNull();
+		expect(lastNotification).not.toBeNull();
+		expect(bodyChildren.indexOf(liveRegion as Element)).toBeGreaterThan(
+			bodyChildren.indexOf(lastNotification as Element),
+		);
+		expect(
+			document.body.lastElementChild?.classList.contains('z-notification-live-region'),
+		).toBe(true);
+	});
+
+	it('keeps live regions after inline notification containers', async () => {
+		const trigger = document.createElement('button');
+		trigger.textContent = 'Copy link';
+		document.body.append(trigger);
+
+		const showInlinePromise = notification.showInline({
+			element: trigger,
+			message: 'Link copied to clipboard.',
+		});
+
+		await vi.advanceTimersByTimeAsync(50);
+		await showInlinePromise;
+
+		const bodyChildren = Array.from(document.body.children);
+		const inlineContainer = document.querySelector('.z-notification-inline');
+		const liveRegion = document.querySelector('.z-notification-live-region--polite');
+
+		expect(inlineContainer).not.toBeNull();
+		expect(liveRegion).not.toBeNull();
+		expect(bodyChildren.indexOf(liveRegion as Element)).toBeGreaterThan(
+			bodyChildren.indexOf(inlineContainer as Element),
+		);
+		expect(
+			document.body.lastElementChild?.classList.contains('z-notification-live-region'),
+		).toBe(true);
+	});
+
+	it('keeps queued announcements visible based on message length with lower and upper bounds', () => {
+		expect(notification.getAnnouncementDelay('Saved.')).toBe(MIN_ANNOUNCEMENT_DELAY);
+		expect(notification.getAnnouncementDelay('A'.repeat(30))).toBe(
+			30 * ANNOUNCEMENT_DELAY_PER_CHARACTER,
+		);
+		expect(notification.getAnnouncementDelay('A'.repeat(100))).toBe(MAX_ANNOUNCEMENT_DELAY);
 	});
 
 	it('inserts anchored top-right notifications next to the triggering element', async () => {
@@ -261,11 +369,11 @@ describe('notification accessibility behavior', () => {
 		await vi.advanceTimersByTimeAsync(50);
 		await showInlinePromise;
 
-		expect(screen.getByRole('status')).not.toBeNull();
+		expect(document.querySelector('.z-notification-inline')).not.toBeNull();
 
 		await vi.advanceTimersByTimeAsync(notification.notificationTimeout);
 
-		expect(screen.queryByRole('status')).toBeNull();
+		expect(document.querySelector('.z-notification-inline')).toBeNull();
 	});
 
 	it('removes inline notifications on outside pointer interaction', async () => {
@@ -285,7 +393,7 @@ describe('notification accessibility behavior', () => {
 
 		outside.dispatchEvent(new Event('pointerup', { bubbles: true }));
 
-		expect(screen.queryByRole('status')).toBeNull();
+		expect(document.querySelector('.z-notification-inline')).toBeNull();
 	});
 
 	it('removes inline notifications after a large scroll delta', async () => {
@@ -308,7 +416,7 @@ describe('notification accessibility behavior', () => {
 
 		document.dispatchEvent(new Event('scroll'));
 
-		expect(screen.queryByRole('status')).toBeNull();
+		expect(document.querySelector('.z-notification-inline')).toBeNull();
 	});
 
 	it('removes top-right notifications after the configured timeout', async () => {
@@ -324,7 +432,7 @@ describe('notification accessibility behavior', () => {
 
 		await vi.advanceTimersByTimeAsync(notification.notificationTimeout);
 
-		expect(screen.queryByText(message)).toBeNull();
+		expect(document.querySelector('.z-notification__message')).toBeNull();
 	});
 
 	it('pauses and resumes the top-right notification timeout on pointer hover', async () => {
@@ -346,14 +454,14 @@ describe('notification accessibility behavior', () => {
 		notificationElement?.dispatchEvent(new Event('pointerenter'));
 		await vi.advanceTimersByTimeAsync(4000);
 
-		expect(screen.getByText(message)).toBe(notificationMessage);
+		expect(document.querySelector('.z-notification__message')).toBe(notificationMessage);
 
 		notificationElement?.dispatchEvent(new Event('pointerleave'));
 		await vi.advanceTimersByTimeAsync(1999);
-		expect(screen.getByText(message)).toBe(notificationMessage);
+		expect(document.querySelector('.z-notification__message')).toBe(notificationMessage);
 
 		await vi.advanceTimersByTimeAsync(1);
-		expect(screen.queryByText(message)).toBeNull();
+		expect(document.querySelector('.z-notification__message')).toBeNull();
 	});
 
 	it('invokes the action callback and removes the notification on click', async () => {
@@ -733,8 +841,12 @@ describe('notification accessibility behavior', () => {
 
 		// First notification was replaced, onClose should not have been called
 		expect(onCloseMock).not.toHaveBeenCalled();
-		expect(screen.queryByText('First notification')).toBeNull();
-		expect(screen.getByText('Second notification')).not.toBeNull();
+		const visibleMessages = Array.from(
+			document.querySelectorAll('.z-notification__message'),
+			message => message.textContent,
+		);
+		expect(visibleMessages).not.toContain('First notification');
+		expect(visibleMessages).toContain('Second notification');
 
 		await vi.advanceTimersByTimeAsync(notification.notificationTimeout);
 

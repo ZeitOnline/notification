@@ -5,16 +5,18 @@ import { virtual } from '@guidepup/virtual-screen-reader';
 
 import { Notification } from '../notification';
 
-const ensureDialogMethods = (): void => {
-	if (!HTMLDialogElement.prototype.show) {
-		HTMLDialogElement.prototype.show = function show(): void {
-			this.setAttribute('open', '');
+const ensurePopoverMethods = (): void => {
+	if (!HTMLElement.prototype.showPopover) {
+		HTMLElement.prototype.showPopover = function showPopover(): void {
+			this.toggleAttribute('open', true);
+			this.style.display = 'flex';
 		};
 	}
 
-	if (!HTMLDialogElement.prototype.close) {
-		HTMLDialogElement.prototype.close = function close(): void {
+	if (!HTMLElement.prototype.hidePopover) {
+		HTMLElement.prototype.hidePopover = function hidePopover(): void {
 			this.removeAttribute('open');
+			this.style.display = '';
 		};
 	}
 };
@@ -29,7 +31,7 @@ describe.sequential('notification spoken accessibility', () => {
 	let notification: Notification;
 
 	beforeEach(() => {
-		ensureDialogMethods();
+		ensurePopoverMethods();
 		Notification.instance = undefined;
 		document.body.innerHTML = '';
 		notification = new Notification();
@@ -84,9 +86,9 @@ describe.sequential('notification spoken accessibility', () => {
 		});
 		await waitForAnnouncement();
 
-		const message = screen.getByText('Publishing failed. Check the form and try again.');
+		const message = document.querySelector('.z-notification__message');
 		expect(message).not.toBeNull();
-		expect(message.textContent).toBe('Publishing failed. Check the form and try again.');
+		expect(message?.textContent).toBe('Publishing failed. Check the form and try again.');
 
 		const user = userEvent.setup();
 		await user.tab();
