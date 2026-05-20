@@ -24,6 +24,7 @@ export const MIN_ANNOUNCEMENT_DELAY = 1500;
 export const MAX_ANNOUNCEMENT_DELAY = 4000;
 export const ANNOUNCEMENT_DELAY_PER_CHARACTER = 80;
 type LiveRegionPoliteness = 'polite' | 'assertive';
+const LIVE_REGION_POLITENESS_LEVELS: LiveRegionPoliteness[] = ['polite', 'assertive'];
 
 export class Notification {
 	static instance: Notification | undefined;
@@ -46,6 +47,7 @@ export class Notification {
 		this.announcementQueues = new Map();
 		this.announcementQueueRunning = new Map();
 		this.notificationTimeout = 4000;
+		this.createLiveRegions();
 	}
 	show({
 		group,
@@ -92,28 +94,19 @@ export class Notification {
 		}
 	}
 
-	/**
-	 * When the container is added to the page, a small delay is required
-	 * before setting the innerText, otherwise the screen reader might not announce it correctly.
-	 */
-	async setAndAnnounceMessage(message: string): Promise<void> {
+	setInlineMessage(message: string): void {
 		if (!this.container) {
 			console.warn('Notification container is not initialized.');
 			return;
 		}
-		this.container.innerText = '';
-		await new Promise<void>(resolve => {
-			setTimeout(() => {
-				resolve();
-			}, 50);
-		});
 		this.container.innerText = message;
 	}
 
 	async showInline({ element, message }: InlineNotificationOptions): Promise<void> {
 		let inline: InlineNotification = { timeoutID: null };
 		this.container = this.createInlineContainer();
-		await this.setAndAnnounceMessage(message);
+		this.setInlineMessage(message);
+		this.announceNotification(message);
 		this.inlinePositioning(element, this.container);
 
 		// using pointerup so that simply touching the screen
@@ -158,23 +151,18 @@ export class Notification {
 		if (!container) {
 			container = document.createElement('div');
 			container.className = 'z-notification-inline';
-			container.setAttribute('role', 'status');
-			// aria-live & aria-atomic are redundant to the role, but
-			// recommended for better screen reader support
-			container.setAttribute('aria-live', 'polite');
-			container.setAttribute('aria-atomic', 'true');
-			document.body.insertAdjacentElement('beforeend', container);
+			this.insertBeforeLiveRegions(container);
 		}
 		return container;
 	}
 
 	createLiveRegion(politeness: LiveRegionPoliteness): HTMLDivElement {
 		const existingRegion = this.liveRegions.get(politeness);
-		if (existingRegion?.isConnected) return existingRegion;
-
-		let region = document.querySelector(
-			`.z-notification-live-region--${politeness}`,
-		) as HTMLDivElement | null;
+		let region = existingRegion?.isConnected
+			? existingRegion
+			: (document.querySelector(
+					`.z-notification-live-region--${politeness}`,
+				) as HTMLDivElement | null);
 
 		if (!region) {
 			region = document.createElement('div');
@@ -182,11 +170,28 @@ export class Notification {
 			region.setAttribute('aria-atomic', 'true');
 			region.setAttribute('aria-live', politeness);
 			region.setAttribute('role', politeness === 'assertive' ? 'alert' : 'status');
-			document.body.insertAdjacentElement('beforeend', region);
 		}
 
+		document.body.append(region);
 		this.liveRegions.set(politeness, region);
 		return region;
+	}
+
+	createLiveRegions(): void {
+		LIVE_REGION_POLITENESS_LEVELS.forEach(politeness => {
+			this.createLiveRegion(politeness);
+		});
+	}
+
+	insertBeforeLiveRegions(element: HTMLElement): void {
+		this.createLiveRegions();
+		const firstLiveRegion = document.querySelector('.z-notification-live-region');
+		if (firstLiveRegion?.parentElement === document.body) {
+			document.body.insertBefore(element, firstLiveRegion);
+			return;
+		}
+
+		document.body.append(element);
 	}
 
 	announceNotification(message: string, status: NotificationOptions['status'] = 'info'): void {
@@ -350,7 +355,7 @@ export class Notification {
 			) {
 				insertionPoint = activeElement;
 			} else {
-				document.body.insertAdjacentElement('beforeend', notification);
+				this.insertBeforeLiveRegions(notification);
 				notification.showPopover();
 				return;
 			}
