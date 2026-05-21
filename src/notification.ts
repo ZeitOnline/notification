@@ -28,7 +28,7 @@ export class Notification {
 	originatorCounter = 0;
 	notificationStacks!: Map<NotificationPosition, NotificationElement[]>;
 	container!: HTMLDivElement | null;
-	notificationTimeout!: number;
+	notificationTimeout?: number;
 
 	constructor() {
 		if (Notification.instance) {
@@ -37,7 +37,6 @@ export class Notification {
 		Notification.instance = this;
 		this.notificationStacks = new Map();
 		this.container = null;
-		this.notificationTimeout = 40000;
 	}
 	show({
 		group,
@@ -62,9 +61,8 @@ export class Notification {
 		}
 
 		const storedDuration = hasTimer ? this.getStoredDuration() : null;
-		if (storedDuration !== null) {
-			this.notificationTimeout = storedDuration;
-		}
+		const duration = hasTimer ? storedDuration ?? this.notificationTimeout : undefined;
+		const hasActiveTimer = hasTimer && duration !== undefined;
 
 		const notification = this.createNotification({
 			element,
@@ -75,16 +73,16 @@ export class Notification {
 			status,
 			button,
 			link,
-			hasTimer,
+			hasTimer: hasActiveTimer,
 			onClose,
-		});
+		}, duration);
 
 		this.insertNotification(notification);
 
 		this.addNotificationToStack(notification);
 		this.positionNotifications(position);
 
-		if (notification.hasTimer) {
+		if (hasTimer) {
 			if (storedDuration === null && settingsHref && !this.isDurationHintDismissed()) {
 				notification.companionNotification = this.showDurationHint(
 					notification.anchorElement,
@@ -92,7 +90,9 @@ export class Notification {
 					notification.position,
 				);
 			}
-			this.startTimeout(notification, notification.remaining);
+			if (notification.hasTimer) {
+				this.startTimeout(notification, notification.remaining);
+			}
 		}
 	}
 
@@ -143,10 +143,12 @@ export class Notification {
 			passive: true,
 		});
 
-		inline.timeoutID = setTimeout(
-			() => this.removeInlineNotification(this.container as HTMLElement, inline),
-			this.notificationTimeout,
-		);
+		if (this.notificationTimeout !== undefined) {
+			inline.timeoutID = setTimeout(
+				() => this.removeInlineNotification(this.container as HTMLElement, inline),
+				this.notificationTimeout,
+			);
+		}
 	}
 
 	/**
@@ -192,7 +194,6 @@ export class Notification {
 		el.timeoutID = null;
 		el.elapsed = 0;
 		el.startedAt = 0;
-		el.remaining = this.notificationTimeout;
 		el.anchorElement = element;
 		return el;
 	}
@@ -208,8 +209,9 @@ export class Notification {
 		link,
 		hasTimer,
 		onClose = null,
-	}: NotificationOptions): NotificationElement {
+	}: NotificationOptions, duration = this.notificationTimeout): NotificationElement {
 		const notification = this.createNotificationElement(element, group, position, onClose);
+		notification.remaining = duration;
 		notification.className = `z-notification z-notification--${position} z-notification--${status}`;
 
 		const buttonClass = 'z-notification__action-btn';
@@ -236,10 +238,12 @@ export class Notification {
 			'.z-notification__close-btn',
 		) as HTMLButtonElement;
 		if (closeButton) {
-			closeButton.style.setProperty(
-				'--z-notification-duration',
-				`${this.notificationTimeout}ms`,
-			);
+			if (duration !== undefined) {
+				closeButton.style.setProperty(
+					'--z-notification-duration',
+					`${duration}ms`,
+				);
+			}
 			closeButton.onclick = () => {
 				this.setFocus(notification.anchorElement);
 				notification.remaining = 0;
@@ -440,6 +444,7 @@ export class Notification {
 	}
 
 	startTimeout(notification: NotificationElement, duration = this.notificationTimeout): void {
+		if (duration === undefined) return;
 		notification.startedAt = Date.now();
 		notification.timeoutID = setTimeout(() => {
 			if (!notification.isPaused) {
@@ -451,6 +456,7 @@ export class Notification {
 	}
 
 	addPauseResumeEvents(notification: NotificationElement): void {
+		const initialDuration = notification.remaining;
 		const ring = notification.querySelector(
 			'.z-notification__close-ring circle',
 		) as SVGCircleElement | null;
@@ -469,7 +475,7 @@ export class Notification {
 		const resume = () => {
 			notification.isPaused = false;
 			notification.startedAt = Date.now();
-			notification.remaining = this.notificationTimeout - notification.elapsed;
+			notification.remaining = initialDuration === undefined ? undefined : initialDuration - notification.elapsed;
 			if (notification.remaining <= 0) {
 				this.setFocus(notification.anchorElement);
 				this.removeNotification(notification);

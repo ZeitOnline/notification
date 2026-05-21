@@ -43,7 +43,7 @@ export interface NotificationElement extends HTMLElement {
 	timeoutID: ReturnType<typeof setTimeout> | null;
 	elapsed: number;
 	startedAt: number;
-	remaining: number;
+	remaining?: number;
 	anchorElement: HTMLElement;
 	onClose?: (() => void) | null;
 	companionNotification?: NotificationElement | null;
