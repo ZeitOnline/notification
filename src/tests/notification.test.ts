@@ -329,6 +329,7 @@ describe('notification accessibility behavior', () => {
 
 	it('pauses and resumes the top-right notification timeout on pointer hover', async () => {
 		const message = 'Publishing failed. Check the form and try again.';
+		const elapsedBeforePause = 2000;
 
 		notification.show({
 			message,
@@ -342,14 +343,14 @@ describe('notification accessibility behavior', () => {
 		) as HTMLElement | null;
 		expect(notificationElement).not.toBeNull();
 
-		await vi.advanceTimersByTimeAsync(2000);
+		await vi.advanceTimersByTimeAsync(elapsedBeforePause);
 		notificationElement?.dispatchEvent(new Event('pointerenter'));
 		await vi.advanceTimersByTimeAsync(4000);
 
 		expect(screen.getByText(message)).toBe(notificationMessage);
 
 		notificationElement?.dispatchEvent(new Event('pointerleave'));
-		await vi.advanceTimersByTimeAsync(1999);
+		await vi.advanceTimersByTimeAsync(notification.notificationTimeout - elapsedBeforePause - 1);
 		expect(screen.getByText(message)).toBe(notificationMessage);
 
 		await vi.advanceTimersByTimeAsync(1);
