@@ -21,6 +21,7 @@ export const MAX_NOTIFICATIONS_PER_POSITION = 3;
 export const OFFSET = 24;
 export const GAP_STACKING = 8;
 const HINT_DISMISSED_KEY = 'z.notification.hint';
+const HINT_DISMISS_MAX_AGE = 2 * 24 * 60 * 60; // 2 days
 
 export class Notification {
 	static instance: Notification | undefined;
@@ -382,19 +383,11 @@ export class Notification {
 	}
 
 	isDurationHintDismissed(): boolean {
-		try {
-			return localStorage.getItem(HINT_DISMISSED_KEY) === '1';
-		} catch {
-			return false;
-		}
+		return document.cookie.includes(`${HINT_DISMISSED_KEY}=`);
 	}
 
 	dismissDurationHint(): void {
-		try {
-			localStorage.setItem(HINT_DISMISSED_KEY, '1');
-		} catch {
-			// localStorage not available
-		}
+		document.cookie = `${HINT_DISMISSED_KEY}=1; max-age=${HINT_DISMISS_MAX_AGE}; path=/; SameSite=Strict`;
 	}
 
 	getStoredDuration(): number | null {
