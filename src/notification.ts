@@ -403,7 +403,7 @@ export class Notification {
 		const notification = this.createNotification({
 			element: anchorElement,
 			position,
-			message: 'Automatisch ausblenden',
+			message: 'Automatisch ausblenden?',
 			button: { text: 'Konfigurieren' },
 			onClose: () => this.dismissDurationHint(),
 		});
