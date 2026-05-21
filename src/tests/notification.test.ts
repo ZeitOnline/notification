@@ -252,6 +252,7 @@ describe('notification accessibility behavior', () => {
 		const trigger = document.createElement('button');
 		trigger.textContent = 'Copy link';
 		document.body.append(trigger);
+		notification.notificationTimeout = 5000;
 
 		const showInlinePromise = notification.showInline({
 			element: trigger,
@@ -313,6 +314,7 @@ describe('notification accessibility behavior', () => {
 
 	it('removes top-right notifications after the configured timeout', async () => {
 		const message = 'Publishing failed. Check the form and try again.';
+		notification.notificationTimeout = 5000;
 
 		notification.show({
 			message,
@@ -330,6 +332,7 @@ describe('notification accessibility behavior', () => {
 	it('pauses and resumes the top-right notification timeout on pointer hover', async () => {
 		const message = 'Publishing failed. Check the form and try again.';
 		const elapsedBeforePause = 2000;
+		notification.notificationTimeout = 5000;
 
 		notification.show({
 			message,
@@ -594,6 +597,8 @@ describe('notification accessibility behavior', () => {
 	});
 
 	it('renders notification with timer', async () => {
+		notification.notificationTimeout = 5000;
+
 		notification.show({
 			message: 'This is an error notification with timer.',
 			status: 'error',
@@ -678,6 +683,7 @@ describe('notification accessibility behavior', () => {
 
 	it('calls onClose callback when timer expires', async () => {
 		const onCloseMock = vi.fn();
+		notification.notificationTimeout = 5000;
 
 		notification.show({
 			message: 'Notification with onClose',
@@ -751,7 +757,7 @@ describe('notification accessibility behavior', () => {
 		});
 
 		expect(document.querySelectorAll('.z-notification')).toHaveLength(2);
-		expect(screen.getByText('Automatisch ausblenden')).not.toBeNull();
+		expect(screen.getByText('Automatisch ausblenden?')).not.toBeNull();
 	});
 
 	it('replaces the companion message and removes the button when Konfigurieren is clicked', async () => {
@@ -772,6 +778,7 @@ describe('notification accessibility behavior', () => {
 
 		await vi.advanceTimersByTimeAsync(2000);
 		expect(openSpy).toHaveBeenCalledWith('https://example.com/settings', '_blank', 'noopener,noreferrer');
+		expect(screen.queryByText('Neuer Tab wird geöffnet …')).toBeNull();
 
 		openSpy.mockRestore();
 	});
@@ -788,5 +795,32 @@ describe('notification accessibility behavior', () => {
 
 		expect(document.querySelectorAll('.z-notification')).toHaveLength(1);
 		expect(screen.queryByText('Automatisch ausblenden')).toBeNull();
+	});
+
+	it('resets a stale stored duration when a later notification has no stored duration', async () => {
+		vi.spyOn(Storage.prototype, 'getItem').mockReturnValueOnce('3000').mockReturnValueOnce(null);
+
+		notification.show({
+			message: 'First saved article.',
+			status: 'success',
+			hasTimer: true,
+			settingsHref: 'https://example.com/settings',
+		});
+
+		await vi.advanceTimersByTimeAsync(3000);
+		expect(screen.queryByText('First saved article.')).toBeNull();
+
+		notification.show({
+			message: 'Second saved article.',
+			status: 'success',
+			hasTimer: true,
+			settingsHref: 'https://example.com/settings',
+		});
+
+		expect(document.querySelectorAll('.z-notification')).toHaveLength(2);
+		expect(screen.getByText('Automatisch ausblenden?')).not.toBeNull();
+
+		await vi.advanceTimersByTimeAsync(3000);
+		expect(screen.getByText('Second saved article.')).not.toBeNull();
 	});
 });
