@@ -36,7 +36,7 @@ export class Notification {
 		Notification.instance = this;
 		this.notificationStacks = new Map();
 		this.container = null;
-		this.notificationTimeout = 4000;
+		this.notificationTimeout = 40000;
 	}
 	show({
 		group,
