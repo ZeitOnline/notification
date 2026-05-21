@@ -423,7 +423,10 @@ export class Notification {
 				}
 				notification.querySelector<HTMLButtonElement>('.z-notification__close-btn')?.focus();
 				actionButton.remove();
-				setTimeout(() => window.open(settingsHref, '_blank', 'noopener,noreferrer'), 2000);
+				setTimeout(() => {
+					window.open(settingsHref, '_blank', 'noopener,noreferrer');
+					this.removeNotification(notification);
+				}, 2000);
 			};
 		}
 
