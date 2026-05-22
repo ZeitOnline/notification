@@ -22,7 +22,7 @@ export const OFFSET = 24;
 export const GAP_STACKING = 8;
 const HINT_DISMISSED_KEY = 'z.notification.hint';
 const HINT_DISMISS_MAX_AGE = 2 * 24 * 60 * 60; // 2 days
-const DEFAULT_DURATION_HINT_COPY = {
+const DEFAULT_SETTINGS_HINT_COPY = {
 	message: 'Automatisch ausblenden?',
 	buttonText: 'Konfigurieren',
 	openingMessage: 'Neuer Tab wird geöffnet …',
@@ -414,9 +414,9 @@ export class Notification {
 		position: NotificationPosition,
 	): NotificationElement {
 		const {
-			message = DEFAULT_DURATION_HINT_COPY.message,
-			buttonText = DEFAULT_DURATION_HINT_COPY.buttonText,
-			openingMessage = DEFAULT_DURATION_HINT_COPY.openingMessage,
+			message = DEFAULT_SETTINGS_HINT_COPY.message,
+			buttonText = DEFAULT_SETTINGS_HINT_COPY.buttonText,
+			openingMessage = DEFAULT_SETTINGS_HINT_COPY.openingMessage,
 		} = settings;
 
 		const notification = this.createNotification({
