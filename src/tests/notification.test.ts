@@ -749,11 +749,11 @@ describe('notification accessibility behavior', () => {
 		expect(onCloseMock).not.toHaveBeenCalled();
 	});
 
-	it('shows a companion notification when settingsHref is provided', () => {
+	it('shows a companion notification when settings.url is provided', () => {
 		notification.show({
 			message: 'Article saved.',
 			hasTimer: true,
-			settingsHref: 'https://example.com/settings',
+			settings: { url: 'https://example.com/settings' },
 		});
 
 		expect(document.querySelectorAll('.z-notification')).toHaveLength(2);
@@ -767,7 +767,7 @@ describe('notification accessibility behavior', () => {
 			message: 'Article saved.',
 			status: 'success',
 			hasTimer: true,
-			settingsHref: 'https://example.com/settings',
+			settings: { url: 'https://example.com/settings' },
 		});
 
 		const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
@@ -783,15 +783,15 @@ describe('notification accessibility behavior', () => {
 		openSpy.mockRestore();
 	});
 
-	it('uses custom duration hint copy when provided', async () => {
+	it('uses custom settings copy when provided', async () => {
 		const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
 
 		notification.show({
 			message: 'Article saved.',
 			status: 'success',
 			hasTimer: true,
-			settingsHref: 'https://example.com/settings',
-			durationHint: {
+			settings: {
+				url: 'https://example.com/settings',
 				message: 'Auto close?',
 				buttonText: 'Configure',
 				openingMessage: 'Opening settings tab...'
@@ -820,7 +820,7 @@ describe('notification accessibility behavior', () => {
 			message: 'Article saved.',
 			status: 'success',
 			hasTimer: true,
-			settingsHref: 'https://example.com/settings',
+			settings: { url: 'https://example.com/settings' },
 		});
 
 		expect(document.querySelectorAll('.z-notification')).toHaveLength(1);
@@ -834,7 +834,7 @@ describe('notification accessibility behavior', () => {
 			message: 'First saved article.',
 			status: 'success',
 			hasTimer: true,
-			settingsHref: 'https://example.com/settings',
+			settings: { url: 'https://example.com/settings' },
 		});
 
 		await vi.advanceTimersByTimeAsync(3000);
@@ -844,7 +844,7 @@ describe('notification accessibility behavior', () => {
 			message: 'Second saved article.',
 			status: 'success',
 			hasTimer: true,
-			settingsHref: 'https://example.com/settings',
+			settings: { url: 'https://example.com/settings' },
 		});
 
 		expect(document.querySelectorAll('.z-notification')).toHaveLength(2);

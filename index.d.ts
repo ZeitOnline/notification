@@ -10,7 +10,8 @@ export type LinkOptions = TextOptions & {
 	href: string;
 };
 
-export type DurationHintOptions = {
+export type SettingsOptions = {
+	url: string;
 	/** Custom copy for the companion hint shown before opening settings. */
 	message?: string;
 	buttonText?: string;
@@ -30,9 +31,7 @@ export type NotificationOptions = {
 	link?: LinkOptions;
 	hasTimer?: boolean;
 	onClose?: (() => void) | null;
-	settingsHref?: string;
-	/** Optional text overrides for the duration settings hint. */
-	durationHint?: DurationHintOptions;
+	settings?: SettingsOptions;
 };
 
 export type InlineNotificationOptions = {

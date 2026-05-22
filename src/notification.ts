@@ -54,8 +54,7 @@ export class Notification {
 		link,
 		hasTimer,
 		onClose,
-		settingsHref,
-		durationHint,
+		settings,
 	}: NotificationOptions): void {
 		if (group) {
 			const notificationsToRemove = this.notificationStacks
@@ -89,12 +88,11 @@ export class Notification {
 		this.positionNotifications(position);
 
 		if (hasTimer) {
-			if (storedDuration === null && settingsHref && !this.isDurationHintDismissed()) {
+			if (storedDuration === null && settings?.url && !this.isDurationHintDismissed()) {
 				notification.companionNotification = this.showDurationHint(
 					notification.anchorElement,
-					settingsHref,
+					settings,
 					notification.position,
-					durationHint,
 				);
 			}
 			if (notification.hasTimer) {
@@ -412,21 +410,20 @@ export class Notification {
 
 	showDurationHint(
 		anchorElement: HTMLElement,
-		settingsHref: string,
+		settings: SettingsOptions,
 		position: NotificationPosition,
-		durationHint?: NotificationOptions['durationHint'],
 	): NotificationElement {
-		const hintCopy = {
-			message: durationHint?.message ?? DEFAULT_DURATION_HINT_COPY.message,
-			buttonText: durationHint?.buttonText ?? DEFAULT_DURATION_HINT_COPY.buttonText,
-			openingMessage: durationHint?.openingMessage ?? DEFAULT_DURATION_HINT_COPY.openingMessage,
-		};
+		const {
+			message = DEFAULT_DURATION_HINT_COPY.message,
+			buttonText = DEFAULT_DURATION_HINT_COPY.buttonText,
+			openingMessage = DEFAULT_DURATION_HINT_COPY.openingMessage,
+		} = settings;
 
 		const notification = this.createNotification({
 			element: anchorElement,
 			position,
-			message: hintCopy.message,
-			button: { text: hintCopy.buttonText },
+			message,
+			button: { text: buttonText },
 			onClose: () => this.dismissDurationHint(),
 		});
 
@@ -437,12 +434,12 @@ export class Notification {
 			actionButton.onclick = () => {
 				const messageEl = notification.querySelector('.z-notification__message');
 				if (messageEl) {
-					messageEl.textContent = hintCopy.openingMessage;
+					messageEl.textContent = openingMessage;
 				}
 				notification.querySelector<HTMLButtonElement>('.z-notification__close-btn')?.focus();
 				actionButton.remove();
 				setTimeout(() => {
-					window.open(settingsHref, '_blank', 'noopener,noreferrer');
+					window.open(settings.url, '_blank', 'noopener,noreferrer');
 					this.removeNotification(notification);
 				}, 2000);
 			};
@@ -605,8 +602,7 @@ const notification: NotificationService = {
 		link,
 		hasTimer,
 		onClose,
-		settingsHref,
-		durationHint,
+		settings,
 	}: NotificationOptions): void {
 		this.notification.show({
 			group,
@@ -619,8 +615,7 @@ const notification: NotificationService = {
 			link,
 			hasTimer,
 			onClose,
-			settingsHref,
-			durationHint,
+			settings,
 		});
 	},
 	debug(): void {
