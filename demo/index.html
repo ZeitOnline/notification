@@ -235,7 +235,7 @@
 			if (group) options.group = group;
 			if (status) options.status = status;
 			if (icon) options.icon = icon;
-			if (settingsHref) options.settingsHref = settingsHref;
+			if (settingsHref) options.settings = { url: settingsHref };
 
 			if (interaction === 'button') {
 				options.button = {
