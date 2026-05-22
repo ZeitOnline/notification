@@ -147,6 +147,12 @@
 							value="This is the default message" />
 					</div>
 
+					<div class="form-message">
+						<label class="form-label form-label--stacked" for="settings-href-input">Settings URL <span class="form-label--hint">(optional, requires Timer)</span></label>
+						<input type="url" id="settings-href-input" name="settingsHref" class="input--underline"
+							placeholder="https://your-settings-page.com/" />
+					</div>
+
 					<button type="submit" class="button" id="show-notification-btn">Show Notification</button>
 				</form>
 			</article>
@@ -217,6 +223,7 @@
 			const interaction = document.getElementById('interaction-buttons').dataset.value;
 			const hasTimer = document.getElementById('timer-buttons').dataset.value === 'true';
 			const message = document.getElementById('message-input').value || 'Notification message';
+			const settingsHref = document.getElementById('settings-href-input').value || undefined;
 
 			const options = {
 				element: event.submitter,
@@ -228,7 +235,7 @@
 			if (group) options.group = group;
 			if (status) options.status = status;
 			if (icon) options.icon = icon;
-			if (hasTimer) options.settingsHref = 'https://www.staging.zeit.de/administratives/barrierefreiheitserklaerung#einstellungen-fuer-verschwindende-benachrichtigungen';
+			if (settingsHref) options.settingsHref = settingsHref;
 
 			if (interaction === 'button') {
 				options.button = {
