@@ -783,6 +783,36 @@ describe('notification accessibility behavior', () => {
 		openSpy.mockRestore();
 	});
 
+	it('uses custom duration hint copy when provided', async () => {
+		const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+
+		notification.show({
+			message: 'Article saved.',
+			status: 'success',
+			hasTimer: true,
+			settingsHref: 'https://example.com/settings',
+			durationHint: {
+				message: 'Auto close?',
+				buttonText: 'Configure',
+				openingMessage: 'Opening settings tab...'
+			},
+		});
+
+		screen.getByText('Auto close?');
+
+		const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+		await user.click(screen.getByRole('button', { name: 'Configure', hidden: true }));
+
+		screen.getByText('Opening settings tab...');
+		expect(screen.queryByRole('button', { name: 'Configure', hidden: true })).toBeNull();
+
+		await vi.advanceTimersByTimeAsync(2000);
+		expect(openSpy).toHaveBeenCalledWith('https://example.com/settings', '_blank', 'noopener,noreferrer');
+		expect(screen.queryByText('Opening settings tab...')).toBeNull();
+
+		openSpy.mockRestore();
+	});
+
 	it('does not show a companion notification when a stored duration already exists', () => {
 		vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('3000');
 

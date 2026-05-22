@@ -10,6 +10,13 @@ export type LinkOptions = TextOptions & {
 	href: string;
 };
 
+export type DurationHintOptions = {
+	/** Custom copy for the companion hint shown before opening settings. */
+	message?: string;
+	buttonText?: string;
+	openingMessage?: string;
+};
+
 export type NotificationPosition = 'top' | 'bottom' | 'top-right';
 
 export type NotificationOptions = {
@@ -24,6 +31,8 @@ export type NotificationOptions = {
 	hasTimer?: boolean;
 	onClose?: (() => void) | null;
 	settingsHref?: string;
+	/** Optional text overrides for the duration settings hint. */
+	durationHint?: DurationHintOptions;
 };
 
 export type InlineNotificationOptions = {

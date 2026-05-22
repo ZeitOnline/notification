@@ -22,6 +22,11 @@ export const OFFSET = 24;
 export const GAP_STACKING = 8;
 const HINT_DISMISSED_KEY = 'z.notification.hint';
 const HINT_DISMISS_MAX_AGE = 2 * 24 * 60 * 60; // 2 days
+const DEFAULT_DURATION_HINT_COPY = {
+	message: 'Automatisch ausblenden?',
+	buttonText: 'Konfigurieren',
+	openingMessage: 'Neuer Tab wird geöffnet …',
+};
 
 export class Notification {
 	static instance: Notification | undefined;
@@ -50,6 +55,7 @@ export class Notification {
 		hasTimer,
 		onClose,
 		settingsHref,
+		durationHint,
 	}: NotificationOptions): void {
 		if (group) {
 			const notificationsToRemove = this.notificationStacks
@@ -88,6 +94,7 @@ export class Notification {
 					notification.anchorElement,
 					settingsHref,
 					notification.position,
+					durationHint,
 				);
 			}
 			if (notification.hasTimer) {
@@ -403,12 +410,23 @@ export class Notification {
 		}
 	}
 
-	showDurationHint(anchorElement: HTMLElement, settingsHref: string, position: NotificationPosition): NotificationElement {
+	showDurationHint(
+		anchorElement: HTMLElement,
+		settingsHref: string,
+		position: NotificationPosition,
+		durationHint?: NotificationOptions['durationHint'],
+	): NotificationElement {
+		const hintCopy = {
+			message: durationHint?.message ?? DEFAULT_DURATION_HINT_COPY.message,
+			buttonText: durationHint?.buttonText ?? DEFAULT_DURATION_HINT_COPY.buttonText,
+			openingMessage: durationHint?.openingMessage ?? DEFAULT_DURATION_HINT_COPY.openingMessage,
+		};
+
 		const notification = this.createNotification({
 			element: anchorElement,
 			position,
-			message: 'Automatisch ausblenden?',
-			button: { text: 'Konfigurieren' },
+			message: hintCopy.message,
+			button: { text: hintCopy.buttonText },
 			onClose: () => this.dismissDurationHint(),
 		});
 
@@ -419,7 +437,7 @@ export class Notification {
 			actionButton.onclick = () => {
 				const messageEl = notification.querySelector('.z-notification__message');
 				if (messageEl) {
-					messageEl.textContent = 'Neuer Tab wird geöffnet …';
+					messageEl.textContent = hintCopy.openingMessage;
 				}
 				notification.querySelector<HTMLButtonElement>('.z-notification__close-btn')?.focus();
 				actionButton.remove();
@@ -588,6 +606,7 @@ const notification: NotificationService = {
 		hasTimer,
 		onClose,
 		settingsHref,
+		durationHint,
 	}: NotificationOptions): void {
 		this.notification.show({
 			group,
@@ -601,6 +620,7 @@ const notification: NotificationService = {
 			hasTimer,
 			onClose,
 			settingsHref,
+			durationHint,
 		});
 	},
 	debug(): void {
