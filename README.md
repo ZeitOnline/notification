@@ -45,10 +45,10 @@ import notification from '@zeitonline/notification';
 
 notification.show({
 	status: 'success',
-	message: 'Der Artikel wurde gespeichert.',
+	message: 'The article was saved.',
 	link: {
-		text: 'Merkliste öffnen',
-		href: 'https://www.zeit.de/konto/listen/merkliste',
+		text: 'Open reading list',
+		href: 'https://example.com/account/reading-list',
 	},
 });
 
@@ -62,7 +62,7 @@ trigger?.addEventListener('click', () => {
 
 	notification.show({
 		element: trigger,
-		message: 'Der Artikel wurde gespeichert.',
+		message: 'The article was saved.',
 		status: 'success',
 	});
 });
@@ -83,9 +83,9 @@ If you use the `icon` option, the notification expects an SVG symbol in the page
 ```js
 notification.show({
 	icon: 'bookmark',
-	message: 'Der Artikel wurde von der Merkliste entfernt.',
+	message: 'The article was removed from your reading list.',
 	button: {
-		text: 'Rückgängig',
+		text: 'Undo',
 		onClick: () => {
 			console.log('Undo');
 		},
@@ -104,6 +104,7 @@ notification.show({
 - Auto-dismiss after 4 seconds, with pause and resume on pointer hover, when timer property is set to true.
 - Timed notifications can emit the `notification-removed` custom event when they close.
 - Stacking of up to 3 notifications per position at the same time.
+- Optional `settings.url` on timed notifications: when no stored auto-dismiss duration preference exists yet, shows a companion notification with a configurable call-to-action that opens the provided URL in a new tab. Dismissing that hint stores `z.notification.hint` for two days.
 
 ## Updates
 
