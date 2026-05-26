@@ -104,7 +104,7 @@ notification.show({
 - Auto-dismiss after 4 seconds, with pause and resume on pointer hover, when timer property is set to true.
 - Timed notifications can emit the `notification-removed` custom event when they close.
 - Stacking of up to 3 notifications per position at the same time.
-- Optional `settingsHref` on timed notifications: when no stored auto-dismiss duration preference exists yet, shows a companion notification with a configurable call-to-action that opens the provided URL in a new tab.
+- Optional `settings.url` on timed notifications: when no stored auto-dismiss duration preference exists yet, shows a companion notification with a configurable call-to-action that opens the provided URL in a new tab. Dismissing that hint stores `z.notification.hint` for two days.
 
 ## Updates
 
