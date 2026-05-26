@@ -297,6 +297,11 @@ nav>a {
 	line-height: 1.2;
 }
 
+.form-label--hint {
+	font-weight: normal;
+	opacity: 0.6;
+}
+
 .input--underline {
 	appearance: none;
 	padding: var(--z-ds-space-xs) 0;
