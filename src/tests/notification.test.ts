@@ -353,7 +353,9 @@ describe('notification accessibility behavior', () => {
 		expect(screen.getByText(message)).toBe(notificationMessage);
 
 		notificationElement?.dispatchEvent(new Event('pointerleave'));
-		await vi.advanceTimersByTimeAsync(notification.notificationTimeout - elapsedBeforePause - 1);
+		await vi.advanceTimersByTimeAsync(
+			notification.notificationTimeout - elapsedBeforePause - 1,
+		);
 		expect(screen.getByText(message)).toBe(notificationMessage);
 
 		await vi.advanceTimersByTimeAsync(1);
@@ -703,6 +705,7 @@ describe('notification accessibility behavior', () => {
 		const trigger = document.createElement('button');
 		const nextFocusTarget = document.createElement('button');
 
+		notification.notificationTimeout = 5000;
 		trigger.textContent = 'Open notification';
 		nextFocusTarget.textContent = 'Keep focus here';
 		document.body.append(trigger, nextFocusTarget);
@@ -720,6 +723,32 @@ describe('notification accessibility behavior', () => {
 
 		expect(screen.queryByText('Notification with timer')).toBeNull();
 		expect(document.activeElement).toBe(nextFocusTarget);
+	});
+
+	it('restores focus to the trigger when timer expires while focus is inside the notification', async () => {
+		const trigger = document.createElement('button');
+
+		notification.notificationTimeout = 5000;
+		trigger.textContent = 'Open notification';
+		document.body.append(trigger);
+		trigger.focus();
+
+		notification.show({
+			element: trigger,
+			message: 'Notification with focused close button',
+			status: 'info',
+			hasTimer: true,
+		});
+		const closeButton = screen.getByRole('button', {
+			name: 'Meldung schließen',
+			hidden: true,
+		});
+		closeButton.focus();
+
+		await vi.advanceTimersByTimeAsync(notification.notificationTimeout);
+
+		expect(screen.queryByText('Notification with focused close button')).toBeNull();
+		expect(document.activeElement).toBe(trigger);
 	});
 
 	it('calls onClose callback when closed manually', async () => {
@@ -800,7 +829,11 @@ describe('notification accessibility behavior', () => {
 		expect(screen.queryByRole('button', { name: 'Konfigurieren', hidden: true })).toBeNull();
 
 		await vi.advanceTimersByTimeAsync(2000);
-		expect(openSpy).toHaveBeenCalledWith('https://example.com/settings', '_blank', 'noopener,noreferrer');
+		expect(openSpy).toHaveBeenCalledWith(
+			'https://example.com/settings',
+			'_blank',
+			'noopener,noreferrer',
+		);
 		expect(screen.queryByText('Neuer Tab wird geöffnet …')).toBeNull();
 
 		openSpy.mockRestore();
@@ -817,7 +850,7 @@ describe('notification accessibility behavior', () => {
 				url: 'https://example.com/settings',
 				message: 'Auto close?',
 				buttonText: 'Configure',
-				openingMessage: 'Opening settings tab...'
+				openingMessage: 'Opening settings tab...',
 			},
 		});
 
@@ -830,7 +863,11 @@ describe('notification accessibility behavior', () => {
 		expect(screen.queryByRole('button', { name: 'Configure', hidden: true })).toBeNull();
 
 		await vi.advanceTimersByTimeAsync(2000);
-		expect(openSpy).toHaveBeenCalledWith('https://example.com/settings', '_blank', 'noopener,noreferrer');
+		expect(openSpy).toHaveBeenCalledWith(
+			'https://example.com/settings',
+			'_blank',
+			'noopener,noreferrer',
+		);
 		expect(screen.queryByText('Opening settings tab...')).toBeNull();
 
 		openSpy.mockRestore();
@@ -851,7 +888,9 @@ describe('notification accessibility behavior', () => {
 	});
 
 	it('resets a stale stored duration when a later notification has no stored duration', async () => {
-		vi.spyOn(Storage.prototype, 'getItem').mockReturnValueOnce('3000').mockReturnValueOnce(null);
+		vi.spyOn(Storage.prototype, 'getItem')
+			.mockReturnValueOnce('3000')
+			.mockReturnValueOnce(null);
 
 		notification.show({
 			message: 'First saved article.',
