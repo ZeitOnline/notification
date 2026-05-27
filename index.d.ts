@@ -10,6 +10,14 @@ export type LinkOptions = TextOptions & {
 	href: string;
 };
 
+export type SettingsOptions = {
+	url: string;
+	/** Custom copy for the companion hint shown before opening settings. */
+	message?: string;
+	buttonText?: string;
+	openingMessage?: string;
+};
+
 export type NotificationPosition = 'top' | 'bottom' | 'top-right';
 
 export type NotificationOptions = {
@@ -23,6 +31,7 @@ export type NotificationOptions = {
 	link?: LinkOptions;
 	hasTimer?: boolean;
 	onClose?: (() => void) | null;
+	settings?: SettingsOptions;
 };
 
 export type InlineNotificationOptions = {
@@ -42,9 +51,10 @@ export interface NotificationElement extends HTMLElement {
 	timeoutID: ReturnType<typeof setTimeout> | null;
 	elapsed: number;
 	startedAt: number;
-	remaining: number;
+	remaining?: number;
 	anchorElement: HTMLElement;
 	onClose?: (() => void) | null;
+	companionNotification?: NotificationElement | null;
 }
 
 export type NotificationService = {

@@ -20,13 +20,20 @@ import type {
 export const MAX_NOTIFICATIONS_PER_POSITION = 3;
 export const OFFSET = 24;
 export const GAP_STACKING = 8;
+const HINT_DISMISSED_KEY = 'z.notification.hint';
+const HINT_DISMISS_MAX_AGE = 2 * 24 * 60 * 60; // 2 days
+const DEFAULT_SETTINGS_HINT_COPY = {
+	message: 'Automatisch ausblenden?',
+	buttonText: 'Konfigurieren',
+	openingMessage: 'Neuer Tab wird geöffnet …',
+};
 
 export class Notification {
 	static instance: Notification | undefined;
 	originatorCounter = 0;
 	notificationStacks!: Map<NotificationPosition, NotificationElement[]>;
 	container!: HTMLDivElement | null;
-	notificationTimeout!: number;
+	notificationTimeout?: number;
 
 	constructor() {
 		if (Notification.instance) {
@@ -35,7 +42,6 @@ export class Notification {
 		Notification.instance = this;
 		this.notificationStacks = new Map();
 		this.container = null;
-		this.notificationTimeout = 4000;
 	}
 	show({
 		group,
@@ -48,6 +54,7 @@ export class Notification {
 		link,
 		hasTimer,
 		onClose,
+		settings,
 	}: NotificationOptions): void {
 		if (group) {
 			const notificationsToRemove = this.notificationStacks
@@ -58,6 +65,10 @@ export class Notification {
 			});
 		}
 
+		const storedDuration = hasTimer ? this.getStoredDuration() : null;
+		const duration = hasTimer ? storedDuration ?? this.notificationTimeout : undefined;
+		const hasActiveTimer = hasTimer && duration !== undefined;
+
 		const notification = this.createNotification({
 			element,
 			position,
@@ -67,17 +78,26 @@ export class Notification {
 			status,
 			button,
 			link,
-			hasTimer,
+			hasTimer: hasActiveTimer,
 			onClose,
-		});
+		}, duration);
 
 		this.insertNotification(notification);
 
 		this.addNotificationToStack(notification);
 		this.positionNotifications(position);
 
-		if (notification.hasTimer) {
-			this.startTimeout(notification);
+		if (hasTimer) {
+			if (storedDuration === null && settings?.url && !this.isDurationHintDismissed()) {
+				notification.companionNotification = this.showDurationHint(
+					notification.anchorElement,
+					settings,
+					notification.position,
+				);
+			}
+			if (notification.hasTimer) {
+				this.startTimeout(notification, notification.remaining);
+			}
 		}
 	}
 
@@ -128,10 +148,12 @@ export class Notification {
 			passive: true,
 		});
 
-		inline.timeoutID = setTimeout(
-			() => this.removeInlineNotification(this.container as HTMLElement, inline),
-			this.notificationTimeout,
-		);
+		if (this.notificationTimeout !== undefined) {
+			inline.timeoutID = setTimeout(
+				() => this.removeInlineNotification(this.container as HTMLElement, inline),
+				this.notificationTimeout,
+			);
+		}
 	}
 
 	/**
@@ -177,7 +199,6 @@ export class Notification {
 		el.timeoutID = null;
 		el.elapsed = 0;
 		el.startedAt = 0;
-		el.remaining = this.notificationTimeout;
 		el.anchorElement = element;
 		return el;
 	}
@@ -193,8 +214,9 @@ export class Notification {
 		link,
 		hasTimer,
 		onClose = null,
-	}: NotificationOptions): NotificationElement {
+	}: NotificationOptions, duration = this.notificationTimeout): NotificationElement {
 		const notification = this.createNotificationElement(element, group, position, onClose);
+		notification.remaining = duration;
 		notification.className = `z-notification z-notification--${position} z-notification--${status}`;
 
 		const buttonClass = 'z-notification__action-btn';
@@ -221,10 +243,12 @@ export class Notification {
 			'.z-notification__close-btn',
 		) as HTMLButtonElement;
 		if (closeButton) {
-			closeButton.style.setProperty(
-				'--z-notification-duration',
-				`${this.notificationTimeout}ms`,
-			);
+			if (duration !== undefined) {
+				closeButton.style.setProperty(
+					'--z-notification-duration',
+					`${duration}ms`,
+				);
+			}
 			closeButton.onclick = () => {
 				this.setFocus(notification.anchorElement);
 				notification.remaining = 0;
@@ -367,7 +391,78 @@ export class Notification {
 		}
 	}
 
+	isDurationHintDismissed(): boolean {
+		return document.cookie.includes(`${HINT_DISMISSED_KEY}=`);
+	}
+
+	dismissDurationHint(): void {
+		document.cookie = `${HINT_DISMISSED_KEY}=1; max-age=${HINT_DISMISS_MAX_AGE}; path=/; SameSite=Strict`;
+	}
+
+	getStoredDuration(): number | null {
+		try {
+			const parsed = Number(localStorage.getItem('z.notification.duration'));
+			return !isNaN(parsed) && parsed > 0 ? parsed : null;
+		} catch {
+			return null;
+		}
+	}
+
+	showDurationHint(
+		anchorElement: HTMLElement,
+		settings: SettingsOptions,
+		position: NotificationPosition,
+	): NotificationElement {
+		const {
+			message = DEFAULT_SETTINGS_HINT_COPY.message,
+			buttonText = DEFAULT_SETTINGS_HINT_COPY.buttonText,
+			openingMessage = DEFAULT_SETTINGS_HINT_COPY.openingMessage,
+		} = settings;
+
+		const notification = this.createNotification({
+			element: anchorElement,
+			position,
+			message,
+			button: { text: buttonText },
+			onClose: () => this.dismissDurationHint(),
+		});
+
+		const actionButton = notification.querySelector(
+			'.z-notification__action-btn',
+		) as HTMLButtonElement | null;
+		if (actionButton) {
+			actionButton.onclick = () => {
+				const messageEl = notification.querySelector('.z-notification__message');
+				if (messageEl) {
+					messageEl.textContent = openingMessage;
+				}
+				notification.querySelector<HTMLButtonElement>('.z-notification__close-btn')?.focus();
+				actionButton.remove();
+				setTimeout(() => {
+					window.open(settings.url, '_blank', 'noopener,noreferrer');
+					this.removeNotification(notification);
+				}, 2000);
+			};
+		}
+
+		this.insertNotification(notification);
+		const stack = this.getStack(notification.position);
+		if (notification.position === 'bottom') {
+			stack.push(notification);
+		} else {
+			stack.splice(stack.length - 1, 0, notification);
+		}
+		// Companion is general UI scaffolding, not a user-event notification,
+		// so it gets a dedicated extra slot instead of evicting an older notification.
+		if (stack.length > MAX_NOTIFICATIONS_PER_POSITION + 1) {
+			this.removeNotification(stack[0], { shouldReflow: false });
+		}
+		this.positionNotifications(notification.position);
+		return notification;
+	}
+
 	startTimeout(notification: NotificationElement, duration = this.notificationTimeout): void {
+		if (duration === undefined) return;
 		notification.startedAt = Date.now();
 		notification.timeoutID = setTimeout(() => {
 			if (!notification.isPaused) {
@@ -378,6 +473,7 @@ export class Notification {
 	}
 
 	addPauseResumeEvents(notification: NotificationElement): void {
+		const initialDuration = notification.remaining;
 		const ring = notification.querySelector(
 			'.z-notification__close-ring circle',
 		) as SVGCircleElement | null;
@@ -396,7 +492,7 @@ export class Notification {
 		const resume = () => {
 			notification.isPaused = false;
 			notification.startedAt = Date.now();
-			notification.remaining = this.notificationTimeout - notification.elapsed;
+			notification.remaining = initialDuration === undefined ? undefined : initialDuration - notification.elapsed;
 			if (notification.remaining <= 0) {
 				this.removeNotification(notification);
 				return;
@@ -441,6 +537,11 @@ export class Notification {
 			// notification is already removed from the DOM
 		}
 		notification.remove();
+
+		if (notification.companionNotification) {
+			this.removeNotification(notification.companionNotification);
+			notification.companionNotification = null;
+		}
 
 		const stack = this.notificationStacks.get(notification.position);
 
@@ -499,6 +600,7 @@ const notification: NotificationService = {
 		link,
 		hasTimer,
 		onClose,
+		settings,
 	}: NotificationOptions): void {
 		this.notification.show({
 			group,
@@ -511,6 +613,7 @@ const notification: NotificationService = {
 			link,
 			hasTimer,
 			onClose,
+			settings,
 		});
 	},
 	debug(): void {

@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.4.0](https://github.com/ZeitOnline/notification/compare/notification-v2.3.0...notification-v2.4.0) (2026-05-26)
+
+
+### 🚀 Features
+
+* add Companion Settings Message ([#68](https://github.com/ZeitOnline/notification/issues/68)) ([f66dd08](https://github.com/ZeitOnline/notification/commit/f66dd08e956236d17cf8814e64cab92b252d8fd9))
+
+
+### 📝 Other Changes
+
+* consolidate text type for ButtonOptions and LinkOptions ([#64](https://github.com/ZeitOnline/notification/issues/64)) ([0ef26b0](https://github.com/ZeitOnline/notification/commit/0ef26b04d9b2f813fef7d554649fbcaac955639c))
+
 ## [2.3.0](https://github.com/ZeitOnline/notification/compare/notification-v2.2.0...notification-v2.3.0) (2026-05-06)
 
 
