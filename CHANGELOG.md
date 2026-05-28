@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.1](https://github.com/ZeitOnline/notification/compare/notification-v2.4.0...notification-v2.4.1) (2026-05-28)
+
+
+### 📝 Other Changes
+
+* do not send focus back with timeout ([#67](https://github.com/ZeitOnline/notification/issues/67)) ([10c2de1](https://github.com/ZeitOnline/notification/commit/10c2de11a26f9f66a4cdb9d8a597c72c78d4f596))
+
 ## [2.4.0](https://github.com/ZeitOnline/notification/compare/notification-v2.3.0...notification-v2.4.0) (2026-05-26)
 
 
