@@ -66,21 +66,24 @@ export class Notification {
 		}
 
 		const storedDuration = hasTimer ? this.getStoredDuration() : null;
-		const duration = hasTimer ? storedDuration ?? this.notificationTimeout : undefined;
+		const duration = hasTimer ? (storedDuration ?? this.notificationTimeout) : undefined;
 		const hasActiveTimer = hasTimer && duration !== undefined;
 
-		const notification = this.createNotification({
-			element,
-			position,
-			group,
-			icon,
-			message,
-			status,
-			button,
-			link,
-			hasTimer: hasActiveTimer,
-			onClose,
-		}, duration);
+		const notification = this.createNotification(
+			{
+				element,
+				position,
+				group,
+				icon,
+				message,
+				status,
+				button,
+				link,
+				hasTimer: hasActiveTimer,
+				onClose,
+			},
+			duration,
+		);
 
 		this.insertNotification(notification);
 
@@ -203,18 +206,21 @@ export class Notification {
 		return el;
 	}
 
-	createNotification({
-		element = document.body,
-		group = null,
-		position = 'top-right',
-		icon,
-		message,
-		status = 'info',
-		button,
-		link,
-		hasTimer,
-		onClose = null,
-	}: NotificationOptions, duration = this.notificationTimeout): NotificationElement {
+	createNotification(
+		{
+			element = document.body,
+			group = null,
+			position = 'top-right',
+			icon,
+			message,
+			status = 'info',
+			button,
+			link,
+			hasTimer,
+			onClose = null,
+		}: NotificationOptions,
+		duration = this.notificationTimeout,
+	): NotificationElement {
 		const notification = this.createNotificationElement(element, group, position, onClose);
 		notification.remaining = duration;
 		notification.className = `z-notification z-notification--${position} z-notification--${status}`;
@@ -244,10 +250,7 @@ export class Notification {
 		) as HTMLButtonElement;
 		if (closeButton) {
 			if (duration !== undefined) {
-				closeButton.style.setProperty(
-					'--z-notification-duration',
-					`${duration}ms`,
-				);
+				closeButton.style.setProperty('--z-notification-duration', `${duration}ms`);
 			}
 			closeButton.onclick = () => {
 				this.setFocus(notification.anchorElement);
@@ -436,7 +439,9 @@ export class Notification {
 				if (messageEl) {
 					messageEl.textContent = openingMessage;
 				}
-				notification.querySelector<HTMLButtonElement>('.z-notification__close-btn')?.focus();
+				notification
+					.querySelector<HTMLButtonElement>('.z-notification__close-btn')
+					?.focus();
 				actionButton.remove();
 				setTimeout(() => {
 					window.open(settings.url, '_blank', 'noopener,noreferrer');
@@ -466,11 +471,18 @@ export class Notification {
 		notification.startedAt = Date.now();
 		notification.timeoutID = setTimeout(() => {
 			if (!notification.isPaused) {
-				notification.remaining = 0;
-				this.setFocus(notification.anchorElement);
-				this.removeNotification(notification);
+				this.expireTimedNotification(notification);
 			}
 		}, duration);
+	}
+
+	expireTimedNotification(notification: NotificationElement): void {
+		const activeElement = document.activeElement;
+		if (activeElement && notification.contains(activeElement)) {
+			this.setFocus(notification.anchorElement);
+		}
+		notification.remaining = 0;
+		this.removeNotification(notification);
 	}
 
 	addPauseResumeEvents(notification: NotificationElement): void {
@@ -493,10 +505,10 @@ export class Notification {
 		const resume = () => {
 			notification.isPaused = false;
 			notification.startedAt = Date.now();
-			notification.remaining = initialDuration === undefined ? undefined : initialDuration - notification.elapsed;
+			if (initialDuration === undefined) return;
+			notification.remaining = initialDuration - notification.elapsed;
 			if (notification.remaining <= 0) {
-				this.setFocus(notification.anchorElement);
-				this.removeNotification(notification);
+				this.expireTimedNotification(notification);
 				return;
 			}
 			this.startTimeout(notification, notification.remaining);
