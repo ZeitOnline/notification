@@ -226,9 +226,9 @@ export class Notification {
 
 		// prettier-ignore
 		notification.innerHTML = this.getSvgIcon(icon) +
-			(message ? `<span class="z-notification__message">${message}</span>` : '') +
-			(link ? `<a href="${link.href}" class="${buttonClass}">${link.text}</a>` : '') +
-			(!link && button ? `<button class="${buttonClass}">${button.text}</button>` : '') +
+			(message ? `<span class="z-notification__message">${this.escapeHtml(message)}</span>` : '') +
+			(link ? `<a href="${this.sanitizeUrl(link.href)}" class="${buttonClass}">${this.escapeHtml(link.text)}</a>` : '') +
+			(!link && button ? `<button class="${buttonClass}">${this.escapeHtml(button.text)}</button>` : '') +
 			this.getCloseButtonHTML(!!hasTimer);
 
 		if (button && button.onClick) {
@@ -369,6 +369,25 @@ export class Notification {
 			</svg>`;
 		}
 		return '';
+	}
+
+	escapeHtml(text: string): string {
+		const div = document.createElement('div');
+		div.textContent = text;
+		return div.innerHTML;
+	}
+
+	sanitizeUrl(href: string): string {
+		try {
+			const url = new URL(href, window.location.href);
+			if (url.protocol === 'http:' || url.protocol === 'https:') {
+				return href;
+			}
+		} catch {
+			// Invalid URL
+		}
+		console.warn('[Notification] Invalid or unsafe URL blocked:', href);
+		return '#';
 	}
 
 	inlinePositioning(element: HTMLElement, container: HTMLElement): void {
