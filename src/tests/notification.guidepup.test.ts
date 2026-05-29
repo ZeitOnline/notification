@@ -5,16 +5,18 @@ import { virtual } from '@guidepup/virtual-screen-reader';
 
 import { Notification } from '../notification';
 
-const ensureDialogMethods = (): void => {
-	if (!HTMLDialogElement.prototype.show) {
-		HTMLDialogElement.prototype.show = function show(): void {
-			this.setAttribute('open', '');
+const ensurePopoverMethods = (): void => {
+	if (!HTMLElement.prototype.showPopover) {
+		HTMLElement.prototype.showPopover = function showPopover(): void {
+			this.toggleAttribute('open', true);
+			this.style.display = 'flex';
 		};
 	}
 
-	if (!HTMLDialogElement.prototype.close) {
-		HTMLDialogElement.prototype.close = function close(): void {
+	if (!HTMLElement.prototype.hidePopover) {
+		HTMLElement.prototype.hidePopover = function hidePopover(): void {
 			this.removeAttribute('open');
+			this.style.display = '';
 		};
 	}
 };
@@ -25,11 +27,31 @@ const waitForAnnouncement = async (delay = 200): Promise<void> => {
 	});
 };
 
+const getNotificationMessage = (message: string): HTMLElement => {
+	const element = Array.from(document.querySelectorAll('.z-notification__message')).find(
+		item => item.textContent === message,
+	) as HTMLElement | undefined;
+	if (!element) {
+		throw new Error(`Expected visible notification message "${message}"`);
+	}
+	return element;
+};
+
+const getLiveRegion = (politeness: 'polite' | 'assertive'): HTMLElement => {
+	const liveRegion = document.querySelector(
+		`.z-notification-live-region--${politeness}`,
+	) as HTMLElement | null;
+	if (!liveRegion) {
+		throw new Error(`Expected ${politeness} notification live region`);
+	}
+	return liveRegion;
+};
+
 describe.sequential('notification spoken accessibility', () => {
 	let notification: Notification;
 
 	beforeEach(() => {
-		ensureDialogMethods();
+		ensurePopoverMethods();
 		Notification.instance = undefined;
 		document.body.innerHTML = '';
 		notification = new Notification();
@@ -62,12 +84,17 @@ describe.sequential('notification spoken accessibility', () => {
 		});
 		await waitForAnnouncement();
 
-		const inlineMessage = screen.getByRole('status');
+		const inlineMessage = document.querySelector(
+			'.z-notification-inline',
+		) as HTMLElement | null;
+		const liveRegion = getLiveRegion('polite');
 
 		expect(document.activeElement).toBe(trigger);
-		expect(inlineMessage.getAttribute('aria-live')).toBe('polite');
-		expect(inlineMessage.getAttribute('aria-atomic')).toBe('true');
-		expect((inlineMessage as HTMLElement).innerText).toContain('Link copied to clipboard.');
+		expect(inlineMessage).not.toBeNull();
+		expect(inlineMessage?.innerText).toContain('Link copied to clipboard.');
+		expect(liveRegion.getAttribute('aria-live')).toBe('polite');
+		expect(liveRegion.getAttribute('aria-atomic')).toBe('true');
+		expect(liveRegion.textContent).toContain('Link copied to clipboard.');
 	});
 
 	it('exposes top-right alerts and speaks the action and close buttons in tab order', async () => {
@@ -84,7 +111,7 @@ describe.sequential('notification spoken accessibility', () => {
 		});
 		await waitForAnnouncement();
 
-		const message = screen.getByText('Publishing failed. Check the form and try again.');
+		const message = getNotificationMessage('Publishing failed. Check the form and try again.');
 		expect(message).not.toBeNull();
 		expect(message.textContent).toBe('Publishing failed. Check the form and try again.');
 
