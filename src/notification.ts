@@ -109,24 +109,18 @@ export class Notification {
 		}
 	}
 
-	async setInlineMessage(message: string): Promise<void> {
+	setInlineMessage(message: string): void {
 		if (!this.container) {
 			console.warn('Notification container is not initialized.');
 			return;
 		}
-		this.container.innerText = '';
-		await new Promise<void>(resolve => {
-			setTimeout(() => {
-				resolve();
-			}, 50);
-		});
 		this.container.innerText = message;
 	}
 
 	async showInline({ element, message }: InlineNotificationOptions): Promise<void> {
 		let inline: InlineNotification = { timeoutID: null };
 		this.container = this.createInlineContainer();
-		await this.setInlineMessage(message);
+		this.setInlineMessage(message);
 		this.announcer.announce(message);
 		this.inlinePositioning(element, this.container);
 
@@ -165,9 +159,6 @@ export class Notification {
 	 * Creates a container that will be displayed close to the element
 	 * that triggered the notification. Do not use a `dialog` element here,
 	 * as it is too disruptive for short, timed inline notifications.
-	 *
-	 * @param {Object} options - Options for the inline container.
-	 * @param {string} options.ariaLiveRegionRole - The ARIA role for the live region
 	 */
 	createInlineContainer(): HTMLDivElement {
 		let container = document.querySelector('.z-notification-inline') as HTMLDivElement | null;

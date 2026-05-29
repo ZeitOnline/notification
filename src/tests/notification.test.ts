@@ -83,7 +83,6 @@ describe('notification accessibility behavior', () => {
 			message: 'Link copied to clipboard.',
 		});
 
-		await vi.advanceTimersByTimeAsync(50);
 		await showInlinePromise;
 
 		const inlineMessage = document.querySelector('.z-notification-inline');
@@ -291,7 +290,6 @@ describe('notification accessibility behavior', () => {
 			message: 'Link copied to clipboard.',
 		});
 
-		await vi.advanceTimersByTimeAsync(50);
 		await showInlinePromise;
 
 		expect(document.querySelector('.z-notification-inline')).not.toBeNull();
@@ -313,7 +311,6 @@ describe('notification accessibility behavior', () => {
 			message: 'Link copied to clipboard.',
 		});
 
-		await vi.advanceTimersByTimeAsync(50);
 		await showInlinePromise;
 
 		outside.dispatchEvent(new Event('pointerup', { bubbles: true }));
@@ -331,7 +328,6 @@ describe('notification accessibility behavior', () => {
 			message: 'Link copied to clipboard.',
 		});
 
-		await vi.advanceTimersByTimeAsync(50);
 		await showInlinePromise;
 
 		Object.defineProperty(window, 'scrollY', {
