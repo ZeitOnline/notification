@@ -76,6 +76,18 @@ describe('live region announcer', () => {
 		expect(getLiveRegion('assertive').textContent).toBe('Publishing failed');
 	});
 
+	it('clears the live region after the announcement queue is empty', async () => {
+		announcer.announce('Only notification', 'info');
+
+		const liveRegion = getLiveRegion('polite');
+
+		await vi.advanceTimersByTimeAsync(50);
+		expect(liveRegion.textContent).toBe('Only notification');
+
+		await vi.advanceTimersByTimeAsync(announcer.getAnnouncementDelay('Only notification'));
+		expect(liveRegion.textContent).toBe('');
+	});
+
 	it('announces polite notifications one after another instead of overwriting the live region', async () => {
 		announcer.announce('First notification', 'info');
 		announcer.announce('Second notification', 'success');

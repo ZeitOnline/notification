@@ -91,6 +91,10 @@ export class LiveRegionAnnouncer {
 
 		if (!message) {
 			this.announcementQueueRunning.set(politeness, false);
+			const region = this.liveRegions.get(politeness);
+			if (region) {
+				region.textContent = '';
+			}
 			return;
 		}
 
