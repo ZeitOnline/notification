@@ -93,6 +93,28 @@ notification.show({
 });
 ```
 
+## Tracking
+
+Applications can pass minimal tracking metadata with a notification. The package
+does not send analytics events itself; the consuming application owns the
+dataLayer or Snowplow integration.
+
+```js
+notification.show({
+	message: 'The article was removed from your reading list.',
+	status: 'success',
+	hasTimer: true,
+	button: {
+		text: 'Undo',
+		onClick: undoBookmark,
+	},
+	tracking: {
+		originator: 'Bookmark',
+		action: 'undo',
+	},
+});
+```
+
 ## What the package provides
 
 - Notifications with `top`, `top-right` and `bottom` placement.

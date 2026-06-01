@@ -20,6 +20,11 @@ export type SettingsOptions = {
 
 export type NotificationPosition = 'top' | 'bottom' | 'top-right';
 
+export type NotificationTrackingOptions = {
+	originator?: string;
+	action?: string;
+};
+
 export type NotificationOptions = {
 	group?: string | null;
 	position?: NotificationPosition;
@@ -32,6 +37,7 @@ export type NotificationOptions = {
 	hasTimer?: boolean;
 	onClose?: (() => void) | null;
 	settings?: SettingsOptions;
+	tracking?: NotificationTrackingOptions;
 };
 
 export type InlineNotificationOptions = {
