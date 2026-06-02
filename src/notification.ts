@@ -15,7 +15,9 @@ import type {
 	NotificationElement,
 	NotificationService,
 	NotificationPosition,
+	SettingsOptions,
 } from '../index';
+import { LiveRegionAnnouncer } from './live-region-announcer';
 
 export const MAX_NOTIFICATIONS_PER_POSITION = 3;
 export const OFFSET = 24;
@@ -33,6 +35,7 @@ export class Notification {
 	originatorCounter = 0;
 	notificationStacks!: Map<NotificationPosition, NotificationElement[]>;
 	container!: HTMLDivElement | null;
+	announcer!: LiveRegionAnnouncer;
 	notificationTimeout?: number;
 
 	constructor() {
@@ -42,6 +45,7 @@ export class Notification {
 		Notification.instance = this;
 		this.notificationStacks = new Map();
 		this.container = null;
+		this.announcer = new LiveRegionAnnouncer();
 	}
 	show({
 		group,
@@ -86,6 +90,7 @@ export class Notification {
 		);
 
 		this.insertNotification(notification);
+		this.announcer.announce(message, status);
 
 		this.addNotificationToStack(notification);
 		this.positionNotifications(position);
@@ -104,28 +109,19 @@ export class Notification {
 		}
 	}
 
-	/**
-	 * When the container is added to the page, a small delay is required
-	 * before setting the innerText, otherwise the screen reader might not announce it correctly.
-	 */
-	async setAndAnnounceMessage(message: string): Promise<void> {
+	setInlineMessage(message: string): void {
 		if (!this.container) {
 			console.warn('Notification container is not initialized.');
 			return;
 		}
-		this.container.innerText = '';
-		await new Promise<void>(resolve => {
-			setTimeout(() => {
-				resolve();
-			}, 50);
-		});
 		this.container.innerText = message;
 	}
 
 	async showInline({ element, message }: InlineNotificationOptions): Promise<void> {
 		let inline: InlineNotification = { timeoutID: null };
 		this.container = this.createInlineContainer();
-		await this.setAndAnnounceMessage(message);
+		this.setInlineMessage(message);
+		this.announcer.announce(message);
 		this.inlinePositioning(element, this.container);
 
 		// using pointerup so that simply touching the screen
@@ -163,21 +159,13 @@ export class Notification {
 	 * Creates a container that will be displayed close to the element
 	 * that triggered the notification. Do not use a `dialog` element here,
 	 * as it is too disruptive for short, timed inline notifications.
-	 *
-	 * @param {Object} options - Options for the inline container.
-	 * @param {string} options.ariaLiveRegionRole - The ARIA role for the live region
 	 */
 	createInlineContainer(): HTMLDivElement {
 		let container = document.querySelector('.z-notification-inline') as HTMLDivElement | null;
 		if (!container) {
 			container = document.createElement('div');
 			container.className = 'z-notification-inline';
-			container.setAttribute('role', 'status');
-			// aria-live & aria-atomic are redundant to the role, but
-			// recommended for better screen reader support
-			container.setAttribute('aria-live', 'polite');
-			container.setAttribute('aria-atomic', 'true');
-			document.body.insertAdjacentElement('beforeend', container);
+			this.announcer.insertBeforeLiveRegions(container);
 		}
 		return container;
 	}
@@ -229,9 +217,9 @@ export class Notification {
 
 		// prettier-ignore
 		notification.innerHTML = this.getSvgIcon(icon) +
-			(message ? `<span aria-live="polite" class="z-notification__message">${message}</span>` : '') +
-			(link ? `<a href="${link.href}" class="${buttonClass}">${link.text}</a>` : '') +
-			(!link && button ? `<button class="${buttonClass}">${button.text}</button>` : '') +
+			(message ? `<span class="z-notification__message">${this.escapeHtml(message)}</span>` : '') +
+			(link ? `<a href="${this.sanitizeUrl(link.href)}" class="${buttonClass}">${this.escapeHtml(link.text)}</a>` : '') +
+			(!link && button ? `<button class="${buttonClass}">${this.escapeHtml(button.text)}</button>` : '') +
 			this.getCloseButtonHTML(!!hasTimer);
 
 		if (button && button.onClick) {
@@ -304,7 +292,7 @@ export class Notification {
 			) {
 				insertionPoint = activeElement;
 			} else {
-				document.body.insertAdjacentElement('beforeend', notification);
+				this.announcer.insertBeforeLiveRegions(notification);
 				notification.showPopover();
 				return;
 			}
@@ -374,6 +362,25 @@ export class Notification {
 		return '';
 	}
 
+	escapeHtml(text: string): string {
+		const div = document.createElement('div');
+		div.textContent = text;
+		return div.innerHTML;
+	}
+
+	sanitizeUrl(href: string): string {
+		try {
+			const url = new URL(href, window.location.href);
+			if (url.protocol === 'http:' || url.protocol === 'https:') {
+				return href;
+			}
+		} catch {
+			// Invalid URL
+		}
+		console.warn('[Notification] Invalid or unsafe URL blocked:', href);
+		return '#';
+	}
+
 	inlinePositioning(element: HTMLElement, container: HTMLElement): void {
 		let margin = 8;
 		let rect = element.getBoundingClientRect();
@@ -426,7 +433,7 @@ export class Notification {
 			element: anchorElement,
 			position,
 			message,
-			button: { text: buttonText },
+			button: { text: buttonText, onClick: () => {} },
 			onClose: () => this.dismissDurationHint(),
 		});
 
@@ -533,7 +540,11 @@ export class Notification {
 		// when a grouped notification is removed, it can have some time remaining
 		// this happens, when the next notification of the same group appears.
 		// onClose won't get called then.
-		if (notification.remaining <= 0 && notification.onClose) {
+		if (
+			notification.remaining !== undefined &&
+			notification.remaining <= 0 &&
+			notification.onClose
+		) {
 			notification.onClose();
 		}
 		this.finishRemovingNotification(notification, { shouldReflow });

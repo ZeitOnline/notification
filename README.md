@@ -70,6 +70,12 @@ trigger?.addEventListener('click', () => {
 
 When `element` is provided for a toast, the notification is inserted after the trigger and any already-rendered notification siblings, and the stack is reflowed from there. If `element` is omitted and a direct child element is focused, the notification is inserted after that element instead of being appended to the end of the body.
 
+## Screen reader announcements
+
+Notifications are announced through hidden ARIA live regions. Regular notifications use a polite live region, while `status: 'error'` uses an assertive live region.
+
+Announcements are queued per live-region politeness level. Each message stays in the live region for at least 1.5 seconds and at most 4 seconds, with longer messages receiving proportionally more time. This pacing is intentionally conservative: typical spoken output is often around 150-180 words per minute, while experienced screen-reader users may use 300 words per minute or faster. The queue prevents rapid notification bursts from overwriting earlier announcements before assistive technologies have time to speak them.
+
 If you use the `icon` option, the notification expects an SVG symbol in the page with the id pattern `svg-<name>`.
 
 ```html
@@ -100,6 +106,7 @@ notification.show({
 - Status variants for `success`, `warning`, `info` and `error`.
 - Optional action button or link.
 - Inline notifications anchored to the element that triggered them.
+- Queued screen-reader announcements with separate polite and assertive live regions.
 - Optional `group` keys to replace earlier notifications within the same position stack.
 - Auto-dismiss after 4 seconds, with pause and resume on pointer hover, when timer property is set to true.
 - Timed notifications can emit the `notification-removed` custom event when they close.
