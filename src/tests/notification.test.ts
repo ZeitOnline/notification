@@ -6,6 +6,7 @@ import {
 	GAP_STACKING,
 	MAX_NOTIFICATIONS_PER_POSITION,
 	Notification,
+	NOTIFICATION_REMOVED_EVENT,
 	OFFSET,
 } from '../notification';
 
@@ -729,6 +730,35 @@ describe('notification accessibility behavior', () => {
 		expect(onCloseMock).toHaveBeenCalledTimes(1);
 	});
 
+	it('dispatches notification-removed with the notification when timer expires', async () => {
+		const eventListener = vi.fn((event: CustomEvent) => {
+			expect(event.detail.notification.isConnected).toBe(true);
+		});
+		notification.notificationTimeout = 5000;
+
+		window.addEventListener(NOTIFICATION_REMOVED_EVENT, eventListener);
+
+		notification.show({
+			message: 'Notification with removal event',
+			status: 'info',
+			hasTimer: true,
+		});
+
+		const notificationElement = getNotificationMessage(
+			'Notification with removal event',
+		).closest('.z-notification');
+
+		await vi.advanceTimersByTimeAsync(notification.notificationTimeout);
+
+		expect(eventListener).toHaveBeenCalledTimes(1);
+		const event = eventListener.mock.calls[0][0] as CustomEvent;
+		expect(event.detail.originator).toBe(document.body);
+		expect(event.detail.notification).toBe(notificationElement);
+		expect(event.detail.notification.isConnected).toBe(false);
+
+		window.removeEventListener(NOTIFICATION_REMOVED_EVENT, eventListener);
+	});
+
 	it('does not restore focus to the trigger when timer expires', async () => {
 		const trigger = document.createElement('button');
 		const nextFocusTarget = document.createElement('button');
@@ -798,8 +828,77 @@ describe('notification accessibility behavior', () => {
 		expect(onCloseMock).toHaveBeenCalledTimes(1);
 	});
 
+	it('dispatches notification-removed with the notification when closed manually', async () => {
+		const trigger = document.createElement('button');
+		const eventListener = vi.fn((event: CustomEvent) => {
+			expect(event.detail.notification.isConnected).toBe(true);
+		});
+		trigger.textContent = 'Open notification';
+		document.body.append(trigger);
+
+		const user = userEvent.setup({
+			advanceTimers: vi.advanceTimersByTime,
+		});
+
+		window.addEventListener(NOTIFICATION_REMOVED_EVENT, eventListener);
+
+		notification.show({
+			element: trigger,
+			message: 'Notification with manual removal event',
+			status: 'info',
+		});
+
+		const notificationElement = getNotificationMessage(
+			'Notification with manual removal event',
+		).closest('.z-notification');
+
+		await user.click(screen.getByRole('button', { name: 'Meldung schließen', hidden: true }));
+
+		expect(eventListener).toHaveBeenCalledTimes(1);
+		const event = eventListener.mock.calls[0][0] as CustomEvent;
+		expect(event.detail.originator).toBe(trigger);
+		expect(event.detail.notification).toBe(notificationElement);
+		expect(event.detail.notification.isConnected).toBe(false);
+
+		window.removeEventListener(NOTIFICATION_REMOVED_EVENT, eventListener);
+	});
+
+	it('dispatches notification-removed when an action button closes the notification', async () => {
+		const eventListener = vi.fn();
+		const user = userEvent.setup({
+			advanceTimers: vi.advanceTimersByTime,
+		});
+
+		window.addEventListener(NOTIFICATION_REMOVED_EVENT, eventListener);
+
+		notification.show({
+			message: 'Notification with action removal event',
+			status: 'info',
+			button: {
+				text: 'Confirm',
+				onClick: vi.fn(),
+			},
+		});
+
+		const notificationElement = getNotificationMessage(
+			'Notification with action removal event',
+		).closest('.z-notification');
+
+		await user.click(screen.getByRole('button', { name: 'Confirm', hidden: true }));
+
+		expect(eventListener).toHaveBeenCalledTimes(1);
+		const event = eventListener.mock.calls[0][0] as CustomEvent;
+		expect(event.detail.originator).toBe(document.body);
+		expect(event.detail.notification).toBe(notificationElement);
+
+		window.removeEventListener(NOTIFICATION_REMOVED_EVENT, eventListener);
+	});
+
 	it('does not call onClose when notification is replaced by same group', async () => {
 		const onCloseMock = vi.fn();
+		const eventListener = vi.fn();
+
+		window.addEventListener(NOTIFICATION_REMOVED_EVENT, eventListener);
 
 		notification.show({
 			group: 'test-group',
@@ -820,6 +919,9 @@ describe('notification accessibility behavior', () => {
 
 		// First notification was replaced, onClose should not have been called
 		expect(onCloseMock).not.toHaveBeenCalled();
+		expect(eventListener).toHaveBeenCalledTimes(1);
+		const event = eventListener.mock.calls[0][0] as CustomEvent;
+		expect(event.detail.notification.textContent).toContain('First notification');
 		expect(queryNotificationMessage('First notification')).toBeNull();
 		expect(getNotificationMessage('Second notification')).not.toBeNull();
 
@@ -827,6 +929,8 @@ describe('notification accessibility behavior', () => {
 
 		// Still not called since first was replaced
 		expect(onCloseMock).not.toHaveBeenCalled();
+
+		window.removeEventListener(NOTIFICATION_REMOVED_EVENT, eventListener);
 	});
 
 	it('shows a companion notification when settings.url is provided', () => {

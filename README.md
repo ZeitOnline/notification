@@ -109,7 +109,7 @@ notification.show({
 - Queued screen-reader announcements with separate polite and assertive live regions.
 - Optional `group` keys to replace earlier notifications within the same position stack.
 - Auto-dismiss after the configured duration, with pause and resume on pointer hover, when `hasTimer` is set to `true`.
-- Timed notifications can emit the `notification-removed` custom event when they close.
+- Notifications emit the global `notification-removed` custom event on `window` with `detail.notification` and `detail.originator` whenever they are removed.
 - Stacking of up to 3 notifications per position at the same time.
 - Optional `settings.url` on timed notifications: when no stored auto-dismiss duration preference exists yet, shows a companion notification with a configurable call-to-action that opens the provided URL in a new tab. Dismissing that hint stores `z.notification.hint` for two days.
 
