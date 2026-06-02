@@ -43,6 +43,11 @@ export type InlineNotification = {
 	timeoutID: ReturnType<typeof setTimeout> | null;
 };
 
+export type NotificationRemovedEventDetail = {
+	originator: HTMLElement;
+	notification: NotificationElement;
+};
+
 export interface NotificationElement extends HTMLElement {
 	group: string | null;
 	hasTimer: boolean;
@@ -69,5 +74,9 @@ declare global {
 		Zeit?: {
 			notification?: NotificationService;
 		};
+	}
+
+	interface WindowEventMap {
+		'notification-removed': CustomEvent<NotificationRemovedEventDetail>;
 	}
 }

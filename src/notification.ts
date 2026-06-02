@@ -22,6 +22,7 @@ import { LiveRegionAnnouncer } from './live-region-announcer';
 export const MAX_NOTIFICATIONS_PER_POSITION = 3;
 export const OFFSET = 24;
 export const GAP_STACKING = 8;
+export const NOTIFICATION_REMOVED_EVENT = 'notification-removed';
 const HINT_DISMISSED_KEY = 'z.notification.hint';
 const HINT_DISMISS_MAX_AGE = 2 * 24 * 60 * 60; // 2 days
 const DEFAULT_SETTINGS_HINT_COPY = {
@@ -550,11 +551,24 @@ export class Notification {
 		this.finishRemovingNotification(notification, { shouldReflow });
 	}
 
+	dispatchNotificationRemoved(notification: NotificationElement): void {
+		window.dispatchEvent(
+			new CustomEvent(NOTIFICATION_REMOVED_EVENT, {
+				detail: {
+					originator: notification.anchorElement,
+					notification,
+				},
+			}),
+		);
+	}
+
 	finishRemovingNotification(
 		notification: NotificationElement,
 		{ shouldReflow = true }: { shouldReflow?: boolean } = {},
 	): void {
 		if (!notification.isConnected) return;
+
+		this.dispatchNotificationRemoved(notification);
 
 		try {
 			notification.hidePopover();
