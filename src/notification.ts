@@ -24,6 +24,7 @@ export const OFFSET = 24;
 export const GAP_STACKING = 8;
 export const NOTIFICATION_REMOVED_EVENT = 'notification-removed';
 const HINT_DISMISSED_KEY = 'z.notification.hint';
+const STORED_DURATION_KEY = 'z.notification.duration';
 const HINT_DISMISS_MAX_AGE = 2 * 24 * 60 * 60; // 2 days
 const DEFAULT_SETTINGS_HINT_COPY = {
 	message: 'Automatisch ausblenden?',
@@ -412,7 +413,7 @@ export class Notification {
 
 	getStoredDuration(): number | null {
 		try {
-			const parsed = Number(localStorage.getItem('z.notification.duration'));
+			const parsed = Number(localStorage.getItem(STORED_DURATION_KEY));
 			return !isNaN(parsed) && parsed > 0 ? parsed : null;
 		} catch {
 			return null;
