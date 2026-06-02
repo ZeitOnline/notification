@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.5.0](https://github.com/ZeitOnline/notification/compare/notification-v2.4.1...notification-v2.5.0) (2026-06-02)
+
+
+### 🚀 Features
+
+* add event when notification is removed ([#74](https://github.com/ZeitOnline/notification/issues/74)) ([d0d2fbd](https://github.com/ZeitOnline/notification/commit/d0d2fbd1d8c3dcaf8f34c9f92618cb4406f1cb71))
+
+
+### 🐛 Bug Fixes
+
+* enhance screenreader support and handle queue of notifications ([#70](https://github.com/ZeitOnline/notification/issues/70)) ([03a6c09](https://github.com/ZeitOnline/notification/commit/03a6c09d5b5010c5e7170ced074bff968418e0aa))
+
+
+### 📝 Other Changes
+
+* update auto-dismiss duration handling in notifications ([#72](https://github.com/ZeitOnline/notification/issues/72)) ([cb99266](https://github.com/ZeitOnline/notification/commit/cb992666c33c1ed53ec5bb3fc2c35d5fd5516796))
+
 ## [2.4.1](https://github.com/ZeitOnline/notification/compare/notification-v2.4.0...notification-v2.4.1) (2026-05-28)
 
 
