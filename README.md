@@ -109,9 +109,78 @@ notification.show({
 - Queued screen-reader announcements with separate polite and assertive live regions.
 - Optional `group` keys to replace earlier notifications within the same position stack.
 - Auto-dismiss after the configured duration, with pause and resume on pointer hover, when `hasTimer` is set to `true`.
-- Notifications emit the global `notification-removed` custom event on `window` with `detail.notification` and `detail.originator` whenever they are removed.
+- Notifications emit `notification-shown`, `notification-action` and `notification-removed` custom events on `window` over their whole lifecycle, so consumers can observe them without touching the call sites. See [Lifecycle events](#lifecycle-events).
 - Stacking of up to 3 notifications per position at the same time.
 - Optional `settings.url` on timed notifications: when no stored auto-dismiss duration preference exists yet, shows a companion notification with a configurable call-to-action that opens the provided URL in a new tab. Dismissing that hint stores `z.notification.hint` for two days.
+
+## Lifecycle events
+
+Every notification reports its own lifecycle through custom events on `window`, and `show()`
+returns the notification element. This keeps concerns such as analytics out of the call sites:
+listen once, and every notification in the application is covered, including the auto-dismiss
+hint the package shows on its own.
+
+```js
+window.addEventListener('notification-shown', ({ detail }) => {
+	// detail.notification is already in the DOM
+});
+
+window.addEventListener('notification-action', ({ detail }) => {
+	// the link or the callback button was activated
+});
+
+window.addEventListener('notification-removed', ({ detail }) => {
+	if (detail.reason === 'close') {
+		// the user actively dismissed it, rather than the timer running out
+	}
+});
+```
+
+All three events share the same `detail` shape:
+
+| Field          | Description                                                                                        |
+| -------------- | -------------------------------------------------------------------------------------------------- |
+| `notification` | The notification element. Still in the DOM in `notification-removed`.                              |
+| `originator`   | The element the notification is anchored to.                                                       |
+| `group`        | The `group` the notification was shown with, or `null`.                                            |
+| `status`       | `success`, `warning`, `info` or `error`.                                                           |
+| `hasTimer`     | Whether an auto-dismiss timer is actually running.                                                 |
+| `duration`     | The effective auto-dismiss duration in milliseconds, or `undefined` when no timer runs.             |
+| `actionType`   | `link` or `button`, or `undefined` when the notification has no action.                             |
+| `isCompanion`  | `true` for companion notifications such as the auto-dismiss hint.                                   |
+| `data`         | Whatever was passed as the `data` option, untouched.                                                |
+
+`notification-removed` adds a `reason`, so consumers can tell a deliberate dismissal from the
+timer running out:
+
+| Reason          | Meaning                                                    |
+| --------------- | ---------------------------------------------------------- |
+| `close`         | The user clicked the close button.                          |
+| `timeout`       | The auto-dismiss timer expired.                             |
+| `action`        | The action button ran its callback.                         |
+| `replaced`      | A newer notification of the same `group` took its place.    |
+| `evicted`       | The position stack was full.                                |
+| `cascade`       | The parent notification was removed.                        |
+| `programmatic`  | Removed through the API without a more specific reason.     |
+
+### Passing your own data through
+
+`show()` accepts an opaque `data` object. The package never reads it; it is stored on the
+notification element and echoed back in every event detail, so consumers can carry their own
+context without the package knowing what it means.
+
+```js
+notification.show({
+	group: 'bookmark',
+	message: 'The article was saved.',
+	data: { myOwnContext: 'whatever the consumer needs' },
+});
+```
+
+### Stable DOM hooks
+
+The notification's parts carry `data-notification-part` attributes (`icon`, `message`, `action`,
+`close`), which are a safer selector target than the styling class names.
 
 ## Updates
 
