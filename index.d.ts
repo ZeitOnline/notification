@@ -25,16 +25,7 @@ export type NotificationStatus = 'error' | 'success' | 'warning' | 'info';
 /** Whether the notification's action is a link or a callback button. */
 export type NotificationActionType = 'link' | 'button';
 
-/**
- * Why a notification was removed:
- * - `close`: the user clicked the close button
- * - `timeout`: the auto-dismiss timer expired
- * - `action`: the action button ran its callback
- * - `replaced`: a newer notification of the same group took its place
- * - `evicted`: the position stack was full
- * - `cascade`: its parent notification was removed
- * - `programmatic`: removed through the API without a more specific reason
- */
+/** Why a notification was removed. See the reason table in the README. */
 export type NotificationRemovalReason =
 	| 'close'
 	| 'timeout'
@@ -89,10 +80,6 @@ export type NotificationEventDetail = {
 	data?: Record<string, unknown>;
 };
 
-export type NotificationShownEventDetail = NotificationEventDetail;
-
-export type NotificationActionEventDetail = NotificationEventDetail;
-
 export type NotificationRemovedEventDetail = NotificationEventDetail & {
 	reason: NotificationRemovalReason;
 };
@@ -131,8 +118,8 @@ declare global {
 	}
 
 	interface WindowEventMap {
-		'notification-shown': CustomEvent<NotificationShownEventDetail>;
-		'notification-action': CustomEvent<NotificationActionEventDetail>;
+		'notification-shown': CustomEvent<NotificationEventDetail>;
+		'notification-action': CustomEvent<NotificationEventDetail>;
 		'notification-removed': CustomEvent<NotificationRemovedEventDetail>;
 	}
 }
