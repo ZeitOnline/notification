@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.0](https://github.com/ZeitOnline/notification/compare/notification-v2.5.0...notification-v2.6.0) (2026-09-07)
+
+
+### 🚀 Features
+
+* add notification lifecycle window events ([#75](https://github.com/ZeitOnline/notification/issues/75)) ([f08169a](https://github.com/ZeitOnline/notification/commit/f08169a3a68729cd9a736e90fbd01ab017770d39))
+
 ## [2.5.0](https://github.com/ZeitOnline/notification/compare/notification-v2.4.1...notification-v2.5.0) (2026-06-02)
 
 
