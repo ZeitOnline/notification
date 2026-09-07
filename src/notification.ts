@@ -13,6 +13,8 @@ import type {
 	InlineNotificationOptions,
 	InlineNotification,
 	NotificationElement,
+	NotificationEventDetail,
+	NotificationRemovalReason,
 	NotificationService,
 	NotificationPosition,
 	SettingsOptions,
@@ -23,6 +25,8 @@ export const MAX_NOTIFICATIONS_PER_POSITION = 3;
 export const OFFSET = 24;
 export const GAP_STACKING = 8;
 export const NOTIFICATION_REMOVED_EVENT = 'notification-removed';
+export const NOTIFICATION_SHOWN_EVENT = 'notification-shown';
+export const NOTIFICATION_ACTION_EVENT = 'notification-action';
 const HINT_DISMISSED_KEY = 'z.notification.hint';
 const STORED_DURATION_KEY = 'z.notification.duration';
 const HINT_DISMISS_MAX_AGE = 2 * 24 * 60 * 60; // 2 days
@@ -61,13 +65,14 @@ export class Notification {
 		hasTimer,
 		onClose,
 		settings,
-	}: NotificationOptions): void {
+		data,
+	}: NotificationOptions): NotificationElement {
 		if (group) {
 			const notificationsToRemove = this.notificationStacks
 				.get(position)
 				?.filter(item => item.group === group);
 			notificationsToRemove?.forEach(notification => {
-				this.removeNotification(notification, { shouldReflow: false });
+				this.removeNotification(notification, { shouldReflow: false, reason: 'replaced' });
 			});
 		}
 
@@ -87,6 +92,7 @@ export class Notification {
 				link,
 				hasTimer: hasActiveTimer,
 				onClose,
+				data,
 			},
 			duration,
 		);
@@ -96,6 +102,7 @@ export class Notification {
 
 		this.addNotificationToStack(notification);
 		this.positionNotifications(position);
+		this.dispatchNotificationShown(notification);
 
 		if (hasTimer) {
 			if (storedDuration === null && settings?.url && !this.isDurationHintDismissed()) {
@@ -109,6 +116,8 @@ export class Notification {
 				this.startTimeout(notification, notification.remaining);
 			}
 		}
+
+		return notification;
 	}
 
 	setInlineMessage(message: string): void {
@@ -193,6 +202,7 @@ export class Notification {
 		el.elapsed = 0;
 		el.startedAt = 0;
 		el.anchorElement = element;
+		el.isCompanion = false;
 		return el;
 	}
 
@@ -208,30 +218,39 @@ export class Notification {
 			link,
 			hasTimer,
 			onClose = null,
+			data,
 		}: NotificationOptions,
 		duration = this.notificationTimeout,
 	): NotificationElement {
 		const notification = this.createNotificationElement(element, group, position, onClose);
 		notification.remaining = duration;
+		notification.status = status;
+		// the configured duration, unlike `remaining`, which pause/resume mutates
+		notification.duration = duration;
+		notification.data = data;
 		notification.className = `z-notification z-notification--${position} z-notification--${status}`;
 
 		const buttonClass = 'z-notification__action-btn';
 
 		// prettier-ignore
 		notification.innerHTML = this.getSvgIcon(icon) +
-			(message ? `<span class="z-notification__message">${this.escapeHtml(message)}</span>` : '') +
-			(link ? `<a href="${this.sanitizeUrl(link.href)}" class="${buttonClass}">${this.escapeHtml(link.text)}</a>` : '') +
-			(!link && button ? `<button class="${buttonClass}">${this.escapeHtml(button.text)}</button>` : '') +
+			(message ? `<span class="z-notification__message" data-notification-part="message">${this.escapeHtml(message)}</span>` : '') +
+			(link ? `<a href="${this.sanitizeUrl(link.href)}" class="${buttonClass}" data-notification-part="action">${this.escapeHtml(link.text)}</a>` : '') +
+			(!link && button ? `<button class="${buttonClass}" data-notification-part="action">${this.escapeHtml(button.text)}</button>` : '') +
 			this.getCloseButtonHTML(!!hasTimer);
 
-		if (button && button.onClick) {
-			const actionElement = notification.querySelector(
-				`.${buttonClass}`,
-			) as HTMLButtonElement;
+		const actionElement = notification.querySelector<HTMLElement>(`.${buttonClass}`);
+		if (actionElement) {
+			notification.actionType = actionElement.tagName === 'A' ? 'link' : 'button';
+			// assigned as a property rather than a listener, so callers such as
+			// showDurationHint() can replace the default behavior entirely
 			actionElement.onclick = () => {
-				button.onClick();
-				this.setFocus(notification.anchorElement);
-				this.removeNotification(notification);
+				this.dispatchNotificationAction(notification);
+				if (button?.onClick) {
+					button.onClick();
+					this.setFocus(notification.anchorElement);
+					this.removeNotification(notification, { reason: 'action' });
+				}
 			};
 		}
 
@@ -245,7 +264,7 @@ export class Notification {
 			closeButton.onclick = () => {
 				this.setFocus(notification.anchorElement);
 				notification.remaining = 0;
-				this.removeNotification(notification);
+				this.removeNotification(notification, { reason: 'close' });
 			};
 		}
 
@@ -270,7 +289,7 @@ export class Notification {
 		const stack = this.getStack(notification.position);
 		stack.push(notification);
 		if (stack.length > MAX_NOTIFICATIONS_PER_POSITION) {
-			this.removeNotification(stack[0], { shouldReflow: false });
+			this.removeNotification(stack[0], { shouldReflow: false, reason: 'evicted' });
 		}
 	}
 
@@ -344,7 +363,7 @@ export class Notification {
 			<circle cx="12" cy="12" r="11.5"/>
 		</svg>`;
 		return (
-			`<button class="z-notification__close-btn${modTimer}" aria-label="Meldung schließen">` +
+			`<button class="z-notification__close-btn${modTimer}" data-notification-part="close" aria-label="Meldung schließen">` +
 			(hasTimer ? TIMER_HTML : '') +
 			`<svg class="z-notification__close-cross" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 				<path d="M15 15L3 3" stroke="currentColor" stroke-width="1.5"/>
@@ -357,7 +376,7 @@ export class Notification {
 	getSvgIcon(icon: string | undefined): string {
 		if (!icon) return '';
 		if (document.querySelector(`#svg-${icon}`) as SVGUseElement | null) {
-			return `<svg class="svg-symbol z-notification__icon" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+			return `<svg class="svg-symbol z-notification__icon" data-notification-part="icon" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
 				<use xlink:href="#svg-${icon}" />
 			</svg>`;
 		}
@@ -438,12 +457,14 @@ export class Notification {
 			button: { text: buttonText, onClick: () => {} },
 			onClose: () => this.dismissDurationHint(),
 		});
+		notification.isCompanion = true;
 
 		const actionButton = notification.querySelector(
 			'.z-notification__action-btn',
 		) as HTMLButtonElement | null;
 		if (actionButton) {
 			actionButton.onclick = () => {
+				this.dispatchNotificationAction(notification);
 				const messageEl = notification.querySelector('.z-notification__message');
 				if (messageEl) {
 					messageEl.textContent = openingMessage;
@@ -469,9 +490,10 @@ export class Notification {
 		// Companion is general UI scaffolding, not a user-event notification,
 		// so it gets a dedicated extra slot instead of evicting an older notification.
 		if (stack.length > MAX_NOTIFICATIONS_PER_POSITION + 1) {
-			this.removeNotification(stack[0], { shouldReflow: false });
+			this.removeNotification(stack[0], { shouldReflow: false, reason: 'evicted' });
 		}
 		this.positionNotifications(notification.position);
+		this.dispatchNotificationShown(notification);
 		return notification;
 	}
 
@@ -491,7 +513,7 @@ export class Notification {
 			this.setFocus(notification.anchorElement);
 		}
 		notification.remaining = 0;
-		this.removeNotification(notification);
+		this.removeNotification(notification, { reason: 'timeout' });
 	}
 
 	addPauseResumeEvents(notification: NotificationElement): void {
@@ -532,7 +554,10 @@ export class Notification {
 
 	removeNotification(
 		notification: NotificationElement | null,
-		{ shouldReflow = true }: { shouldReflow?: boolean } = {},
+		{
+			shouldReflow = true,
+			reason = 'programmatic',
+		}: { shouldReflow?: boolean; reason?: NotificationRemovalReason } = {},
 	): void {
 		if (!notification) return;
 
@@ -549,27 +574,65 @@ export class Notification {
 		) {
 			notification.onClose();
 		}
-		this.finishRemovingNotification(notification, { shouldReflow });
+		this.finishRemovingNotification(notification, { shouldReflow, reason });
 	}
 
-	dispatchNotificationRemoved(notification: NotificationElement): void {
+	/**
+	 * Describes a notification for consumers listening to its lifecycle events.
+	 * Everything here is derived from the notification itself, so consumers do
+	 * not need to know how the notification was created or where it lives.
+	 */
+	getEventDetail(notification: NotificationElement): NotificationEventDetail {
+		return {
+			originator: notification.anchorElement,
+			notification,
+			group: notification.group,
+			status: notification.status,
+			hasTimer: notification.hasTimer,
+			duration: notification.duration,
+			actionType: notification.actionType,
+			isCompanion: notification.isCompanion,
+			data: notification.data,
+		};
+	}
+
+	dispatchNotificationShown(notification: NotificationElement): void {
+		window.dispatchEvent(
+			new CustomEvent(NOTIFICATION_SHOWN_EVENT, {
+				detail: this.getEventDetail(notification),
+			}),
+		);
+	}
+
+	dispatchNotificationAction(notification: NotificationElement): void {
+		window.dispatchEvent(
+			new CustomEvent(NOTIFICATION_ACTION_EVENT, {
+				detail: this.getEventDetail(notification),
+			}),
+		);
+	}
+
+	dispatchNotificationRemoved(
+		notification: NotificationElement,
+		reason: NotificationRemovalReason = 'programmatic',
+	): void {
 		window.dispatchEvent(
 			new CustomEvent(NOTIFICATION_REMOVED_EVENT, {
-				detail: {
-					originator: notification.anchorElement,
-					notification,
-				},
+				detail: { ...this.getEventDetail(notification), reason },
 			}),
 		);
 	}
 
 	finishRemovingNotification(
 		notification: NotificationElement,
-		{ shouldReflow = true }: { shouldReflow?: boolean } = {},
+		{
+			shouldReflow = true,
+			reason = 'programmatic',
+		}: { shouldReflow?: boolean; reason?: NotificationRemovalReason } = {},
 	): void {
 		if (!notification.isConnected) return;
 
-		this.dispatchNotificationRemoved(notification);
+		this.dispatchNotificationRemoved(notification, reason);
 
 		try {
 			notification.hidePopover();
@@ -579,7 +642,7 @@ export class Notification {
 		notification.remove();
 
 		if (notification.companionNotification) {
-			this.removeNotification(notification.companionNotification);
+			this.removeNotification(notification.companionNotification, { reason: 'cascade' });
 			notification.companionNotification = null;
 		}
 
@@ -641,8 +704,9 @@ const notification: NotificationService = {
 		hasTimer,
 		onClose,
 		settings,
-	}: NotificationOptions): void {
-		this.notification.show({
+		data,
+	}: NotificationOptions): NotificationElement {
+		return this.notification.show({
 			group,
 			position,
 			element,
@@ -654,6 +718,7 @@ const notification: NotificationService = {
 			hasTimer,
 			onClose,
 			settings,
+			data,
 		});
 	},
 	debug(): void {

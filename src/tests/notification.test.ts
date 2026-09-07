@@ -6,7 +6,9 @@ import {
 	GAP_STACKING,
 	MAX_NOTIFICATIONS_PER_POSITION,
 	Notification,
+	NOTIFICATION_ACTION_EVENT,
 	NOTIFICATION_REMOVED_EVENT,
+	NOTIFICATION_SHOWN_EVENT,
 	OFFSET,
 } from '../notification';
 
@@ -1046,5 +1048,278 @@ describe('notification accessibility behavior', () => {
 
 		await vi.advanceTimersByTimeAsync(3000);
 		expect(getNotificationMessage('Second saved article.')).not.toBeNull();
+	});
+});
+
+describe('notification lifecycle events', () => {
+	let notification: Notification;
+	const listeners: Array<[string, EventListener]> = [];
+
+	const listenTo = (eventName: string): ReturnType<typeof vi.fn> => {
+		const listener = vi.fn();
+		window.addEventListener(eventName, listener);
+		listeners.push([eventName, listener as unknown as EventListener]);
+		return listener;
+	};
+
+	const detailOf = (listener: ReturnType<typeof vi.fn>, call = 0) =>
+		(listener.mock.calls[call][0] as CustomEvent).detail;
+
+	beforeEach(() => {
+		ensurePopoverMethods();
+		Notification.instance = undefined;
+		document.body.innerHTML = '';
+		vi.useFakeTimers();
+		notification = new Notification();
+	});
+
+	afterEach(() => {
+		listeners.forEach(([eventName, listener]) =>
+			window.removeEventListener(eventName, listener),
+		);
+		listeners.length = 0;
+		vi.runOnlyPendingTimers();
+		vi.useRealTimers();
+		document.body.innerHTML = '';
+		Notification.instance = undefined;
+	});
+
+	it('returns the notification element from show()', () => {
+		const trigger = document.createElement('button');
+		document.body.append(trigger);
+
+		const element = notification.show({
+			element: trigger,
+			group: 'bookmark',
+			message: 'Article saved.',
+			status: 'success',
+		});
+
+		expect(element).toBe(getNotificationMessage('Article saved.').closest('.z-notification'));
+		expect(element.group).toBe('bookmark');
+		expect(element.status).toBe('success');
+		expect(element.anchorElement).toBe(trigger);
+	});
+
+	it('dispatches notification-shown once the notification is in the DOM', () => {
+		const trigger = document.createElement('button');
+		document.body.append(trigger);
+		const shown = listenTo(NOTIFICATION_SHOWN_EVENT);
+
+		const element = notification.show({
+			element: trigger,
+			group: 'bookmark',
+			message: 'Article saved.',
+			status: 'success',
+		});
+
+		expect(shown).toHaveBeenCalledTimes(1);
+		const detail = detailOf(shown);
+		expect(detail.notification).toBe(element);
+		expect(detail.notification.isConnected).toBe(true);
+		expect(detail.originator).toBe(trigger);
+		expect(detail.group).toBe('bookmark');
+		expect(detail.status).toBe('success');
+		expect(detail.hasTimer).toBe(false);
+		expect(detail.duration).toBeUndefined();
+		expect(detail.isCompanion).toBe(false);
+	});
+
+	it('reports the effective timer duration, not the stored preference', () => {
+		vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('3000');
+		const shown = listenTo(NOTIFICATION_SHOWN_EVENT);
+
+		notification.show({ message: 'With timer', hasTimer: true });
+		notification.show({ message: 'Without timer' });
+
+		expect(detailOf(shown, 0).hasTimer).toBe(true);
+		expect(detailOf(shown, 0).duration).toBe(3000);
+		expect(detailOf(shown, 1).hasTimer).toBe(false);
+		expect(detailOf(shown, 1).duration).toBeUndefined();
+	});
+
+	it('reports no active timer when nothing configured a duration', () => {
+		vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
+		const shown = listenTo(NOTIFICATION_SHOWN_EVENT);
+
+		notification.show({ message: 'No stored duration', hasTimer: true });
+
+		expect(detailOf(shown).hasTimer).toBe(false);
+		expect(detailOf(shown).duration).toBeUndefined();
+	});
+
+	it('echoes the opaque data option back in every lifecycle event', async () => {
+		const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+		const shown = listenTo(NOTIFICATION_SHOWN_EVENT);
+		const removed = listenTo(NOTIFICATION_REMOVED_EVENT);
+		const data = { layout: 'bookmark_link_timer' };
+
+		const element = notification.show({ message: 'With data', data });
+
+		expect(element.data).toBe(data);
+		expect(detailOf(shown).data).toBe(data);
+
+		await user.click(screen.getByRole('button', { name: 'Meldung schließen', hidden: true }));
+
+		expect(detailOf(removed).data).toBe(data);
+	});
+
+	it('dispatches notification-action for a callback button', async () => {
+		const onClick = vi.fn();
+		const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+		const action = listenTo(NOTIFICATION_ACTION_EVENT);
+		const removed = listenTo(NOTIFICATION_REMOVED_EVENT);
+
+		const element = notification.show({
+			message: 'Article removed.',
+			button: { text: 'Rückgängig', onClick },
+		});
+
+		expect(element.actionType).toBe('button');
+
+		await user.click(screen.getByRole('button', { name: 'Rückgängig', hidden: true }));
+
+		expect(action).toHaveBeenCalledTimes(1);
+		expect(detailOf(action).notification).toBe(element);
+		expect(detailOf(action).actionType).toBe('button');
+		expect(onClick).toHaveBeenCalledTimes(1);
+		expect(detailOf(removed).reason).toBe('action');
+	});
+
+	it('dispatches notification-action for a link without removing the notification', async () => {
+		const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+		const action = listenTo(NOTIFICATION_ACTION_EVENT);
+		const removed = listenTo(NOTIFICATION_REMOVED_EVENT);
+
+		const element = notification.show({
+			message: 'Article saved.',
+			link: { text: 'Zur Merkliste', href: 'https://example.com/merkliste' },
+		});
+
+		expect(element.actionType).toBe('link');
+
+		const link = screen.getByRole('link', { name: 'Zur Merkliste', hidden: true });
+		link.addEventListener('click', event => event.preventDefault());
+		await user.click(link);
+
+		expect(action).toHaveBeenCalledTimes(1);
+		expect(detailOf(action).actionType).toBe('link');
+		expect(removed).not.toHaveBeenCalled();
+	});
+
+	it('dispatches notification-action for the auto-dismiss hint', async () => {
+		const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+		vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
+		const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+		const shown = listenTo(NOTIFICATION_SHOWN_EVENT);
+		const action = listenTo(NOTIFICATION_ACTION_EVENT);
+
+		notification.show({
+			message: 'Article saved.',
+			hasTimer: true,
+			settings: { url: 'https://example.com/settings' },
+		});
+
+		expect(shown).toHaveBeenCalledTimes(2);
+		expect(detailOf(shown, 0).isCompanion).toBe(false);
+		expect(detailOf(shown, 1).isCompanion).toBe(true);
+
+		await user.click(screen.getByRole('button', { name: 'Konfigurieren', hidden: true }));
+
+		expect(action).toHaveBeenCalledTimes(1);
+		expect(detailOf(action).isCompanion).toBe(true);
+		expect(screen.getByText('Neuer Tab wird geöffnet …')).not.toBeNull();
+
+		await vi.advanceTimersByTimeAsync(2000);
+		expect(openSpy).toHaveBeenCalledTimes(1);
+
+		openSpy.mockRestore();
+	});
+
+	it('reports reason "close" when the user clicks the close button', async () => {
+		const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+		const removed = listenTo(NOTIFICATION_REMOVED_EVENT);
+
+		notification.show({ message: 'Closed by hand' });
+
+		await user.click(screen.getByRole('button', { name: 'Meldung schließen', hidden: true }));
+
+		expect(detailOf(removed).reason).toBe('close');
+	});
+
+	it('reports reason "timeout" when the timer expires', async () => {
+		const removed = listenTo(NOTIFICATION_REMOVED_EVENT);
+		notification.notificationTimeout = 5000;
+
+		notification.show({ message: 'Auto dismissed', hasTimer: true });
+
+		await vi.advanceTimersByTimeAsync(5000);
+
+		expect(detailOf(removed).reason).toBe('timeout');
+	});
+
+	it('reports reason "replaced" when a newer notification of the same group appears', () => {
+		const removed = listenTo(NOTIFICATION_REMOVED_EVENT);
+
+		notification.show({ group: 'bookmark', message: 'First' });
+		notification.show({ group: 'bookmark', message: 'Second' });
+
+		expect(removed).toHaveBeenCalledTimes(1);
+		expect(detailOf(removed).reason).toBe('replaced');
+	});
+
+	it('reports reason "evicted" when the position stack overflows', () => {
+		const removed = listenTo(NOTIFICATION_REMOVED_EVENT);
+
+		for (let index = 0; index <= MAX_NOTIFICATIONS_PER_POSITION; index++) {
+			notification.show({ message: `Notification ${index}` });
+		}
+
+		expect(removed).toHaveBeenCalledTimes(1);
+		expect(detailOf(removed).reason).toBe('evicted');
+	});
+
+	it('reports reason "cascade" when the hint follows its parent out of the DOM', async () => {
+		vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
+		const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+		const removed = listenTo(NOTIFICATION_REMOVED_EVENT);
+
+		notification.show({
+			message: 'Article saved.',
+			hasTimer: true,
+			settings: { url: 'https://example.com/settings' },
+		});
+
+		const closeButtons = screen.getAllByRole('button', {
+			name: 'Meldung schließen',
+			hidden: true,
+		});
+		await user.click(closeButtons[0]);
+
+		expect(removed).toHaveBeenCalledTimes(2);
+		expect(detailOf(removed, 0).reason).toBe('close');
+		expect(detailOf(removed, 0).isCompanion).toBe(false);
+		expect(detailOf(removed, 1).reason).toBe('cascade');
+		expect(detailOf(removed, 1).isCompanion).toBe(true);
+	});
+
+	it('reports reason "programmatic" for removals through the API', () => {
+		const removed = listenTo(NOTIFICATION_REMOVED_EVENT);
+
+		const element = notification.show({ message: 'Removed by code' });
+		notification.removeNotification(element);
+
+		expect(detailOf(removed).reason).toBe('programmatic');
+	});
+
+	it('exposes stable part hooks for consumers', () => {
+		const element = notification.show({
+			message: 'Article saved.',
+			link: { text: 'Zur Merkliste', href: 'https://example.com/merkliste' },
+		});
+
+		expect(element.querySelector('[data-notification-part="message"]')).not.toBeNull();
+		expect(element.querySelector('[data-notification-part="action"]')?.tagName).toBe('A');
+		expect(element.querySelector('[data-notification-part="close"]')).not.toBeNull();
 	});
 });
