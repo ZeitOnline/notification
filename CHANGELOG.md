@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.6.1](https://github.com/ZeitOnline/notification/compare/notification-v2.6.0...notification-v2.6.1) (2026-10-08)
+
+
+### 📝 Other Changes
+
+* remove the docs trigger workflow ([#77](https://github.com/ZeitOnline/notification/issues/77)) ([9b9348c](https://github.com/ZeitOnline/notification/commit/9b9348c414ae36ea1d551cd8c44129691b0fca1b))
+* remove the docs trigger workflow, docs polls its modules ([9b9348c](https://github.com/ZeitOnline/notification/commit/9b9348c414ae36ea1d551cd8c44129691b0fca1b))
+
 ## [2.6.0](https://github.com/ZeitOnline/notification/compare/notification-v2.5.0...notification-v2.6.0) (2026-09-07)
 
 
