@@ -961,8 +961,10 @@ describe('notification accessibility behavior', () => {
 
 		expect(screen.getByText('Neuer Tab wird geöffnet …')).not.toBeNull();
 		expect(screen.queryByRole('button', { name: 'Konfigurieren', hidden: true })).toBeNull();
+		expect(openSpy).not.toHaveBeenCalled();
 
-		await vi.advanceTimersByTimeAsync(2000);
+		// must open within ~1s of the click, otherwise mobile popup blockers block it
+		await vi.advanceTimersByTimeAsync(900);
 		expect(openSpy).toHaveBeenCalledWith(
 			'https://example.com/settings',
 			'_blank',
@@ -996,7 +998,7 @@ describe('notification accessibility behavior', () => {
 		screen.getByText('Opening settings tab...');
 		expect(screen.queryByRole('button', { name: 'Configure', hidden: true })).toBeNull();
 
-		await vi.advanceTimersByTimeAsync(2000);
+		await vi.advanceTimersByTimeAsync(900);
 		expect(openSpy).toHaveBeenCalledWith(
 			'https://example.com/settings',
 			'_blank',
@@ -1230,7 +1232,7 @@ describe('notification lifecycle events', () => {
 		expect(detailOf(action).isCompanion).toBe(true);
 		expect(screen.getByText('Neuer Tab wird geöffnet …')).not.toBeNull();
 
-		await vi.advanceTimersByTimeAsync(2000);
+		await vi.advanceTimersByTimeAsync(900);
 		expect(openSpy).toHaveBeenCalledTimes(1);
 
 		openSpy.mockRestore();

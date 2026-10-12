@@ -30,6 +30,9 @@ export const NOTIFICATION_ACTION_EVENT = 'notification-action';
 const HINT_DISMISSED_KEY = 'z.notification.hint';
 const STORED_DURATION_KEY = 'z.notification.duration';
 const HINT_DISMISS_MAX_AGE = 2 * 24 * 60 * 60; // 2 days
+// Mobile browsers (e.g. iOS Safari) only allow window.open() within ~1s of the
+// user's click and silently block it afterwards, so this must stay below 1000ms.
+const SETTINGS_OPEN_DELAY = 900;
 const DEFAULT_SETTINGS_HINT_COPY = {
 	message: 'Automatisch ausblenden?',
 	buttonText: 'Konfigurieren',
@@ -476,7 +479,7 @@ export class Notification {
 				setTimeout(() => {
 					window.open(settings.url, '_blank', 'noopener,noreferrer');
 					this.removeNotification(notification);
-				}, 2000);
+				}, SETTINGS_OPEN_DELAY);
 			};
 		}
 
