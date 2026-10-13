@@ -132,7 +132,7 @@ export class Notification {
 	}
 
 	async showInline({ element, message }: InlineNotificationOptions): Promise<void> {
-		let inline: InlineNotification = { timeoutID: null };
+		const inline: InlineNotification = { timeoutID: null };
 		this.container = this.createInlineContainer();
 		this.setInlineMessage(message);
 		this.announcer.announce(message);
@@ -271,7 +271,7 @@ export class Notification {
 			};
 		}
 
-		if (!!hasTimer) {
+		if (hasTimer) {
 			notification.hasTimer = true;
 			this.addPauseResumeEvents(notification);
 		}
@@ -406,7 +406,7 @@ export class Notification {
 	}
 
 	inlinePositioning(element: HTMLElement, container: HTMLElement): void {
-		let margin = 8;
+		const margin = 8;
 		let rect = element.getBoundingClientRect();
 		const viewportWidth = document.documentElement.clientWidth || window.innerWidth;
 		const viewportHeight = document.documentElement.clientHeight || window.innerHeight;
