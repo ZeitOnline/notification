@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.6.1](https://github.com/ZeitOnline/notification/compare/notification-v2.6.0...notification-v2.6.1) (2026-10-14)
+
+
+### 🐛 Bug Fixes
+
+* open accessibility settings tab on mobile browsers (ENG-1176) ([#79](https://github.com/ZeitOnline/notification/issues/79)) ([521d648](https://github.com/ZeitOnline/notification/commit/521d6481bfb9c3f95b58ce42cb43494ea8820381))
+
+
+### 📝 Other Changes
+
+* remove the docs trigger workflow ([#77](https://github.com/ZeitOnline/notification/issues/77)) ([9b9348c](https://github.com/ZeitOnline/notification/commit/9b9348c414ae36ea1d551cd8c44129691b0fca1b))
+
 ## [2.6.0](https://github.com/ZeitOnline/notification/compare/notification-v2.5.0...notification-v2.6.0) (2026-09-07)
 
 
