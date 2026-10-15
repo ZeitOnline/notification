@@ -151,7 +151,7 @@ describe.sequential('notification spoken accessibility', () => {
 
 		expect(document.activeElement).toBe(screen.getByRole('link', { name: 'Open docs' }));
 
-		let spoken = (await virtual.lastSpokenPhrase()).toLowerCase();
+		const spoken = (await virtual.lastSpokenPhrase()).toLowerCase();
 		expect(spoken).toContain('open docs');
 		expect(spoken).toContain('link');
 

@@ -1,0 +1,11 @@
+> 0.2% in DE
+last 2 versions
+not dead
+Firefox ESR
+
+# Explicitly exclude irrelevant & (too) outdated browsers
+not op_mini all
+not kaios > 0
+not safari <= 11.2
+not ios_saf <= 11.2
+not chrome <= 100
