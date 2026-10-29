@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.6.2](https://github.com/ZeitOnline/notification/compare/notification-v2.6.1...notification-v2.6.2) (2026-10-29)
+
+
+### 📝 Other Changes
+
+* **eslint:** update @zeitonline/eslint-config to 3.1 ([#82](https://github.com/ZeitOnline/notification/issues/82)) ([4405ca3](https://github.com/ZeitOnline/notification/commit/4405ca3f5c664f531defe3b3b47eb271b4c313f9))
+* let eslint check typescript files ([#80](https://github.com/ZeitOnline/notification/issues/80)) ([2629931](https://github.com/ZeitOnline/notification/commit/26299317196f871b35c5622db835884aeaa700f9))
+
 ## [2.6.1](https://github.com/ZeitOnline/notification/compare/notification-v2.6.0...notification-v2.6.1) (2026-10-14)
 
 
