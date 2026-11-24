@@ -547,8 +547,35 @@ export class Notification {
 			}
 		};
 
-		notification.addEventListener('pointerenter', pause);
-		notification.addEventListener('pointerleave', resume);
+		// Pointer and keyboard focus each hold the timer; it runs again only once both have left.
+		let isHovered = false;
+		let isFocused = false;
+		const update = () => {
+			const shouldPause = isHovered || isFocused;
+			if (shouldPause && !notification.isPaused) {
+				pause();
+			} else if (!shouldPause && notification.isPaused) {
+				resume();
+			}
+		};
+
+		notification.addEventListener('pointerenter', () => {
+			isHovered = true;
+			update();
+		});
+		notification.addEventListener('pointerleave', () => {
+			isHovered = false;
+			update();
+		});
+		notification.addEventListener('focusin', () => {
+			isFocused = true;
+			update();
+		});
+		notification.addEventListener('focusout', (event: FocusEvent) => {
+			if (notification.contains(event.relatedTarget as Node | null)) return;
+			isFocused = false;
+			update();
+		});
 	}
 
 	removeNotification(
@@ -560,6 +587,7 @@ export class Notification {
 	): void {
 		if (!notification) return;
 
+		// Before clearing the timer: moving focus out resumes a timer paused by focus.
 		if (notification.isConnected && notification.contains(document.activeElement)) {
 			this.restoreFocus(notification);
 		}
