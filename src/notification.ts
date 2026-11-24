@@ -511,10 +511,6 @@ export class Notification {
 	}
 
 	expireTimedNotification(notification: NotificationElement): void {
-		const activeElement = document.activeElement;
-		if (activeElement && notification.contains(activeElement)) {
-			this.setFocus(notification.anchorElement);
-		}
 		notification.remaining = 0;
 		this.removeNotification(notification, { reason: 'timeout' });
 	}
@@ -564,6 +560,9 @@ export class Notification {
 	): void {
 		if (!notification) return;
 
+		if (notification.isConnected && notification.contains(document.activeElement)) {
+			this.restoreFocus(notification);
+		}
 		if (notification.timeoutID) {
 			clearTimeout(notification.timeoutID);
 		}
@@ -660,6 +659,25 @@ export class Notification {
 
 	setFocus(element: HTMLElement): void {
 		element.focus();
+	}
+
+	/**
+	 * Keeps keyboard and screen reader users in place when a notification
+	 * holding focus disappears: back to its trigger, otherwise to the
+	 * newest notification left at the same position.
+	 */
+	restoreFocus(notification: NotificationElement): void {
+		const anchor = notification.anchorElement;
+		if (anchor !== document.body && anchor.isConnected) {
+			this.setFocus(anchor);
+			if (document.activeElement === anchor) return;
+		}
+
+		const next = this.notificationStacks
+			.get(notification.position)
+			?.filter(item => item !== notification && item.isConnected)
+			.at(-1);
+		next?.querySelector<HTMLElement>('a[href], button')?.focus();
 	}
 
 	removeNotificationFromStack(notification: NotificationElement): void {

@@ -811,6 +811,58 @@ describe('notification accessibility behavior', () => {
 		expect(document.activeElement).toBe(trigger);
 	});
 
+	it('restores focus to the trigger when the companion is removed while it holds focus', async () => {
+		const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+		const trigger = document.createElement('button');
+		trigger.textContent = 'Save article';
+		document.body.append(trigger);
+		trigger.focus();
+
+		notification.show({
+			element: trigger,
+			message: 'Article saved.',
+			status: 'success',
+			hasTimer: true,
+			settings: { url: 'https://example.com/settings' },
+		});
+
+		const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+		await user.click(screen.getByRole('button', { name: 'Konfigurieren', hidden: true }));
+		await vi.advanceTimersByTimeAsync(900);
+
+		expect(screen.queryByText('Neuer Tab wird geöffnet …')).toBeNull();
+		expect(document.activeElement).toBe(trigger);
+
+		openSpy.mockRestore();
+	});
+
+	it('restores focus to the trigger when a focused notification is replaced by its group', () => {
+		const trigger = document.createElement('button');
+		trigger.textContent = 'Save article';
+		document.body.append(trigger);
+
+		notification.show({ element: trigger, group: 'bookmark', message: 'Article saved.' });
+		screen.getByRole('button', { name: 'Meldung schließen', hidden: true }).focus();
+		notification.show({ element: trigger, group: 'bookmark', message: 'Article removed.' });
+
+		expect(queryNotificationMessage('Article saved.')).toBeNull();
+		expect(document.activeElement).toBe(trigger);
+	});
+
+	it('moves focus to the next notification when a focused notification without trigger is removed', () => {
+		notification.show({ message: 'First notification' });
+		const second = notification.show({ message: 'Second notification' });
+		const [firstClose, secondClose] = screen.getAllByRole('button', {
+			name: 'Meldung schließen',
+			hidden: true,
+		});
+		secondClose.focus();
+
+		notification.removeNotification(second);
+
+		expect(document.activeElement).toBe(firstClose);
+	});
+
 	it('calls onClose callback when closed manually', async () => {
 		const onCloseMock = vi.fn();
 
