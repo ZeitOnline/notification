@@ -482,6 +482,99 @@ describe('notification accessibility behavior', () => {
 		});
 	});
 
+	describe('onClose while focus is restored', () => {
+		let onClose: ReturnType<typeof vi.fn>;
+		let trigger: HTMLButtonElement;
+
+		beforeEach(() => {
+			onClose = vi.fn();
+			notification.notificationTimeout = 5000;
+			trigger = document.createElement('button');
+			trigger.textContent = 'Save article';
+			document.body.append(trigger);
+		});
+
+		const getCloseButton = (element: HTMLElement): HTMLElement =>
+			element.querySelector<HTMLElement>('.z-notification__close-btn')!;
+
+		it('is called when a timed notification without trigger is closed by keyboard', () => {
+			notification.show({ message: 'Other notification' });
+			const timed = notification.show({
+				message: 'Timed notification',
+				hasTimer: true,
+				onClose,
+			});
+
+			getCloseButton(timed).focus();
+			getCloseButton(timed).click();
+
+			expect(onClose).toHaveBeenCalledTimes(1);
+		});
+
+		it('is called only once when the timer is already overdue on close', () => {
+			const reasons: string[] = [];
+			const listener = (event: Event) =>
+				reasons.push((event as CustomEvent<{ reason: string }>).detail.reason);
+			window.addEventListener(NOTIFICATION_REMOVED_EVENT, listener);
+			const timed = notification.show({
+				element: trigger,
+				message: 'Timed notification',
+				hasTimer: true,
+				onClose,
+			});
+
+			// the clock passes the duration, but the timeout callback has not run yet
+			vi.setSystemTime(Date.now() + 6000);
+			getCloseButton(timed).focus();
+			getCloseButton(timed).click();
+			window.removeEventListener(NOTIFICATION_REMOVED_EVENT, listener);
+
+			expect(onClose).toHaveBeenCalledTimes(1);
+			expect(reasons).toEqual(['close']);
+		});
+
+		it('is not called when an overdue notification holding focus is replaced by its group', () => {
+			const timed = notification.show({
+				element: trigger,
+				group: 'bookmark',
+				message: 'Article saved.',
+				hasTimer: true,
+				onClose,
+			});
+
+			vi.setSystemTime(Date.now() + 6000);
+			getCloseButton(timed).focus();
+			notification.show({ element: trigger, group: 'bookmark', message: 'Article removed.' });
+
+			expect(onClose).not.toHaveBeenCalled();
+		});
+
+		it('is called only once when onClose removes the same notification again', () => {
+			const timed = notification.show({
+				element: trigger,
+				message: 'Timed notification',
+				hasTimer: true,
+				onClose: () => {
+					onClose();
+					notification.removeNotification(timed);
+				},
+			});
+
+			getCloseButton(timed).click();
+
+			expect(onClose).toHaveBeenCalledTimes(1);
+		});
+
+		it('moves focus to the trigger when closed by a click that did not focus the button', () => {
+			const timed = notification.show({ element: trigger, message: 'Article saved.' });
+
+			// Safari does not focus buttons on click
+			getCloseButton(timed).click();
+
+			expect(document.activeElement).toBe(trigger);
+		});
+	});
+
 	it('invokes the action callback and removes the notification on click', async () => {
 		const onClick = vi.fn();
 		const trigger = document.createElement('button');

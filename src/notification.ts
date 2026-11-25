@@ -206,6 +206,7 @@ export class Notification {
 		el.startedAt = 0;
 		el.anchorElement = element;
 		el.isCompanion = false;
+		el.isRemoving = false;
 		return el;
 	}
 
@@ -251,8 +252,7 @@ export class Notification {
 				this.dispatchNotificationAction(notification);
 				if (button?.onClick) {
 					button.onClick();
-					this.setFocus(notification.anchorElement);
-					this.removeNotification(notification, { reason: 'action' });
+					this.removeNotification(notification, { reason: 'action', focusTrigger: true });
 				}
 			};
 		}
@@ -265,9 +265,8 @@ export class Notification {
 				closeButton.style.setProperty('--z-notification-duration', `${duration}ms`);
 			}
 			closeButton.onclick = () => {
-				this.setFocus(notification.anchorElement);
 				notification.remaining = 0;
-				this.removeNotification(notification, { reason: 'close' });
+				this.removeNotification(notification, { reason: 'close', focusTrigger: true });
 			};
 		}
 
@@ -551,6 +550,8 @@ export class Notification {
 		let isHovered = false;
 		let isFocused = false;
 		const update = () => {
+			// Moving focus out while removing must neither touch `remaining` nor expire it again.
+			if (notification.isRemoving) return;
 			const shouldPause = isHovered || isFocused;
 			if (shouldPause && !notification.isPaused) {
 				pause();
@@ -583,13 +584,21 @@ export class Notification {
 		{
 			shouldReflow = true,
 			reason = 'programmatic',
-		}: { shouldReflow?: boolean; reason?: NotificationRemovalReason } = {},
+			focusTrigger = false,
+		}: {
+			shouldReflow?: boolean;
+			reason?: NotificationRemovalReason;
+			// for closing via the notification's own controls, even when the click did not focus them
+			focusTrigger?: boolean;
+		} = {},
 	): void {
-		if (!notification) return;
+		if (!notification || notification.isRemoving) return;
+		notification.isRemoving = true;
 
-		// Before clearing the timer: moving focus out resumes a timer paused by focus.
 		if (notification.isConnected && notification.contains(document.activeElement)) {
 			this.restoreFocus(notification);
+		} else if (focusTrigger) {
+			this.setFocus(notification.anchorElement);
 		}
 		if (notification.timeoutID) {
 			clearTimeout(notification.timeoutID);

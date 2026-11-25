@@ -97,6 +97,7 @@ export interface NotificationElement extends HTMLElement {
 	duration?: number;
 	actionType?: NotificationActionType;
 	isCompanion: boolean;
+	isRemoving: boolean;
 	data?: Record<string, unknown>;
 	anchorElement: HTMLElement;
 	onClose?: (() => void) | null;
