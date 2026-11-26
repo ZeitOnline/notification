@@ -393,6 +393,188 @@ describe('notification accessibility behavior', () => {
 		expect(queryNotificationMessage(message)).toBeNull();
 	});
 
+	describe('keyboard focus', () => {
+		const message = 'Article removed.';
+		const elapsedBeforePause = 2000;
+		let trigger: HTMLButtonElement;
+		let undoButton: HTMLElement;
+		let closeButton: HTMLElement;
+
+		beforeEach(() => {
+			notification.notificationTimeout = 5000;
+			trigger = document.createElement('button');
+			trigger.textContent = 'Remove bookmark';
+			document.body.append(trigger);
+			notification.show({
+				element: trigger,
+				message,
+				button: { text: 'Rückgängig', onClick: () => {} },
+				hasTimer: true,
+			});
+			undoButton = screen.getByRole('button', { name: 'Rückgängig', hidden: true });
+			closeButton = screen.getByRole('button', { name: 'Meldung schließen', hidden: true });
+		});
+
+		const expectRemainingTime = async (remaining: number): Promise<void> => {
+			await vi.advanceTimersByTimeAsync(remaining - 1);
+			expect(queryNotificationMessage(message)).not.toBeNull();
+			await vi.advanceTimersByTimeAsync(1);
+			expect(queryNotificationMessage(message)).toBeNull();
+		};
+
+		it('pauses the timeout while focus is inside and resumes when it leaves', async () => {
+			await vi.advanceTimersByTimeAsync(elapsedBeforePause);
+			undoButton.focus();
+			await vi.advanceTimersByTimeAsync(10000);
+			expect(queryNotificationMessage(message)).not.toBeNull();
+
+			trigger.focus();
+			await expectRemainingTime(notification.notificationTimeout! - elapsedBeforePause);
+		});
+
+		it('stays paused while focus moves between its controls', async () => {
+			await vi.advanceTimersByTimeAsync(elapsedBeforePause);
+			undoButton.focus();
+			closeButton.focus();
+			await vi.advanceTimersByTimeAsync(10000);
+			expect(queryNotificationMessage(message)).not.toBeNull();
+
+			trigger.focus();
+			await expectRemainingTime(notification.notificationTimeout! - elapsedBeforePause);
+		});
+
+		it('stays paused until both pointer and focus have left', async () => {
+			const notificationElement = undoButton.closest('.z-notification') as HTMLElement;
+			await vi.advanceTimersByTimeAsync(elapsedBeforePause);
+			notificationElement.dispatchEvent(new Event('pointerenter'));
+			undoButton.focus();
+			notificationElement.dispatchEvent(new Event('pointerleave'));
+			await vi.advanceTimersByTimeAsync(10000);
+			expect(queryNotificationMessage(message)).not.toBeNull();
+
+			trigger.focus();
+			notificationElement.dispatchEvent(new Event('pointerenter'));
+			await vi.advanceTimersByTimeAsync(10000);
+			expect(queryNotificationMessage(message)).not.toBeNull();
+
+			notificationElement.dispatchEvent(new Event('pointerleave'));
+			await expectRemainingTime(notification.notificationTimeout! - elapsedBeforePause);
+		});
+
+		it('does not restart the timeout when it is replaced while holding focus', async () => {
+			const onClose = vi.fn();
+			trigger.focus();
+			notification.show({
+				element: trigger,
+				group: 'bookmark',
+				message: 'Article saved.',
+				hasTimer: true,
+				onClose,
+			});
+			screen
+				.getAllByRole('button', { name: 'Meldung schließen', hidden: true })
+				.at(-1)!
+				.focus();
+			notification.show({ element: trigger, group: 'bookmark', message: 'Article removed.' });
+
+			await vi.advanceTimersByTimeAsync(10000);
+			expect(onClose).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('onClose while focus is restored', () => {
+		let onClose: ReturnType<typeof vi.fn>;
+		let trigger: HTMLButtonElement;
+
+		beforeEach(() => {
+			onClose = vi.fn();
+			notification.notificationTimeout = 5000;
+			trigger = document.createElement('button');
+			trigger.textContent = 'Save article';
+			document.body.append(trigger);
+		});
+
+		const getCloseButton = (element: HTMLElement): HTMLElement =>
+			element.querySelector<HTMLElement>('.z-notification__close-btn')!;
+
+		it('is called when a timed notification without trigger is closed by keyboard', () => {
+			notification.show({ message: 'Other notification' });
+			const timed = notification.show({
+				message: 'Timed notification',
+				hasTimer: true,
+				onClose,
+			});
+
+			getCloseButton(timed).focus();
+			getCloseButton(timed).click();
+
+			expect(onClose).toHaveBeenCalledTimes(1);
+		});
+
+		it('is called only once when the timer is already overdue on close', () => {
+			const reasons: string[] = [];
+			const listener = (event: Event) =>
+				reasons.push((event as CustomEvent<{ reason: string }>).detail.reason);
+			window.addEventListener(NOTIFICATION_REMOVED_EVENT, listener);
+			const timed = notification.show({
+				element: trigger,
+				message: 'Timed notification',
+				hasTimer: true,
+				onClose,
+			});
+
+			// the clock passes the duration, but the timeout callback has not run yet
+			vi.setSystemTime(Date.now() + 6000);
+			getCloseButton(timed).focus();
+			getCloseButton(timed).click();
+			window.removeEventListener(NOTIFICATION_REMOVED_EVENT, listener);
+
+			expect(onClose).toHaveBeenCalledTimes(1);
+			expect(reasons).toEqual(['close']);
+		});
+
+		it('is not called when an overdue notification holding focus is replaced by its group', () => {
+			const timed = notification.show({
+				element: trigger,
+				group: 'bookmark',
+				message: 'Article saved.',
+				hasTimer: true,
+				onClose,
+			});
+
+			vi.setSystemTime(Date.now() + 6000);
+			getCloseButton(timed).focus();
+			notification.show({ element: trigger, group: 'bookmark', message: 'Article removed.' });
+
+			expect(onClose).not.toHaveBeenCalled();
+		});
+
+		it('is called only once when onClose removes the same notification again', () => {
+			const timed = notification.show({
+				element: trigger,
+				message: 'Timed notification',
+				hasTimer: true,
+				onClose: () => {
+					onClose();
+					notification.removeNotification(timed);
+				},
+			});
+
+			getCloseButton(timed).click();
+
+			expect(onClose).toHaveBeenCalledTimes(1);
+		});
+
+		it('moves focus to the trigger when closed by a click that did not focus the button', () => {
+			const timed = notification.show({ element: trigger, message: 'Article saved.' });
+
+			// Safari does not focus buttons on click
+			getCloseButton(timed).click();
+
+			expect(document.activeElement).toBe(trigger);
+		});
+	});
+
 	it('invokes the action callback and removes the notification on click', async () => {
 		const onClick = vi.fn();
 		const trigger = document.createElement('button');
@@ -785,30 +967,56 @@ describe('notification accessibility behavior', () => {
 		expect(document.activeElement).toBe(nextFocusTarget);
 	});
 
-	it('restores focus to the trigger when timer expires while focus is inside the notification', async () => {
+	it('restores focus to the trigger when the companion is removed while it holds focus', async () => {
+		const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
 		const trigger = document.createElement('button');
-
-		notification.notificationTimeout = 5000;
-		trigger.textContent = 'Open notification';
+		trigger.textContent = 'Save article';
 		document.body.append(trigger);
 		trigger.focus();
 
 		notification.show({
 			element: trigger,
-			message: 'Notification with focused close button',
-			status: 'info',
+			message: 'Article saved.',
+			status: 'success',
 			hasTimer: true,
+			settings: { url: 'https://example.com/settings' },
 		});
-		const closeButton = screen.getByRole('button', {
+
+		const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+		await user.click(screen.getByRole('button', { name: 'Konfigurieren', hidden: true }));
+		await vi.advanceTimersByTimeAsync(900);
+
+		expect(screen.queryByText('Neuer Tab wird geöffnet …')).toBeNull();
+		expect(document.activeElement).toBe(trigger);
+
+		openSpy.mockRestore();
+	});
+
+	it('restores focus to the trigger when a focused notification is replaced by its group', () => {
+		const trigger = document.createElement('button');
+		trigger.textContent = 'Save article';
+		document.body.append(trigger);
+
+		notification.show({ element: trigger, group: 'bookmark', message: 'Article saved.' });
+		screen.getByRole('button', { name: 'Meldung schließen', hidden: true }).focus();
+		notification.show({ element: trigger, group: 'bookmark', message: 'Article removed.' });
+
+		expect(queryNotificationMessage('Article saved.')).toBeNull();
+		expect(document.activeElement).toBe(trigger);
+	});
+
+	it('moves focus to the next notification when a focused notification without trigger is removed', () => {
+		notification.show({ message: 'First notification' });
+		const second = notification.show({ message: 'Second notification' });
+		const [firstClose, secondClose] = screen.getAllByRole('button', {
 			name: 'Meldung schließen',
 			hidden: true,
 		});
-		closeButton.focus();
+		secondClose.focus();
 
-		await vi.advanceTimersByTimeAsync(notification.notificationTimeout);
+		notification.removeNotification(second);
 
-		expect(queryNotificationMessage('Notification with focused close button')).toBeNull();
-		expect(document.activeElement).toBe(trigger);
+		expect(document.activeElement).toBe(firstClose);
 	});
 
 	it('calls onClose callback when closed manually', async () => {

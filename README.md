@@ -108,7 +108,8 @@ notification.show({
 - Inline notifications anchored to the element that triggered them.
 - Queued screen-reader announcements with separate polite and assertive live regions.
 - Optional `group` keys to replace earlier notifications within the same position stack.
-- Auto-dismiss after the configured duration, with pause and resume on pointer hover, when `hasTimer` is set to `true`.
+- Auto-dismiss after the configured duration when `hasTimer` is set to `true`. The timer pauses while the pointer hovers the notification or keyboard focus is inside it, and resumes once both have left.
+- When a notification is removed while it holds focus, focus returns to the triggering element, or else to the newest notification left at the same position.
 - Notifications emit `notification-shown`, `notification-action` and `notification-removed` custom events on `window` over their whole lifecycle, so consumers can observe them without touching the call sites. See [Lifecycle events](#lifecycle-events).
 - Stacking of up to 3 notifications per position at the same time.
 - Optional `settings.url` on timed notifications: when no stored auto-dismiss duration preference exists yet, shows a companion notification with a configurable call-to-action that opens the provided URL in a new tab. Dismissing that hint stores `z.notification.hint` for two days.

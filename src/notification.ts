@@ -206,6 +206,7 @@ export class Notification {
 		el.startedAt = 0;
 		el.anchorElement = element;
 		el.isCompanion = false;
+		el.isRemoving = false;
 		return el;
 	}
 
@@ -251,8 +252,7 @@ export class Notification {
 				this.dispatchNotificationAction(notification);
 				if (button?.onClick) {
 					button.onClick();
-					this.setFocus(notification.anchorElement);
-					this.removeNotification(notification, { reason: 'action' });
+					this.removeNotification(notification, { reason: 'action', focusTrigger: true });
 				}
 			};
 		}
@@ -265,9 +265,8 @@ export class Notification {
 				closeButton.style.setProperty('--z-notification-duration', `${duration}ms`);
 			}
 			closeButton.onclick = () => {
-				this.setFocus(notification.anchorElement);
 				notification.remaining = 0;
-				this.removeNotification(notification, { reason: 'close' });
+				this.removeNotification(notification, { reason: 'close', focusTrigger: true });
 			};
 		}
 
@@ -511,10 +510,6 @@ export class Notification {
 	}
 
 	expireTimedNotification(notification: NotificationElement): void {
-		const activeElement = document.activeElement;
-		if (activeElement && notification.contains(activeElement)) {
-			this.setFocus(notification.anchorElement);
-		}
 		notification.remaining = 0;
 		this.removeNotification(notification, { reason: 'timeout' });
 	}
@@ -551,8 +546,37 @@ export class Notification {
 			}
 		};
 
-		notification.addEventListener('pointerenter', pause);
-		notification.addEventListener('pointerleave', resume);
+		// Pointer and keyboard focus each hold the timer; it runs again only once both have left.
+		let isHovered = false;
+		let isFocused = false;
+		const update = () => {
+			// Moving focus out while removing must neither touch `remaining` nor expire it again.
+			if (notification.isRemoving) return;
+			const shouldPause = isHovered || isFocused;
+			if (shouldPause && !notification.isPaused) {
+				pause();
+			} else if (!shouldPause && notification.isPaused) {
+				resume();
+			}
+		};
+
+		notification.addEventListener('pointerenter', () => {
+			isHovered = true;
+			update();
+		});
+		notification.addEventListener('pointerleave', () => {
+			isHovered = false;
+			update();
+		});
+		notification.addEventListener('focusin', () => {
+			isFocused = true;
+			update();
+		});
+		notification.addEventListener('focusout', (event: FocusEvent) => {
+			if (notification.contains(event.relatedTarget as Node | null)) return;
+			isFocused = false;
+			update();
+		});
 	}
 
 	removeNotification(
@@ -560,10 +584,22 @@ export class Notification {
 		{
 			shouldReflow = true,
 			reason = 'programmatic',
-		}: { shouldReflow?: boolean; reason?: NotificationRemovalReason } = {},
+			focusTrigger = false,
+		}: {
+			shouldReflow?: boolean;
+			reason?: NotificationRemovalReason;
+			// for closing via the notification's own controls, even when the click did not focus them
+			focusTrigger?: boolean;
+		} = {},
 	): void {
-		if (!notification) return;
+		if (!notification || notification.isRemoving) return;
+		notification.isRemoving = true;
 
+		if (notification.isConnected && notification.contains(document.activeElement)) {
+			this.restoreFocus(notification);
+		} else if (focusTrigger) {
+			this.setFocus(notification.anchorElement);
+		}
 		if (notification.timeoutID) {
 			clearTimeout(notification.timeoutID);
 		}
@@ -660,6 +696,25 @@ export class Notification {
 
 	setFocus(element: HTMLElement): void {
 		element.focus();
+	}
+
+	/**
+	 * Keeps keyboard and screen reader users in place when a notification
+	 * holding focus disappears: back to its trigger, otherwise to the
+	 * newest notification left at the same position.
+	 */
+	restoreFocus(notification: NotificationElement): void {
+		const anchor = notification.anchorElement;
+		if (anchor !== document.body && anchor.isConnected) {
+			this.setFocus(anchor);
+			if (document.activeElement === anchor) return;
+		}
+
+		const next = this.notificationStacks
+			.get(notification.position)
+			?.filter(item => item !== notification && item.isConnected)
+			.at(-1);
+		next?.querySelector<HTMLElement>('a[href], button')?.focus();
 	}
 
 	removeNotificationFromStack(notification: NotificationElement): void {
